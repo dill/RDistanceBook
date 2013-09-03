@@ -1,0 +1,43 @@
+# Distance book idea
+
+## Purpose
+
+The idea is to write something that someone who is familiar with the principles of distance sampling can fit models in R for a variety of distance sampling analyses. the audience would be grad students, postdocs and applied researchers (in natural resources/ecology departments, government and consultancies). The book would then be the bridge between the introductory book and actually performing analyses.
+
+While avoiding reproducing the introductory book, there will be some material necessary to "set the table". This would mainly consist of material from chapter 3. I don't think I want to include anything about field procedures, this book should be about analysis only.
+
+One possibility would be to have the introduction incorporate some of the core conceptual material DLB had suggested, showing appropriate simulation/code that readers could interact with. From there a walk through a series of examples of increasing complexity building on each other (perhaps based on a handful of sample data sets).
+
+
+
+## Chapters
+
+  * Distance sampling outline.
+  * Fitting CDS detection functions using `Distance`
+  * Fitting MCDS detection functions using `Distance`
+  * Abundance and density estimation, including stratification and random abundance effects using `reds`
+  * MRDS analysis using `mrds`
+  * Analysing spatial data using `dsm`
+  * Mixed clusters in `mads`
+  * Accounting to for availability bias (simple and more complicated methods a la Roland and DLB)
+  * Simulating distance data using `DSsim` (appendix?)
+  * Getting your data in the right format (appendix?)
+
+*NB in the above, `Distance` refers to my R package.*
+
+
+## Publishing options:
+
+  * Springer useR! series
+  * electronic only (Kindle/ePub/PDF) -- [https://leanpub.com/](https://leanpub.com/)
+  * small print run/print-on-demand service?
+  * should we charge at all?
+
+
+## Possible titles
+ 
+  * Distance sampling analyses with R
+  * Analysis of distance sampling data in R
+  * Analyzing distance sampling data in R
+
+ 

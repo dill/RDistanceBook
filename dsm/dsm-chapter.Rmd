@@ -1,0 +1,26 @@
+# Density surface modelling
+
+## Contents (i.e. todo list)
+
+ * What is DSM?
+    - pull lots of this from MEE paper
+ * Data setup for a DSM
+    - resolution
+    - selecting segment length
+    - possible sources
+    - effort
+ * Constructing DSMs
+    - roadmap for the rest of the chapter
+    - model construction flow diagram
+ * Model checking
+    - Prediction (covariates!)
+ * markov random fields?
+ * Special cases
+    - strip transects
+    - mrds
+ * Other stuff
+    - Temporal trends
+    - Temporal inference
+    - general $L_p$ matrix stuff
+
+## Intro

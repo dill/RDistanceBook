@@ -1,0 +1,31 @@
+# Data setup for density surface models
+
+This section deals with the practical issues involved in creating a dataset that can be analysed using `dsm`.
+
+In general we need three pieces of information, these are outlined here then followed by a series of concrete examples showing how to setup the data in various situations.
+
+ * *segment data* - think of this as the details of the survey. This `data.frame` gives the information on each segment in the survey. This must include a unique identifier for each segment and some measure of the effort expended.
+ * *`ddf` object* - this is the object returned from fitting the detection function to the distance data. The probabilities of detection per observation are stored here and used by DSM to correct the counts/estimate the effective areas of the transects.
+ * *observation data* - this `data.frame` serves as a link between
+
+
+## Segment size
+
+
+## A word about GIS
+
+
+## Obtaining additional covariates
+
+
+## Examples
+
+### Loons
+
+### Bears
+
+### Dolphins
+
+
+
+
