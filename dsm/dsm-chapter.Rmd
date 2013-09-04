@@ -4,6 +4,7 @@
 
  * What is DSM?
     - pull lots of this from MEE paper
+ * Data sets used in this chapter
  * Data setup for a DSM
     - resolution
     - selecting segment length

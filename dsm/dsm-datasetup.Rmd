@@ -2,30 +2,55 @@
 
 This section deals with the practical issues involved in creating a dataset that can be analysed using `dsm`.
 
-In general we need three pieces of information, these are outlined here then followed by a series of concrete examples showing how to setup the data in various situations.
+In general we need three pieces of information, these are outlined here then followed by a series of concrete examples at the end of the section showing how to setup the data in various situations.
 
  * *segment data* - think of this as the details of the survey. This `data.frame` gives the information on each segment in the survey. This must include a unique identifier for each segment and some measure of the effort expended.
  * *`ddf` object* - this is the object returned from fitting the detection function to the distance data. The probabilities of detection per observation are stored here and used by DSM to correct the counts/estimate the effective areas of the transects.
- * *observation data* - this `data.frame` serves as a link between
+ * *observation data* - this `data.frame` serves as a link between the `ddf` object and the segment data, allowing the observations to be allocated to segments via a look-up. This might be the same `data.frame` that was passed to fit the `ddf` model.
 
 
 ## Segment size
 
 
-## A word about GIS
+
+## A word about GIS and shapefiles
+
+Many of the tasks that need to be performed to build the segment and observation data are much more easily performed in GIS. Most GIS packages have built-in tools for chopping transects into segments and for finding which observations lie in which segments.
+
+The output format from GIS is often a shapefile or a comma separated value file. (CSV). CSV files are much easier to read into R and are generally more portable however, often one is sent shapefiles and has to deal with them. The R packages [`sp`](http://cran.r-project.org/web/packages/sp/index.html), [`maptools`](http://cran.r-project.org/web/packages/maptools/index.html) and [`rgdal`](http://cran.r-project.org/web/packages/rgdal/index.html) are useful for manipulating shapefiles. Much has been written about both GIS and shapefiles, which I do not intend to re-iterate. Barry Rowlingson has a [useful cheatsheet for spatial data in R](http://www.maths.lancs.ac.uk/~rowlings/Teaching/UseR2012/cheatsheet.html). I'll note a couple of tips here when using shapefiles:
+
+ * Once a shapefile has been loaded in R, it has a number of "slots": `@points`/`@lines`/`@polygons`, `@data`, `@proj`, etc. The `@points`/`@lines`/`@polygons` include information on the locations of the points or lines or polygons in the data. These locations each have a row assigned to them in  `@data`, but there is not validation between the two, so the locations in `@data` may not correspond to those in the `@points`/`@lines`/`@polygons` (which will be used if one calls `plot` on the object). Checking this can avoid some nasty issues later.
+ * The locations in the shapefile will be according to some projection of geographic coordinates. Again, there is much literature about this but it's worth making sure that an appropriate projection is used (TKTKTK citations here?). Projections can be changed using the `spTransform` function in `rgdal` ([spatialreference.org](http://spatialreference.org/) provides information about projection strings; see also [this useful SO thread](http://gis.stackexchange.com/questions/31743/projecting-sp-objects-in-r)).
+ * Usually projecting the data into a suitable coordinate system and measuring distances as (kilo)metres from a particular feature (e.g. the centre of the study area) makes locations much easier to deal with (and also makes two-dimensional smoothing easier; see [Smoothing] (TKTKTK references between chapters?)).
 
 
 ## Obtaining additional covariates
+
+Often environmental covariates that may be useful in the analysis were not collected at the same time as observations of the species in question. There are several large databases of geographically (and temporally) referenced data available. Although it would be impossible to list all such repositories here, some of the more popular databases are listed.
+
+ * [NOAA Environmental Research Division's Data Access Program](http://coastwatch.pfeg.noaa.gov/erddap/index.html) (ERDDAP) -- contains sea surface temperature, chlorophyll-a levels, wind speeds, bathymetry and other variables for the coastlines of the USA.
+ * [North Atlantic Oscillation](http://www.cru.uea.ac.uk/~timo/datapages/naoi.htm) -- data from University of East Anglia on pressure differenced between the Azores and Iceland, thought to be a good indicator of Northern Hemisphere climate.
+ * [British Oceanographic Data Centre: Numerical model data](https://www.bodc.ac.uk/data/online_delivery/numerical_model_data/request/) -- similar to ERDDAP for UK coastline.
+ * [British Oceanographic Data Centre: ](https://www.bodc.ac.uk/data/online_delivery/gebco/) -- bathymetry data for the UK.
+
+(TKTKTK more here?)
 
 
 ## Examples
 
 ### Loons
 
-### Bears
+(TKTKTK This is the easy data set).
+
 
 ### Dolphins
 
+### Bears
 
+(TKTKTK More complicated because the segments that the bears were observed from were not the same as the ones where covariates were measured.)
+
+## References
+
+ * []
 
 
