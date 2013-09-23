@@ -13,15 +13,29 @@
  * Constructing DSMs
     - roadmap for the rest of the chapter
     - model construction flow diagram
- * Model checking
-    - Prediction (covariates!)
- * markov random fields?
- * Special cases
-    - strip transects
-    - mrds
- * Other stuff
+    - actual model construction stuff
+       - assume that detection function stuff already done?
+       - "knot" selection
+       - response distributions (when/why/how)
+       - smoothing in general
+ * Model checking (maybe this should be rolled in with the above?)
+    - simple gam.check stuff
+    - autocorrelation checks
+    - influence checks
+ * Prediction
+    - covariate values
+    - variance estimation
+    - integrating out certain parameters?
+ * Advanced modelling
+    - autocorrelation
     - Temporal trends
     - Temporal inference
+    - mrds
+ * Special cases
+    - strip transects
+    - points?
+ * Other (fancy) stuff
+    - markov random fields?
     - general $L_p$ matrix stuff
 
 ## Intro

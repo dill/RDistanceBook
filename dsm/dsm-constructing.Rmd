@@ -1,0 +1,45 @@
+# Constructing density surface models
+
+## Steps to a DSM analysis
+
+ * Detection function
+     * fit detection functions
+     * check absolute fit by $\chi^2$, if not possible use visual inspection
+     * use best model by AIC
+ * DSM
+     * fit model with all covars (using method="REML")
+     * ensure that k~=k'
+     * cut covars back using select=TRUE and p-values
+     * default use negative binomial for sea birds, can fit theta at the same time as other pars
+     * check other response distributions (using qq plot)
+     * check for residual autocorrelation (using dsm.cor)
+     * check predictive power? (Oppel's test? is this BS?)
+
+
+
+
+
+## Response distributions
+
+ * counts
+ * keep as close to the original measure as possible?
+
+
+### Negative binomial
+
+ * finding $\theta$
+   - when using the `c(low,high)` form, don't make the interval too short?
+     - if it's too small then the surface is too flat
+     - optimisation takes aaaaages
+
+### Tweedie
+
+ * line search
+ * only need to cary by 0.1 along line
+ * plot `sqrt(abs(residuals)`, AIC?
+
+
+
+
+
+

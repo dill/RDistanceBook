@@ -9,7 +9,45 @@ In general we need three pieces of information, these are outlined here then fol
  * *observation data* - this `data.frame` serves as a link between the `ddf` object and the segment data, allowing the observations to be allocated to segments via a look-up. This might be the same `data.frame` that was passed to fit the `ddf` model.
 
 
-## Segment size
+## Segment size and effort
+
+(TKTKTK
+ * does segment size matter that much? Probably want to go into more detail than just citing Steve's sentence on this. Maybe construct an argument about this?
+ * EFFORT: temporal replicates? Should they be new samples (increase n) or effort multipliers (increase effort).
+)
+
+    Dear Ujjal,
+    
+    Thanks for your e-mail. This is a relatively common problem and is somewhat dependent on what you want to get out of the analysis and how the field procedure was conducted.
+    
+    You correctly state the two options:
+    
+     * each segment is 2km, you visit them three times, so this could give three unique segments in the data (three rows in the segment data.frame). If the segments are relatively spaced out and you expect the distribution of the animals to have changed between the sampling occasions then this seems more reasonable.
+    
+     * each segment is 2km, you visit them three times, so just make the effort for each segment 2km*3 (one row with the effort column multiplied by 3). I like this less for two reasons: 1) if the surveys are spaced in time then there will be movement between survey occasions, so the distribution will change and you model is then based on some kind of average over time, not counts and 2) you sort of falsely report your sample size since you did sample three times but you're pretending that the sample size is 1/3 of what it actually was (this in turn will probably lead to higher variance estimates).
+    
+    So, I would opt for including each segment three times: one for each survey occasion. Do remember to make the Sample.Label for the segments unique though. For example for transect 2, segment 4 on occasion 2 you might name it: "2-4-2", rather than including "2-4" three times.
+    
+    On 01/09/2013 09:24, Ujjwal Kumar wrote:> Dear Dr. David
+    > I am doing an analysis of ungulate abundance in DSM framework to predict 
+    > surface density. My Line transects are of 10Km line length. I walked 3 
+    > day per transect that is pseudo replicates(temporal replicates) 
+    > resulting 30km effort per transect. It is easy to make 30km effort for 
+    > each transect and analyse data in Distance program, But when it comes to 
+    > DSM package where we have to give spatial information for each segment. 
+    > I am confused! please help me in this regard. I have segmented  10Km 
+    > transects into 5 segments of 2 Km  length. So what should I use in 
+    > segment effort 2Km or 2Km x 3day effort= 6 km, but my segment spatial 
+    > information is of 2 km only.????
+    > I shall be very thankful to you.
+    > -- 
+    > with regards
+    > Ujjwal Kumar
+    > / Research Fellow/
+    >   P.O. Box 18 Chandrabani
+    > Dehradun (Uttarakhand) 248001
+    > mobile: +91 9808712591(Dehradun)
+    >                  +91 8103228214 (Kanha
 
 
 
@@ -31,9 +69,17 @@ Often environmental covariates that may be useful in the analysis were not colle
  * [NOAA Environmental Research Division's Data Access Program](http://coastwatch.pfeg.noaa.gov/erddap/index.html) (ERDDAP) -- contains sea surface temperature, chlorophyll-a levels, wind speeds, bathymetry and other variables for the coastlines of the USA.
  * [North Atlantic Oscillation](http://www.cru.uea.ac.uk/~timo/datapages/naoi.htm) -- data from University of East Anglia on pressure differenced between the Azores and Iceland, thought to be a good indicator of Northern Hemisphere climate.
  * [British Oceanographic Data Centre: Numerical model data](https://www.bodc.ac.uk/data/online_delivery/numerical_model_data/request/) -- similar to ERDDAP for UK coastline.
- * [British Oceanographic Data Centre: ](https://www.bodc.ac.uk/data/online_delivery/gebco/) -- bathymetry data for the UK.
+ * [British Oceanographic Data Centre](https://www.bodc.ac.uk/data/online_delivery/gebco/) -- bathymetry data for the UK.
+ * [marineexplore.org](http://marineexplore.org) -- a large repository of worldwide oceanographic data from a large number of governmental and academic sources.
+ * [LANDSAT data](https://earth.esa.int/web/guest/data-access/browse-data-products/-/asset_publisher/y8Qb/content/landsat-5-thematic-mapper-geolocated-terrain-corrected-systematic-processing-over-kiruna) -- landscape classification data
 
 (TKTKTK more here?)
+
+There are several R packages that allow one to easily import data from these databases:
+
+ * [ROpenSci](https://github.com/ropensci/) -- offer a series of packages that give access to large databases.
+ * `marmap` -- NOAA ETOPO1 bathymetry and tpolograph  http://www.plosone.org/article/info:doi%2F10.1371%2Fjournal.pone.0073051
+
 
 
 ## Examples
