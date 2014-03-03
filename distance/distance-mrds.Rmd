@@ -1,0 +1,16 @@
+# Mark-recapture distance sampling
+
+## Outline
+
+ * key assumption in (M)CDS is that g(0)=1
+ * plenty of times this is not the case
+ * use two observers
+    - io
+    - rem
+    - trial
+ * point vs. full independence
+ * (when are these methods applicable/appropriate)
+ * don't forget point transects
+ * explain this in a useful rather than general way
+
+
