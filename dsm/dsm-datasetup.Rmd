@@ -1,5 +1,17 @@
 # Data setup for density surface models
 
+**Pasted from todo list**:
+
+- resolution
+- possible data sources
+- measuring effort
+   - going on/off transect
+   - 1 vs 2 sided transects
+   - points?
+
+
+
+
 This section deals with the practical issues involved in creating a dataset that can be analysed using `dsm`.
 
 In general we need three pieces of information, these are outlined here then followed by a series of concrete examples at the end of the section showing how to setup the data in various situations.
@@ -11,8 +23,19 @@ In general we need three pieces of information, these are outlined here then fol
 
 ## Segment size and effort
 
-(TKTKTK
+
+### Segment size
+
  * does segment size matter that much? Probably want to go into more detail than just citing Steve's sentence on this. Maybe construct an argument about this?
+
+1) How would one test whether environmental variables varied appreciably within a segment?
+
+Calculating the CV per-segment based on the finest resolution data available probably isn't a bad way of dealing with this.
+
+
+
+
+(TKTKTK
  * EFFORT: temporal replicates? Should they be new samples (increase n) or effort multipliers (increase effort).
 )
 
@@ -53,6 +76,8 @@ In general we need three pieces of information, these are outlined here then fol
 
 ## A word about GIS and shapefiles
 
+[[TKTKTK does this belong in an appendix?]]
+
 Many of the tasks that need to be performed to build the segment and observation data are much more easily performed in GIS. Most GIS packages have built-in tools for chopping transects into segments and for finding which observations lie in which segments.
 
 The output format from GIS is often a shapefile or a comma separated value file. (CSV). CSV files are much easier to read into R and are generally more portable however, often one is sent shapefiles and has to deal with them. The R packages [`sp`](http://cran.r-project.org/web/packages/sp/index.html), [`maptools`](http://cran.r-project.org/web/packages/maptools/index.html) and [`rgdal`](http://cran.r-project.org/web/packages/rgdal/index.html) are useful for manipulating shapefiles. Much has been written about both GIS and shapefiles, which I do not intend to re-iterate. Barry Rowlingson has a [useful cheatsheet for spatial data in R](http://www.maths.lancs.ac.uk/~rowlings/Teaching/UseR2012/cheatsheet.html). I'll note a couple of tips here when using shapefiles:
@@ -60,6 +85,7 @@ The output format from GIS is often a shapefile or a comma separated value file.
  * Once a shapefile has been loaded in R, it has a number of "slots": `@points`/`@lines`/`@polygons`, `@data`, `@proj`, etc. The `@points`/`@lines`/`@polygons` include information on the locations of the points or lines or polygons in the data. These locations each have a row assigned to them in  `@data`, but there is not validation between the two, so the locations in `@data` may not correspond to those in the `@points`/`@lines`/`@polygons` (which will be used if one calls `plot` on the object). Checking this can avoid some nasty issues later.
  * The locations in the shapefile will be according to some projection of geographic coordinates. Again, there is much literature about this but it's worth making sure that an appropriate projection is used (TKTKTK citations here?). Projections can be changed using the `spTransform` function in `rgdal` ([spatialreference.org](http://spatialreference.org/) provides information about projection strings; see also [this useful SO thread](http://gis.stackexchange.com/questions/31743/projecting-sp-objects-in-r)).
  * Usually projecting the data into a suitable coordinate system and measuring distances as (kilo)metres from a particular feature (e.g. the centre of the study area) makes locations much easier to deal with (and also makes two-dimensional smoothing easier; see [Smoothing] (TKTKTK references between chapters?)).
+ * Using an incorrect projection (especially in the far North and South) can cause very big problems in modelling. (TKTKTK reference to this)
 
 
 ## Obtaining additional covariates
@@ -80,7 +106,7 @@ There are several R packages that allow one to easily import data from these dat
  * [ROpenSci](https://github.com/ropensci/) -- offer a series of packages that give access to large databases.
  * `marmap` -- NOAA ETOPO1 bathymetry and tpolograph  http://www.plosone.org/article/info:doi%2F10.1371%2Fjournal.pone.0073051
 
-
+TIP: Having included these variables in the data set, it is worth checking that the values fall in the range that you thought they did (using `range`) and mapping the covariates to ensure that they have been downloaded correctly and allocated to the segments/grid points that you expect. In particular it can be useful to download the values your require for prediction grid at the same time and plot these to check that the distribution is as expected. Additionally, keeping track of the units and scales that covariates are measured on can save confusion in the interpretation of the results.
 
 ## Examples
 

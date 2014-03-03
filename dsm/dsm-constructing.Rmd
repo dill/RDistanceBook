@@ -1,11 +1,31 @@
 # Constructing density surface models
 
+**TODO**
+ * Constructing DSMs
+    - roadmap for the rest of the chapter
+    - model construction flow diagram
+    - actual model construction stuff
+       - assume that detection function stuff already done?
+       - how do we account for group size?
+       - "knot" selection
+       - response distributions (when/why/how)
+       - smoothing in general
+       - fit, select terms, change response? How does response affect fit?
+
+ * Model checking (maybe this should be rolled in with the above?)
+    - simple gam.check stuff
+    - autocorrelation checks
+    - influence checks
+
+
+
 ## Steps to a DSM analysis
 
  * Detection function
      * fit detection functions
      * check absolute fit by $\chi^2$, if not possible use visual inspection
      * use best model by AIC
+     * refer back to distance chapter
  * DSM
      * fit model with all covars (using method="REML")
      * ensure that k~=k'
@@ -23,11 +43,16 @@
 
  * counts
  * keep as close to the original measure as possible?
+ * do we need to re-fit after finding the response parameter, do we need to re-fit once we've found $\beta$/$\lambda$?
 
+
+### quasi-Poisson
 
 ### Negative binomial
 
  * finding $\theta$
+   - use `glm.nb` in `MASS` to get a "starting" value, terms are linear but this shouldn't be hugely problematic
+   - from the `$theta` returned, expand around for a `c(low,high)`.
    - when using the `c(low,high)` form, don't make the interval too short?
      - if it's too small then the surface is too flat
      - optimisation takes aaaaages
@@ -37,9 +62,22 @@
  * line search
  * only need to cary by 0.1 along line
  * plot `sqrt(abs(residuals)`, AIC?
+ * Natalie Kelly stuff here or in GoF section?
+
+### Relations
+
+If quasi doesn't work then which way do we go? Plots of realisations from different p and theta values etc.
+
+
+## Smoothing
+
+ * `gam.check` to find $k$, _but_ don't make $k$ too big as this can lead to large predictions (large set of functions!)
 
 
 
+## Model discrimination
 
-
+ * randomised quantile residuals
+ * plotting smooth functions
+ * using `vis.gam` -- warning about averaging other covariates
 

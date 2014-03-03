@@ -4,24 +4,11 @@
 
  * What is DSM?
     - pull lots of this from MEE paper
+    - "what about all those zeros?"
+    - p*0 still =0?!
  * Data sets used in this chapter
- * Data setup for a DSM
-    - resolution
-    - selecting segment length
-    - possible sources
-    - effort
- * Constructing DSMs
-    - roadmap for the rest of the chapter
-    - model construction flow diagram
-    - actual model construction stuff
-       - assume that detection function stuff already done?
-       - "knot" selection
-       - response distributions (when/why/how)
-       - smoothing in general
- * Model checking (maybe this should be rolled in with the above?)
-    - simple gam.check stuff
-    - autocorrelation checks
-    - influence checks
+ * [Data setup for a DSM](dsm-datasetup.Rmd) -> follow link for todo
+ * [Constructing DSMs](dsm-constructing.Rmd) -> follow link for todo
  * Prediction
     - covariate values
     - variance estimation
