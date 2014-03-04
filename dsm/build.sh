@@ -1,14 +1,25 @@
 # borrowed from Hadley Wickham's adv-r book
 # github.com/hadley/adv-r
 
-pandoc --chapters -o dsm.pdf --latex-engine xelatex \
+pandoc --chapters -o dsm.tex \
   -V papersize:oneside -V links-as-notes --toc \
-  --parse-raw --natbib\
+  --parse-raw --natbib \
+  --number-sections \
+  --from=markdown+header_attributes \
   markeddown/part-dsm.md\
   markeddown/dsm-chapter.md\
   markeddown/dsm-datasetup.md\
   markeddown/dsm-constructing.md\
-  markeddown/bib-dsm.md
+  markeddown/dsm-prediction-variance.md
+
+mv dsm.tex tex/
+cd tex/
+pdflatex book.tex
+bibtex book
+pdflatex book.tex
+pdflatex book.tex
+cd ..
+
 
 # pandoc --chapters -o fp.pdf --latex-engine xelatex \
 #   -f markdown+pipe_tables \

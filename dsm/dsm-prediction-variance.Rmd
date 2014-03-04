@@ -1,0 +1,46 @@
+# Predictions and uncertainty
+
+TODO
+    - covariate values
+    - variance estimation
+    - integrating out certain parameters?
+
+## Prediction
+
+From MEE paper:
+
+A DSM can be used to predict abundance over a larger/different area than was originally surveyed. In that case the investigator must create a series of prediction cells over the prediction region. For each cell the covariates included in the DSM must be available; the area of each cell is also required. Having made predictions for each cell, these can be plotted as an abundance map (as in Fig. \ref{fits-depth}) and, by summing over cells, an overall estimate of abundance can be calculated. It is worth noting that using prediction grid cells that are smaller than the resolution of the spatially referenced data has no effect on abundance/density estimates.
+
+## Variance estimation
+
+From MEE paper:
+
+Estimating the variance of abundances calculated using a DSM is not straightforward: uncertainty from the estimated parameters of the detection function must be incorporated into the spatial model. A second consideration is that in a line transect survey, abundances in adjacent segments are likely to be correlated; failure to account for this spatial autocorrelation will lead to artificially low variance estimates and hence misleadingly narrow confidence intervals.
+
+\cite{Hedley:2004et} describe a method of calculating the variance in the abundance estimates using a parametric bootstrap, resampling from the residuals of the fitted model. The bootstrap procedure is as follows.
+
+Denote the fitted values for the model to be $\hat{\mathbf{\eta}}$. For $b=1,\ldots,B$ (where $B$ is the number of resamples required).
+\begin{enumerate}
+  \item Resample (with replacement) the per-segment/point residuals, store the values in $\mathbf{r}_{b}$.
+  \item Refit the model but with the response set to $\hat{\mathbf{\eta}}+\mathbf{r}_{b}$ (where $\hat{\mathbf{\eta}}$ are the fitted values from the orginal model).
+  \item Take the predicted values for the new model and store them.
+\end{enumerate}
+From the predicted values stored in the last step the variance originating in the spatial part of the model can be calculated. The total variance of the abundance estimate (over the whole region of interest or sub-areas) can then be found by combining the variance estimate from the bootstrap procedure with the variance of the probability of detection from the detection function model using the delta method \citep[which assumes that the two components of the variance are independent;][]{verhoef:2012}.
+
+The above procedure assumes that there is no correlation in space between segments, which are usually contiguous along transects. If many animals are observed in a particular segment then we might expect there to be high numbers in the adjacent segments. A moving block bootstrap \citep[MBB;][Section 8.6]{Efron:1993tv} can account for some of this spatial autocorrelation in the variance estimation. The segments are grouped together into overlapping blocks (so if the block size is 5, block one is segments $1,\ldots,5$, block two is segments $2,\ldots,6$, and so on). Then, at step (2) above, resamples are taken at the block level (rather than individual segments within a transect). Using MMB will account for correlation between the segments at scales smaller than the block size, inflating the variances accordingly. Block size can be selected by plotting an autocorrelogram of the residuals from the DSM.
+
+Both bootstrap procedures can also be modified to take detection function uncertainty into account. Distances are simulated from the fitted detection function and then the offset is re-calculated by fitting a detection function to the simulated distances.
+ 
+Uncertainty can be estimated for a given prediction region by calculating the appropriate quantiles of the resulting abundance estimates (outlier removal may be required before quantile calculation). DSM uncertainty can be visualised via a plot of per-cell coefficient of variation obtained by dividing the standard error for each cell by its predicted abundance (as in Fig. \ref{cv-plot}). 
+
+Rather than using a bootstrap, one can use GAM theory to construct uncertainty estimates for DSM abundance estimates. This requires that we use the distribution of the parameters in the GAM to simulate model coefficients, using them to generate replicate abundance estimates \citep[further information can found in][page 245]{Wood:2006wz}. Such an approach removes the need to refit the model many times, making variance estimation much faster.
+ 
+\cite{WILLIAMS:2011in} go a step further and incorporate the uncertainty in the estimation of the detection function into the variance of the spatial model, albeit only when segment level covariates are in the DSM. Their procedure is to fit the density surface model with an additional random effect term that characterises the uncertainty in the estimation of the detection function (via the derivatives of the probability of detection, $\hat{p}$, with respect to their parameters). Variance estimates of the abundance calculated using standard GAM theory will include uncertainty from the estimation of the detection function. A more complete mathematical explanation of this result is given in Appendix B.
+
+We consider that propagating the uncertainty in this manner to be preferable to the MBB because it is more computationally efficient meaning investigators can easily and quickly estimate variances of complex models. The confidence intervals produced via variance propagation appear comparable (if not narrower) than their bootstrap equivalents, while maintaining good coverage (results of a small simulation study are given in Appendix C).
+
+
+
+
+
+
