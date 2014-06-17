@@ -9,14 +9,24 @@
        - how do we account for group size?
        - "knot" selection
        - response distributions (when/why/how)
+          * compare Poisson/quasi/negbin/Tweedie w. plots
+          * negbin -- http://www.unc.edu/courses/2008fall/ecol/563/001/docs/lectures/lecture14.htm
+          * Tweedie -- Shono etc
        - smoothing in general
        - fit, select terms, change response? How does response affect fit?
-
  * Model checking (maybe this should be rolled in with the above?)
     - simple gam.check stuff
     - autocorrelation checks
     - influence checks
+ * Model construction, information theoretic considerations etc
+    - http://danieljhocking.wordpress.com/2014/03/25/review-of-an-information-theoretic-approach-to-ecology-and-evolution/
+ * Seasonality
+    - http://www.fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
 
+
+Notes:
+
+  * Harihar et al 2013 have some stuff about forwards-backwards selection, use F-test of deviance explained.
 
 
 ## Steps to a DSM analysis

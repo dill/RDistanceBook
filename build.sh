@@ -1,18 +1,22 @@
 # borrowed from Hadley Wickham's adv-r book
 # github.com/hadley/adv-r
 
-pandoc --chapters -o dsm.tex \
-  -V papersize:oneside -V links-as-notes --toc \
-  --parse-raw --natbib \
+pandoc --chapters -o middlematter.tex \
+  -V links-as-notes \
+  --parse-raw \
+  --smart \
+  --natbib \
   --number-sections \
-  --from=markdown+header_attributes \
+  --from=markdown+header_attributes+raw_tex \
+  markeddown/rversions.md\
+  markeddown/part-distance.md\
   markeddown/part-dsm.md\
   markeddown/dsm-chapter.md\
   markeddown/dsm-datasetup.md\
   markeddown/dsm-constructing.md\
   markeddown/dsm-prediction-variance.md
 
-mv dsm.tex tex/
+mv middlematter.tex tex/
 cd tex/
 pdflatex book.tex
 bibtex book

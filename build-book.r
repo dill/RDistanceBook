@@ -8,11 +8,15 @@ source("rmd2html.r")
 #chapters <- dir(".", pattern = "\\.Rmd$")
 
 # full names of chapters
-chapters.f <- dir(c("dsm","distance"), pattern = "\\.Rmd$",full.names=TRUE)
-chapters <- dir(c("dsm","distance"), pattern = "\\.Rmd$")
+chapters.f <- c(dir(c("dsm","distance"), pattern = "\\.Rmd$",full.names=TRUE),
+                "rversions.Rmd")
+chapters <- c(dir(c("dsm","distance"), pattern = "\\.Rmd$"),
+              "rversions.Rmd")
 
 # remove the old markdown files
+system("rm markeddown/rversions.md")
 system("rm markeddown/dsm-*")
+system("rm markeddown/distance-*")
 
 # Rmd -> md with custom knitr
 for(i in seq_along(chapters)){
