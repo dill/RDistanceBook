@@ -2,7 +2,8 @@
 # github.com/hadley/adv-r
 
 library(devtools)
-source("rmd2html.r")
+library(rmarkdown)
+#source("rmd2html.r")
 
 # what Hadley calls "chapters" we might call "sections"...
 #chapters <- dir(".", pattern = "\\.Rmd$")
@@ -20,8 +21,10 @@ system("rm markeddown/distance-*")
 
 # Rmd -> md with custom knitr
 for(i in seq_along(chapters)){
-  out <- cache_file(chapters.f[i], rmd2md, ".md")
-  file.copy(out, paste0("markeddown/", gsub(".Rmd", ".md", chapters[i])))
+#  out <- cache_file(chapters.f[i], rmd2md, ".md")
+#  file.copy(out, paste0("markeddown/", gsub(".Rmd", ".md", chapters[i])))
+  render(chapters.f[i],md_document(),
+         paste0("markeddown/", gsub(".Rmd", ".md", chapters[i])))
 }
 
 # actually call pandoc

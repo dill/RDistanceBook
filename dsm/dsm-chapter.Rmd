@@ -13,6 +13,9 @@
  * Advanced modelling
     - autocorrelation
     - Temporal inference
+      - Gavin Simpson's posts interesting?
+        - http://www.fromthebottomoftheheap.net/2011/06/12/additive-modelling-and-the-hadcrut3v-global-mean-temperature-series/
+        - http://www.fromthebottomoftheheap.net/2014/06/16/simultaneous-confidence-intervals-for-derivatives/
     - incorporating MRDS models
  * Special cases
     - strip transects
@@ -26,6 +29,9 @@
  * Other methods
     - talk about DSpat etc? -- this is all in the paper anyway...
 http://ropensci.org/blog/2014/03/17/spocc/
+ * plotting
+    - can colour blind people read yr plots? http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/#a-colorblind-friendly-palette
+    - rules for colour http://www.perceptualedge.com/articles/visual_business_intelligence/rules_for_using_color.pdf
 
 ### Considerations
 \label{aref}

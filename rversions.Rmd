@@ -1,0 +1,17 @@
+# `R` versions
+
+This version of the book was built using the following version of `R`:
+
+```{r}
+print(R.version)
+```
+
+Main package versions were:
+
+```{r}
+packageVersion("Distance")
+packageVersion("mrds")
+packageVersion("dsm")
+```
+
+

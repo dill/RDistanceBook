@@ -10,7 +10,9 @@
        - "knot" selection
        - response distributions (when/why/how)
           * compare Poisson/quasi/negbin/Tweedie w. plots
-          * negbin -- http://www.unc.edu/courses/2008fall/ecol/563/001/docs/lectures/lecture14.htm
+          * negbin
+            - http://www.unc.edu/courses/2008fall/ecol/563/001/docs/lectures/lecture14.htm
+            - http://www.johndcook.com/blog/2009/11/03/negative-binomial-poisson-gamma/
           * Tweedie -- Shono etc
        - smoothing in general
        - fit, select terms, change response? How does response affect fit?
@@ -18,6 +20,7 @@
     - simple gam.check stuff
     - autocorrelation checks
     - influence checks
+    * those neat residual plots we did in the Italy paper
  * Model construction, information theoretic considerations etc
     - http://danieljhocking.wordpress.com/2014/03/25/review-of-an-information-theoretic-approach-to-ecology-and-evolution/
  * Seasonality
