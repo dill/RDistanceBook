@@ -11,7 +11,7 @@ This document serves to outline the various chapters of the book *Practical Dist
 The book will be written in `knitr`, so all plots, models and so on will be produced, fitted etc as the book is "built".
 
 
-# 1. Distance sampling (Distance)
+# 1. Distance sampling
 
 **Overview**: This chapter introduces the very basics of distance sampling, by no means is it a full treatment as in Buckland et al (2001, 2004), but does need to present enough information to set terms of reference that'll be used throughout.
 
@@ -21,17 +21,18 @@ The book will be written in `knitr`, so all plots, models and so on will be prod
 
   * *Sampling biological populations*: why are we doing this? What can we hope to know?
   * *Strip transects to line transects*: why is distance sampling a good idea?
-  * *Models for detectability*: introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard rate models here.)
+  * *Models for detectability*: introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)
   * *What else affects detectability?*: covariate models.
   * *Improving the fit of detection functions*: adjustments and mixtures, other key functions etc.
   * *Estimating abundance*: Horvitz-Thompson estimators, stratification.
-  * *How certain are we in our estimates?*: More diagnostics, uncertainty estimation.
+  * *How certain are we in our estimates?*: uncertainty estimation (more diagnostics?).
 
 ## Code
 
-Examples of using `ds`, `dht` from `Distance`.
+Examples of using `ds`, `dht` from `Distance`. Additionally diagnostic plotting and goodness-of-fit testing.
 
-Additionally diagnostic plotting and goodness-of-fit testing.
+Begin by having a vector of distances, make a `data.frame` then add columns as we need to. Not clear if having `flatfile`-style data is better than building tables.
+
 
 ## Data sets
 
@@ -48,13 +49,18 @@ Data available (able to be released with the book) which we can do "basic" dista
      * URI seabirds boat (line transect, exact)
      * SCANS II ? (line transect, exact)
 
+What would be nice: a data set that fits okay with half-normal/hazard-rate, improves with adjustments/mixtures, has covariates.
 
 ## Relevant literature
 
   * Buckland, ST, DR Anderson, KP Burnham, JL Laake, DL Borchers, and L Thomas. Introduction to Distance Sampling, Oxford University Press, 2001.
   * Buckland, ST, DR Anderson, KP Burnham, JL Laake, DL Borchers, and L Thomas. Advanced Distance Sampling, Oxford University Press, 2004.
   * Marques, TA, L Thomas, SG Fancy, and ST Buckland. “Improving Estimates of Bird Density Using Multiple-Covariate Distance Sampling.” The Auk 124, no. 4 (2007): 1229–43.
-
+  * Borchers, D L, S T Buckland, and W Zucchini. Estimating Animal Abundance
+  * Seber, G A F. The Estimation of Animal Abundance and Related Parameters, 1982.
+, Springer, 2002.
+  * Steve's new book
+  * Mixture model paper
 
 
 # 2. Spatial models for distance sampling data
