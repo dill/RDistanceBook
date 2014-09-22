@@ -20,25 +20,24 @@ This document serves to outline the various chapters of the book *Practical Dist
 
 # 1. Distance sampling
 
-**Overview**: This chapter introduces the very basics of distance sampling, by no means is it a full treatment as in Buckland et al (2001, 2004), but does need to present enough information to set terms of reference that'll be used throughout.
+**Overview**: This chapter will introduce the very basics of distance sampling, by no means will it be a full treatment, but does need to present enough information to set terms of reference that'll be used throughout. It will instruct readers how to build detection function models in R, check and discriminate between them. Finally, readers will learn how use these models to estimate abundance/density using Horvitz-Thompson estimators and calculate the uncertainty in those estimates (and see where that uncertainty comes from).
 
 
+## Outline
 
-## Subsections
-
-  * *Sampling biological populations*: why are we doing this? What can we hope to know?
-  * *Strip transects to line transects*: why is distance sampling a good idea?
+  * *Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
   * *Models for detectability*: introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)
-  * *What else affects detectability?*: covariate models.
-  * *Improving the fit of detection functions*: adjustments and mixtures, other key functions etc.
-  * *Estimating abundance*: Horvitz-Thompson estimators, stratification.
-  * *How certain are we in our estimates?*: uncertainty estimation (more diagnostics?).
+  * *What else affects detectability?*: covariate models, selecting covariates, size bias.
+  * *Improving the fit of detection functions*: adjustments and mixtures, other key functions. Model selection via AIC.
+  * *Estimating abundance*: Horvitz-Thompson estimators, stratification (how and when).
+  * *How certain are we in our estimates?*: uncertainty estimation, explanation of variance components (more diagnostics?).
+
 
 ## Code
 
-Examples of using `ds`, `dht` from `Distance`. Additionally diagnostic plotting and goodness-of-fit testing.
+Examples of using `ds`, `dht` from `Distance`. Additionally diagnostic plotting and goodness-of-fit testing (some of this needs to be written/updated to be user friendly).
 
-Begin by having a vector of distances, make a `data.frame` then add columns as we need to. Not clear if having `flatfile`-style data is better than building tables.
+Begin by having a vector of distances, make a `data.frame` then add columns as we need to. Not clear if having `flatfile`-style data is better than building separate tables.
 
 
 ## Data sets
@@ -56,54 +55,56 @@ Data available (able to be released with the book) which we can do "basic" dista
      * URI seabirds boat (line transect, exact)
      * SCANS II ? (line transect, exact)
 
-What would be nice: a data set that fits okay with half-normal/hazard-rate, improves with adjustments/mixtures, has covariates.
+What would be nice: a data set that fits okay with half-normal/hazard-rate, improves with adjustments/mixtures, has covariates. Need both point and line data.
 
 ## Relevant literature
 
 See [distance literature review file](distance/distance-lit.md).
 
+
+
 # 2. Spatial models for distance sampling data
 
-## Subsections
+**Overview**: Readers will take detection function models and apply them to spatially explicit data. Readers will first learn about requirements that would be useful for a spatial model and what sort of data one might need to collect.
 
-  * *Why build spatial models?*: What do we get on top of using Horvitz-Thompson? What are the benefits/costs?
+
+## Outline
+
+  * *Why build spatial models?*: Why use a DSM rather than just Horvitz-Thompson? What are the benefits/costs?
   * *Survey set up*: what does a DSM survey look like? Data setup.
-  * *Model formulation*: what do we require from the model, 2-stage models, why GAMs?
+  * *Model formulation*: what do we require from the model, 2-stage modelling, why GAMs? What does the response mean?
   * *Crash course in GAMs*: What are GAMs? Wigglyness, penalties, "this is just a GLM"
-  * *Adding covariates*: term selection, how do we know a term is "useful"? How do we interpret smooth terms? Random effects?
-  * *Response distributions*: Relations between distributions, when are particular distributions appropriate? Selecting a distribution.
+  * *Adding covariates*: static vs. dynamic variables, how does this dichotomy change the response. Term selection, how do we know a term is "useful"? How do we interpret smooth terms? When should we use random effects?
+  * *Response distributions*: Relations between distributions, when are particular distributions appropriate? Selecting a distribution, model discrimination.
+  * *Estimating and mapping abundance*: Prediction grids: how to build them, what resolutions make sense, extrapolation issues. Making predictions, plotting them.
+  * *Uncertainty estimation*: explanation of boostrap and analytical approaches. Uncertainty in point estimates. Uncertainty maps: CV vs. SE vs. confidence intervals. Uncertainty from the detection function.
+  * *Advanced DSMs*: autocorrelation, temporal models.
 
-
-
-- Prediction
-- Uncertainty estimation
-- Spatio-temporal models
-- Random effects
-
+(It seems a little weird to talk about the data setup before the model, but it then allows us to illustrate the models as we explain them mathematically, this seems more appealing than "lots of theory" all at once.)
 
 ## Code
 
-Functions from `dsm` and `mgcv` packages, in particular `dsm`, `gam.check`, `rqgam.check`
+Functions from `dsm` and `mgcv` packages, in particular `dsm`, `gam.check`, `rqgam.check`, `dsm.var.*`.
+
+Worth re-visiting the structure of the `dsm` package and making the above as user friendly as possible.
 
 *Note*: it should be possible to use the spatial `data.frame`s created by `sp`/`RGDAL`/etc when importing data from shape files. Perhaps it's good to use this as the simple example since most folks will be importing their data from ArcGIS/QGIS/etc?
 
 
 ## Relevant literature
 
-See [distance literature review file](distance/distance-lit.md).
+See [dsm literature review file](dsm/dsm-lit.md).
 
 ## Data sets
 
   * Available:
     * Pantropical spotted dolphins
-    * Minke (though this is simulated)
-  * Maybes (need to check with owners):
-    * Black bears from Talkeetna/Skewntna
+  * Maybes (check with owners):
+    * Minke from Hedley and Buckland? (is this simulated?)
+    * Black bears from AK (Talkeetna/Skwentna)
     * URI seabirds
     * Dubbo weed data used in the `DSPat` paper
-
-
-
+    * Abishek Harihar's ungulate data
 
 
 # 3. Imperfect detection on the line
