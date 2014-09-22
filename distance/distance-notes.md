@@ -2,16 +2,6 @@
 
 ## Outline (toc)
 
- * H-T estimators
- * why is p=1 wrong?
- * composition of p
-    - availability
-      * Borchers et al HMM paper notes that "correction factor methods should not be used to correct for availability bias, except perhaps when animals are within   range for a very short time relative to the typical length of time they area    available."
-    - detectability
- * when is binning a good idea?
- * how should we set up `dht` tables?
-    - wiki page
-    - graphical dendrogram thingy
  * from Earl Becker 28/5/2014 -- model selection Buckland et al. (Intro. to Distance sampling, 2001) p68-71 Model Selection. See Burham and Anderson Book 1998
     1. Criteria for Robust Estimation (in ORDER of IMPORTANCE):
       a. Model Robustness - true for key + series expansion models (robust models will not have few P(y) < 0.20  Marques and Buckland)
