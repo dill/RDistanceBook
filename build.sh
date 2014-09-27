@@ -1,4 +1,4 @@
-# borrowed from Hadley Wickham's adv-r book
+# borrowed (and hacked) from Hadley Wickham's adv-r book
 # github.com/hadley/adv-r
 
 pandoc --chapters -o middlematter.tex \
@@ -8,6 +8,7 @@ pandoc --chapters -o middlematter.tex \
   --natbib \
   --number-sections \
   --from=markdown+header_attributes+raw_tex \
+  --to=latex \
   markeddown/rversions.md\
   markeddown/part-distance.md\
   markeddown/part-dsm.md\

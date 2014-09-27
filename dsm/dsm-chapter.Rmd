@@ -1,44 +1,5 @@
 # What is density surface modelling?
 
-## Pre-amble, running todolist 
-
- * What is DSM?
-    - pull lots of this from MEE paper
-    - "what about all those zeros?"
-    - p*0 still =0?!
- * Data sets used in this chapter
- * [Data setup for a DSM](dsm-datasetup.Rmd) -> follow link for todo
- * [Constructing DSMs](dsm-constructing.Rmd) -> follow link for todo
- * [Prediction and uncertainty](dsm-prediction-variance.Rmd) -> follow link for todo
- * Advanced modelling
-    - autocorrelation
-    - Temporal inference
-      - Gavin Simpson's posts interesting?
-        - http://www.fromthebottomoftheheap.net/2011/06/12/additive-modelling-and-the-hadcrut3v-global-mean-temperature-series/
-        - http://www.fromthebottomoftheheap.net/2014/06/16/simultaneous-confidence-intervals-for-derivatives/
-    - incorporating MRDS models
- * Special cases
-    - strip transects
-    - points?
- * Other (fancy) stuff
-    - finite area smoothing (soap/msg/CReSS)
-    - markov random fields?
-    - general $L_p$ matrix stuff
-    - predictions using random effects
-       * http://r.789695.n4.nabble.com/mgcv-gamm-predict-to-reflect-random-s-effects-td3622738.html
- * Other methods
-    - talk about DSpat etc? -- this is all in the paper anyway...
-http://ropensci.org/blog/2014/03/17/spocc/
- * plotting
-    - can colour blind people read yr plots? http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/#a-colorblind-friendly-palette
-    - rules for colour http://www.perceptualedge.com/articles/visual_business_intelligence/rules_for_using_color.pdf
-  * Other modelling http://www.johndcook.com/blog/2011/05/25/crude-models/
-
-### Considerations
-\label{aref}
-
-  * Do we call environmental covariates $z_k$ here?
-
 
 ## Introduction
 
