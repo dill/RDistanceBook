@@ -9,13 +9,13 @@ This document serves to outline the various chapters of the book *Practical Dist
 
 # Abstract
 
-**Aim**: the book will explain how to build models for distance sampling data using packages available for the programming language R. It will be assumed that readers have already conducted field work and have data to analyse.
+**Aim**: the book will explain how to build models of distance sampling data using packages available for the programming language R. It will be assumed that readers have already conducted field work and have data to analyse.
 
 **Audience**: ecology/biology masters and PhD students, field researchers, environmental consultants, wildlife/natural resources scientists.
 
-**Audience background**: "quantitatively minded" but not statisticians by training, should be comfortable with explaining a fitted GLM. Assumed that those reading will be familiar with R, though not consider themselves "programmers".
+**Audience background**: "quantitatively minded" but not statisticians by training, (e.g. should be comfortable with fitting and explaining results from a GLM). Assumed that those reading will be familiar with R (know what `data.frame`s are, how to build them, general "data-mudging", though not consider themselves "programmers".
 
-**Format**: the book will be written in `knitr`, so all plots, models and so on will be produced, fitted etc as the book is "built". At least two versions of the book will exist: a website and a PDF.
+**Format**: the book will be written in `knitr`, so all plots, models and so on will be produced, fitted etc as the book is "built". At least two versions of the book will exist: a website and a PDF. All data sets will be available for readers to investigate.
 
 
 # 1. Distance sampling
@@ -109,63 +109,103 @@ See [dsm literature review file](dsm/dsm-lit.md).
 
 # 3. Imperfect detection on the line
 
+**Overview**: This chapter introduces the fact that one of the key assumptions of distance sampling -- that all animals on the line/at the point are detected with probability one -- is violated. The main topic will be perception bias, and it's solution via MRDS methods, but will also include information on accounting for availability.
+
 ## Subsections
 
-- Uncertain detectability on the line
-- Observer modes
-- Fitting double observer models (ddf)
-- Diagnostics
-- Estimating abundance and uncertainty
-- Availability (multipliers/HMM)
+  * *Uncertain detectability on the line/point*: availability versus perception bias; when might you have one, when might you have another.
+  * *Addressing perception bias: MRDS*
+    * *Two observers are better than one*: correcting estimates via mark-recapture methods (point and full independence with IO mode)
+    * *What else affects detectability at zero distance*: including covariates in MRDS models
+    * *Estimating abundance and uncertainty*: How do we combine these models with standard DS analyses?
+    * *Why do this complicated analysis?*: Re-analyse data without MRDS component, show what goes wrong. Diagnistics and model selection.
+    * *Variations on MRDS*: Other observer modes and how to specify them.
+  * *Addressing availability bias*
+    * *Hide and seek*: how can we account for animals not being available to be observed.
+    * *Average behaviour*: using simple multipliers from experimental studies etc.
+    * *Additional information collected during the survey*: Hidden Markov models (maybe just an overview? Review other methods?)
+  * *Including these incomplete detection at zero distance in other models*: Putting all this into a DSM.
+
 
 ## Code
 
+Need to use whatever comes after `mrds`, perhaps want to develop further diagnostics and diagnostic plots for MRDS analyses? It would be nice to include availability in the model spec (for the simple multiplier).
+
+If HMMs are to be included, this represents a major time investment in coding.
 
 ## Relevant literature
 
+  * Borchers, DL, JL Laake, C Southwell, and CGM Paxton. “Accommodating Unmodeled Heterogeneity in Double-Observer Distance Sampling Surveys.” Biometrics 62, no. 2 (2006): 372–78. doi:10.1111/j.1541-0420.2005.00493.x.
+  * Laake, JL, and DL Borchers. “Methods for Incomplete Detection at Zero Distance.” In Advanced Distance Sampling, edited by ST Buckland, DR Anderson, KP Burnham, JL Laake, DL Borchers, and L Thomas, 48–70, Oxford University Press, 2004.
+  * Laake, JL, J Calambokidis, SD Osmek, and DJ Rugh. “Probability of Detecting Harbor Porpoise From Aerial Surveys: Estimating G (0).” Journal of Wildlife Management, 1997, 63–75.
+  * Buckland, ST, JM Breiwick, KL Cattanach, and JL Laake. “Estimated Population Size of the California Gray Whale.” Marine Mammal Science 9, no. 3 (1993): 235–49.
+  * Laake, JL, BA Collier, ML Morrison, and RN Wilkins. “Point-Based Mark-Recapture Distance Sampling.” Journal of Agricultural, Biological, and Environmental Statistics 16, no. 3 (2011): 389–408.
+  * Winiarski, KJ, ML Burt, EA Rexstad, DL Miller, CL Trocki, PWC Paton, and SR McWilliams. “Integrating Aerial and Ship Surveys of Marine Birds Into a Combined Density Surface Model: a Case Study of Wintering Common Loons.” The Condor 116, no. 2 (February 5, 2014): 149–61. doi:10.1650/CONDOR-13-085.1.s1.
+  * Draft MRDS in practise paper?
+  * Deb Palka's NOAA report on g(0) issues
+
 ## Data sets
+
+  * MRDS
+    * Available:
+      * stake data from `mrds`
+      * Golf tees (NONONO!)
+    * Maybe:
+      * Black-capped vireo (`lfbcvi` in `mrds`, need to ask or not?) (point transect, binned)
+      * Golden-cheeked warbler (`lfgcwa` in `mrds`, need to ask or not?) (point transect, binned)
+  * Availability
+    * Available:
+      * ?
+    * Maybe:
+      * URI data from Winiarski, Burt etc paper
+      * Deb Palka has data on cetaceans with both availability and perception bias data?
+
 
 
 # 4. Special cases
 
+**Overview**: What other stuff needs to be included but doesn't easily fit in above and is not essential for most analyses. I don't want to include any of these without an example of an analysis.
+
 ## Subsections
 
-- Cue counting/indirect sampling
-- One-sided transects
-- Strip transect and presence/absence models (salvaging data)
-- Combining data from multiple surveys
 
-
+  - *Cue counting/indirect sampling*
+  - *One-sided transects*
+  - *Strip transect and presence/absence models*: aka "salvaging crappy data?"
+  - *Combining data from multiple surveys*: specifically "puting many detection functions into one DSM", checks/diagnostics etc.
+  * *Other detection functions*: peaks away from zero (gamma/2-part normal detection functions); random effects a la Cornelia?
 
 ## Code
 
+Potentially this is fiddly stuff that doesn't fit into the general framework. Probably it's best to show general enough examples of these models so that folks can replicate the analyses for their data.
 
 ## Relevant literature
 
-  * Winiarski, Kristopher J, M Louise Burt, Eric Rexstad, David Lawrence Miller, Carol L Trocki, Peter W C Paton, and Scott R McWilliams. “Integrating Aerial and Ship Surveys of Marine Birds Into a Combined Density Surface Model: a Case Study of Wintering Common Loons.” The Condor 116, no. 2 (February 5, 2014): 149–61. doi:10.1650/CONDOR-13-085.1.s1.
-  * Fletcher, David, and Philip M Dixon. “Modelling Data From Different Sites, Times or Studies: Weighted vs. Unweighted Regression.” Methods in Ecology and Evolution 3, no. 1 (July 29, 2011): 168–76. doi:10.1111/j.2041-210X.2011.00140.x.
-  * Bishop, Tom R, Marc S Botham, Richard Fox, Simon R Leather, Daniel S Chapman, and Tom H Oliver. “The Utility of Distribution Data in Predicting Phenology.” Edited by Robert Freckleton. Methods in Ecology and Evolution 4, no. 11 (October 16, 2013): 1024–32. doi:10.1111/2041-210X.12112.
-  * Sólymos, Péter, Steven M Matsuoka, Erin M Bayne, Subhash R Lele, Patricia Fontaine, Steve G Cumming, Diana Stralberg, Fiona K A Schmiegelow, and Samantha J Song. “Calibrating Indices of Avian Density From Non-Standardized Survey Data: Making the Most of a Messy Situation.” Edited by Robert B O'Hara. Methods in Ecology and Evolution 4, no. 11 (September 4, 2013): 1047–58. doi:10.1111/2041-210X.12106.
+  * Winiarski, KJ, ML Burt, EA Rexstad, DL Miller, CL Trocki, PWC Paton, and SR McWilliams. “Integrating Aerial and Ship Surveys of Marine Birds Into a Combined Density Surface Model: a Case Study of Wintering Common Loons.” The Condor 116, no. 2 (February 5, 2014): 149–61. doi:10.1650/CONDOR-13-085.1.s1.
+  * Fletcher, D, and PM Dixon. “Modelling Data From Different Sites, Times or Studies: Weighted vs. Unweighted Regression.” Methods in Ecology and Evolution 3, no. 1 (July 29, 2011): 168–76. doi:10.1111/j.2041-210X.2011.00140.x.
+  * Bishop, TR, MS Botham, R Fox, SR Leather, DS Chapman, and TH Oliver. “The Utility of Distribution Data in Predicting Phenology.” Edited by Robert Freckleton. Methods in Ecology and Evolution 4, no. 11 (October 16, 2013): 1024–32. doi:10.1111/2041-210X.12112.
+  * Sólymos, P, SM Matsuoka, EM Bayne, SR Lele, P Fontaine, SG Cumming, D Stralberg, FKA Schmiegelow, and SJ Song. “Calibrating Indices of Avian Density From Non-Standardized Survey Data: Making the Most of a Messy Situation.” Methods in Ecology and Evolution 4, no. 11 (2013): 1047–58. doi:10.1111/2041-210X.12106.
+  * Steffan Oppel's comments on our paper.
 
 ## Data sets
+
+  * Maybe:
+    * URI data (combination of detection functions, crappy data (some species))
+    * Earl's bear data (weird distance data from uphill aerial surveys, one sided transects)
 
 
 # 5. Appendices
 
+**Overview**: This section collects information somewhat orthogonal to the modelling above, but still necessary for model formulation.
+
 ## Subsections
 
-  * Obtaining, constructing and selecting covariates
-  * Getting your data into shape (for Distance/mrds/dsm)
-  * Projections and other geo-spatial matters
-  * Simulating distance sampling data
+  * *Obtaining, constructing and selecting covariates*: using OBIS, ERDDAP, UK equivalents, ROpenSci data etc.
+  * *Getting your data into shape*: this will likely be covered above, but a reference on the `data.frame` specifications for each package (which columns are reserved etc) seems useful.
+  * *Projections and other geo-spatial matters*: a brief chat about spatial data, obvious pitfalls, where to seek advice (Roger Bivands book etc)
 
+## Relevant literature
 
-## Code
-
-
-## References
-
-## Data sets
-
-
+  * Bivand, RS, E Pebesma, and V Gómez-Rubio. Applied Spatial Data Analysis with R, Springer Science & Business Media, 2013.
+  * Sam Strindberg's thesis appendix on projections.
 
