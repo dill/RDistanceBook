@@ -143,6 +143,7 @@ If HMMs are to be included, this represents a major time investment in coding.
   * Winiarski, KJ, ML Burt, EA Rexstad, DL Miller, CL Trocki, PWC Paton, and SR McWilliams. “Integrating Aerial and Ship Surveys of Marine Birds Into a Combined Density Surface Model: a Case Study of Wintering Common Loons.” The Condor 116, no. 2 (February 5, 2014): 149–61. doi:10.1650/CONDOR-13-085.1.s1.
   * Draft MRDS in practise paper?
   * Deb Palka's NOAA report on g(0) issues
+  * Collier, BA, SL Farrell, AM Long, AJ Campomizzi, KB Hays, JL Laake, ML Morrison, and RN Wilkins. “Modeling Spatially Explicit Densities of Endangered Avian Species in a Heterogeneous Landscape.” The Auk 130, no. 4 (2013): 666–76. doi:10.1525/auk.2013.13017.
 
 ## Data sets
 
