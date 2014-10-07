@@ -100,7 +100,7 @@ See [dsm literature review file](dsm/dsm-lit.md).
   * Available:
     * Pantropical spotted dolphins
   * Maybes (check with owners):
-    * Minke from Hedley and Buckland? (is this simulated?)
+    * Minke from Hedley and Buckland? (is this simulated?)  _I believe Japanese hence sensitive_
     * Black bears from AK (Talkeetna/Skwentna)
     * URI seabirds
     * Dubbo weed data used in the `DSPat` paper
