@@ -2,6 +2,10 @@
 title: Introduction to distance sampling
 ---
 
+```{r echo=FALSE}
+source("../figure-captions.R")
+```
+
 **From outline**: *Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
 
 
