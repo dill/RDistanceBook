@@ -2,19 +2,15 @@
 title: Introduction to distance sampling
 ---
 
-*Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
+**From outline**: *Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
 
 
 
-Want abundance
-
-Sometimes also want abundace as a function of environmental factors
-
-Different ways of getting to abundance.
-
-To get abundance correct need to think about mechanisms that would affect the survey
-
-Two axes: detectability and availability. We're going to talk about the former.
+  * Want abundance
+  * Sometimes also want abundace as a function of environmental factors
+  * Different ways of getting to abundance.
+  * To get abundance correct need to think about mechanisms that would affect the survey
+  * Two axes: detectability and availability. We're going to talk about the former.
 
 
 ## Why distance sampling?
@@ -35,7 +31,7 @@ y <- runif(N)
 plot(x,y, pch=19,asp=1,cex=0.4,main="")
 
 # generate some quadrats
-quadrat <- data.frame(x=c(0,0,0.1,0.1,0),y=c(0,0.1,0.1,0,0))
+quadrat <- list(x=c(0,0,0.1,0.1,0),y=c(0,0.1,0.1,0,0))
 n <- 0
 for(i in 1:10){
   # randomly place a quadrat (and plot it)
@@ -68,7 +64,7 @@ plot(x,y, pch=19,asp=1,cex=0.4,main="")
 
 # generate some strips
 # in this case we don't randomise the offset of the grid
-strip <- data.frame(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+strip <- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
 for(i in 1:5){
   # calculate next strip location
   strip$x <- strip$x+0.15
@@ -98,7 +94,7 @@ As is usually the case in statistics, we can model this problem (detectability) 
 
 Returning to our example population, rather than think of boxes where we see everything in a given area, instead consider walking down a line (*transect*) and recording distances to the animals that we see. Let's assume that detectability changes as a function of distance from the transect and that relationship is governed by a *half-normal* relationship, that is:
 $$
-\exp\left(-\frac{x^2}{2\sigma^2}\right)
+\exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
 where $x$ is the perpendicular distance from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances.
 
@@ -107,7 +103,7 @@ plot(x,y, pch=19,asp=1,cex=0.4,main="")
 
 # generate some lines
 # in this case we don't randomise the offset of the grid
-lt <- data.frame(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+lt <- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
 # set sigma
 sigma <- 0.01
 # storage for detected distances
@@ -138,7 +134,7 @@ hist(detected_distances,xlab="Distance",main="")
 
 In the previous examples, we were able to estimate the abundance in the study area by calculating density in the covered area and then multiplying density by the size study area. Mathematically:
 $$
-\hat{D} = n/a
+\hat{D} = n/a,
 $$
 where $D$ is density (the hat indicates it's an estimate of density), $n$ is the  umber of animals we saw and $a$ is the area we covered during the survey. We can thing of $a$ as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multipled by its height, i.e. $a=2wKl$ where $K$ is the number of transects, $2w$ is the width (why we say $2w$ will become appparent below) and $l$ is the length. What is unclear in the line transect case I just presented is what $a$ is -- not just the quantity we should use but also its meaning.
 
@@ -147,7 +143,7 @@ Looking at each component of $a$, the part that we are uncertain about is $2w$, 
 ```{r echo=FALSE}
 ## calculate Nhat
 # calculate mu, since we know sigma and set w=0.02
-mu <- integrate(function(x)  exp(-x^2/(2*0.01^2)), lower=0,upper=0.02)$value
+mu <- integrate(function(x)  exp(-x^2/(2*sigma^2)), lower=0,upper=0.02)$value
 # calculate p = mu/w
 p <- mu/0.02
 n<-length(detected_distances)
@@ -157,7 +153,7 @@ Nhat <- A*n/(a*p)
 
 If we knew the probability of detecting an animal we could divide the estimate of density by this, thus inflating the according to this probability of detection. We would then have the following estimator:
 $$
-\hat{D} = \frac{n}{2wKl\hat{p}}
+\hat{D} = \frac{n}{2wKl\hat{p}},
 $$
 where $\hat{p}$ is the probability of detecting an animal at any distance from the observer. For simplicity's sake let us assume that $\hat{p}=$ `r round(p,4)`, we can then use the above estimator to obtain $\hat{D}=$ `r round(Nhat,2)` animals/unit area. The rest of this chapter (and the entire body of work on distance sampling) focuses on models for $\hat{p}$.
 
