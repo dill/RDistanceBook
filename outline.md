@@ -72,7 +72,7 @@ See [distance literature review file](distance/distance-lit.md).
 
   * *Why build spatial models?*: Why use a DSM rather than just Horvitz-Thompson? What are the benefits/costs?
   * *Survey set up*: what does a DSM survey look like? Data setup.
-  * *Model formulation*: what do we require from the model, 2-stage modelling, why GAMs? What does the response mean?
+  * *Model formulation*: what do we require from the model, 2-stage modelling, why GAMs? What does the response mean?  _I get lost in the density vs count vs abundance_ nuances.  Encourage simplicity here.
   * *Crash course in GAMs*: What are GAMs? Wigglyness, penalties, "this is just a GLM"
   * *Adding covariates*: static vs. dynamic variables, how does this dichotomy change the response. Term selection, how do we know a term is "useful"? How do we interpret smooth terms? When should we use random effects?
   * *Response distributions*: Relations between distributions, when are particular distributions appropriate? Selecting a distribution, model discrimination.
@@ -100,7 +100,7 @@ See [dsm literature review file](dsm/dsm-lit.md).
   * Available:
     * Pantropical spotted dolphins
   * Maybes (check with owners):
-    * Minke from Hedley and Buckland? (is this simulated?)
+    * Minke from Hedley and Buckland? (is this simulated?)  _I believe Japanese hence sensitive_
     * Black bears from AK (Talkeetna/Skwentna)
     * URI seabirds
     * Dubbo weed data used in the `DSPat` paper
