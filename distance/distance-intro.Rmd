@@ -1,0 +1,98 @@
+---
+title: Distance sampling: introduction
+---
+
+*Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
+
+
+
+Want abundance
+
+Sometimes also want abundace as a function of environmental factors
+
+Different ways of getting to abundance.
+
+To get abundance correct need to think about mechanisms that would affect the survey
+
+Two axes: detectability and availability. We're going to talk about the former.
+
+
+## Why distance sampling?
+
+Let's first consider a simple example of a simulated population. Each point in the plot below represents an individual in our population -- for simplicity's sake let's call them animals. One simple option to estimate how many animals there are in the study area (in our case the square from 0 to 1 in $x$ and $y$ directions) would be to survey quadrats (boxes) that were randomly placed within the region, count all the animals in each box. By dividing the number of animals we saw by the sum of the areas of all the quadrats, we can obtain an estimate of the abundance of the animals in the study area by multiplying this estimated density by the area of the study region.
+
+
+
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population with quadrats (red dashed lines) overlaid, observed points are in red."}
+set.seed(131)
+library(mgcv) # for inSide
+
+N <- 500
+# generate population locations
+x <- runif(N)
+y <- runif(N)
+# plot it
+plot(x,y,main="Simulated population", pch=19,asp=1,cex=0.4)
+
+# generate some quadrats
+quadrat <- data.frame(x=c(0,0,0.1,0.1,0),y=c(0,0.1,0.1,0,0))
+n <- 0
+for(i in 1:10){
+  # randomly place a quadrat (and plot it)
+  this.quadrat <- quadrat
+  this.quadrat$x <- this.quadrat$x+runif(1)
+  this.quadrat$y <- this.quadrat$y+runif(1)
+  polygon(this.quadrat,lty=2,border="red")
+  # see which points are inside
+  inout <- inSide(this.quadrat,x,y)
+  # count them
+  n <- n + sum(inout)
+  # plot the points inside the quadrat in red
+  points(x[inout],y[inout],pch=19,cex=0.4,col="red")
+}
+# estimate density
+D <- n/(10*0.1^2)
+# area of the survey region
+A <- 1
+# estimate abundance
+Nhat <- D*A^2
+```
+
+To simplify data collection from a logistical point of view, it seems simpler to have observers walk down strips rather than have them investigate a square area. Using a regular grid of strips may also allow observers to move from one strip to the next most efficiently than between randomly positioned quadrats.
+
+
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population with strip transects (red dashed lines) and strip centrelines (red solid lines) overlaid, observed animals are in red."}
+plot(x,y,main="Simulated population", pch=19,asp=1,cex=0.4)
+
+# generate some strips
+# in this case we don't randomise the offset of the grid
+strip <- data.frame(x=c(-0.1,-0.1,0,0,-0.1),y=c(0,1,1,0,0))
+for(i in 1:10){
+  # calculate next strip location
+  strip$x <- strip$x+0.2
+  # plot the strip and its centreline
+  polygon(strip,lty=2,border="red")
+  lines(rep(mean(range(strip$x)),2),c(0,1),col="red")
+  # see what was inside the strip
+  inout <- inSide(strip,x,y)
+  # count them
+  n <- n + sum(inout)
+  # plot those animals within the strip
+  points(x[inout],y[inout],pch=19,cex=0.4,col="red")
+}
+# estimate density
+D <- n/(10*0.1)
+# area of the survey region
+A <- 1
+# estimate abundance
+Nhat <- D*A^2
+```
+
+Both methodologies assume that all animals within the *covered area* (the area inside the red dashed lines in the figures above) are detected. This is possible, for example if video recording/digital photography are used \citep{Buckland:2012ua}.
+
+
+
+
+## Simple point transect example
+
+
