@@ -25,7 +25,7 @@ This document serves to outline the various chapters of the book *Practical Dist
 
 ## Outline
 
-  * *Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
+  * [*Introduction to distance sampling*](distance/distance-intro.Rmd): why do distance sampling? Explanation of survey setup. What do distance sampling data look like?
   * *Models for detectability*: introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)
   * *What else affects detectability?*: covariate models, selecting covariates, size bias.
   * *Improving the fit of detection functions*: adjustments and mixtures, other key functions. Model selection via AIC.
@@ -135,15 +135,8 @@ If HMMs are to be included, this represents a major time investment in coding.
 
 ## Relevant literature
 
-  * Borchers, DL, JL Laake, C Southwell, and CGM Paxton. “Accommodating Unmodeled Heterogeneity in Double-Observer Distance Sampling Surveys.” Biometrics 62, no. 2 (2006): 372–78. doi:10.1111/j.1541-0420.2005.00493.x.
-  * Laake, JL, and DL Borchers. “Methods for Incomplete Detection at Zero Distance.” In Advanced Distance Sampling, edited by ST Buckland, DR Anderson, KP Burnham, JL Laake, DL Borchers, and L Thomas, 48–70, Oxford University Press, 2004.
-  * Laake, JL, J Calambokidis, SD Osmek, and DJ Rugh. “Probability of Detecting Harbor Porpoise From Aerial Surveys: Estimating G (0).” Journal of Wildlife Management, 1997, 63–75.
-  * Buckland, ST, JM Breiwick, KL Cattanach, and JL Laake. “Estimated Population Size of the California Gray Whale.” Marine Mammal Science 9, no. 3 (1993): 235–49.
-  * Laake, JL, BA Collier, ML Morrison, and RN Wilkins. “Point-Based Mark-Recapture Distance Sampling.” Journal of Agricultural, Biological, and Environmental Statistics 16, no. 3 (2011): 389–408.
-  * Winiarski, KJ, ML Burt, EA Rexstad, DL Miller, CL Trocki, PWC Paton, and SR McWilliams. “Integrating Aerial and Ship Surveys of Marine Birds Into a Combined Density Surface Model: a Case Study of Wintering Common Loons.” The Condor 116, no. 2 (February 5, 2014): 149–61. doi:10.1650/CONDOR-13-085.1.s1.
-  * Draft MRDS in practise paper?
-  * Deb Palka's NOAA report on g(0) issues
-  * Collier, BA, SL Farrell, AM Long, AJ Campomizzi, KB Hays, JL Laake, ML Morrison, and RN Wilkins. “Modeling Spatially Explicit Densities of Endangered Avian Species in a Heterogeneous Landscape.” The Auk 130, no. 4 (2013): 666–76. doi:10.1525/auk.2013.13017.
+See [mrds/availability literature review file](mrds/mrds-lit.md).
+
 
 ## Data sets
 
@@ -182,11 +175,7 @@ Potentially this is fiddly stuff that doesn't fit into the general framework. Pr
 
 ## Relevant literature
 
-  * Winiarski, KJ, ML Burt, EA Rexstad, DL Miller, CL Trocki, PWC Paton, and SR McWilliams. “Integrating Aerial and Ship Surveys of Marine Birds Into a Combined Density Surface Model: a Case Study of Wintering Common Loons.” The Condor 116, no. 2 (February 5, 2014): 149–61. doi:10.1650/CONDOR-13-085.1.s1.
-  * Fletcher, D, and PM Dixon. “Modelling Data From Different Sites, Times or Studies: Weighted vs. Unweighted Regression.” Methods in Ecology and Evolution 3, no. 1 (July 29, 2011): 168–76. doi:10.1111/j.2041-210X.2011.00140.x.
-  * Bishop, TR, MS Botham, R Fox, SR Leather, DS Chapman, and TH Oliver. “The Utility of Distribution Data in Predicting Phenology.” Edited by Robert Freckleton. Methods in Ecology and Evolution 4, no. 11 (October 16, 2013): 1024–32. doi:10.1111/2041-210X.12112.
-  * Sólymos, P, SM Matsuoka, EM Bayne, SR Lele, P Fontaine, SG Cumming, D Stralberg, FKA Schmiegelow, and SJ Song. “Calibrating Indices of Avian Density From Non-Standardized Survey Data: Making the Most of a Messy Situation.” Methods in Ecology and Evolution 4, no. 11 (2013): 1047–58. doi:10.1111/2041-210X.12106.
-  * Steffan Oppel's comments on our paper.
+See [special cases literature review file](special/special-lit.md).
 
 ## Data sets
 
@@ -207,6 +196,5 @@ Potentially this is fiddly stuff that doesn't fit into the general framework. Pr
 
 ## Relevant literature
 
-  * Bivand, RS, E Pebesma, and V Gómez-Rubio. Applied Spatial Data Analysis with R, Springer Science & Business Media, 2013.
-  * Sam Strindberg's thesis appendix on projections.
+See [appendices literature review file](appendices/appendices-lit.md).
 
