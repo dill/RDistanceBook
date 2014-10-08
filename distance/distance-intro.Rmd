@@ -1,5 +1,5 @@
 ---
-title: Distance sampling: introduction
+title: Introduction to distance sampling
 ---
 
 *Introduction to distance sampling*: why do distance sampling? Explanation of survey setup. What does distance sampling data look like?
@@ -32,7 +32,7 @@ N <- 500
 x <- runif(N)
 y <- runif(N)
 # plot it
-plot(x,y,main="Simulated population", pch=19,asp=1,cex=0.4)
+plot(x,y, pch=19,asp=1,cex=0.4,main="")
 
 # generate some quadrats
 quadrat <- data.frame(x=c(0,0,0.1,0.1,0),y=c(0,0.1,0.1,0,0))
@@ -50,26 +50,28 @@ for(i in 1:10){
   # plot the points inside the quadrat in red
   points(x[inout],y[inout],pch=19,cex=0.4,col="red")
 }
+# covered area
+covered <- 10*0.1^2
 # estimate density
-D <- n/(10*0.1^2)
+D <- n/covered
 # area of the survey region
 A <- 1
 # estimate abundance
 Nhat <- D*A^2
 ```
 
-To simplify data collection from a logistical point of view, it seems simpler to have observers walk down strips rather than have them investigate a square area. Using a regular grid of strips may also allow observers to move from one strip to the next most efficiently than between randomly positioned quadrats.
+To simplify data collection from a logistical point of view, it seems simpler to have observers traverse lines and observe strips rather than have them investigate a square area. Using a regular grid of strips may also allow observers to move from one strip to the next most efficiently than between randomly positioned quadrats.
 
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population with strip transects (red dashed lines) and strip centrelines (red solid lines) overlaid, observed animals are in red."}
-plot(x,y,main="Simulated population", pch=19,asp=1,cex=0.4)
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population with strip transects (red dashed lines) and strip centrelines (that observers walk/fly/drive/sail down; red solid lines) overlaid, observed animals are in red."}
+plot(x,y, pch=19,asp=1,cex=0.4,main="")
 
 # generate some strips
 # in this case we don't randomise the offset of the grid
-strip <- data.frame(x=c(-0.1,-0.1,0,0,-0.1),y=c(0,1,1,0,0))
-for(i in 1:10){
+strip <- data.frame(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+for(i in 1:5){
   # calculate next strip location
-  strip$x <- strip$x+0.2
+  strip$x <- strip$x+0.15
   # plot the strip and its centreline
   polygon(strip,lty=2,border="red")
   lines(rep(mean(range(strip$x)),2),c(0,1),col="red")
@@ -80,19 +82,87 @@ for(i in 1:10){
   # plot those animals within the strip
   points(x[inout],y[inout],pch=19,cex=0.4,col="red")
 }
+# covered area -- same area as for the quadrats
+covered <- 4*1*0.025
 # estimate density
-D <- n/(10*0.1)
+D <- n/covered
 # area of the survey region
 A <- 1
 # estimate abundance
 Nhat <- D*A^2
 ```
 
-Both methodologies assume that all animals within the *covered area* (the area inside the red dashed lines in the figures above) are detected. This is possible, for example if video recording/digital photography are used \citep{Buckland:2012ua}.
+Both methodologies assume that all animals within the *covered area* (the area inside the red dashed lines in the figures above) are detected. Certain detection is possible, for example if video recording/digital photography are used \citep{Buckland:2012ua}, but not likely when human observers conduct surveying. Many factors be affect whether or not an animal is detected by an observer. For example: weather, the observer's previous experience, time of day, environmental conditions and, of course, the distance to the animal from the observer. These factors and (importantly) combinations of these factors surely influence the number of animals seen and hence the final abundance estimate of the species of interest.
+
+As is usually the case in statistics, we can model this problem (detectability) but in order to do so we must pay the price of collecting more data. In the simplest models in the chapter we require not only the number of animals we saw, but also the distance from the observations to the observers. We can then use the extra data on distances to model detectability. We will go on to supplement this with data on other factors which affect detectability.
+
+Returning to our example population, rather than think of boxes where we see everything in a given area, instead consider walking down a line (*transect*) and recording distances to the animals that we see. Let's assume that detectability changes as a function of distance from the transect and that relationship is governed by a *half-normal* relationship, that is:
+$$
+\exp\left(-\frac{x^2}{2\sigma^2}\right)
+$$
+where $x$ is the perpendicular distance from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances.
+
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population with line transects (red dashed lines), observed animals are in red."}
+plot(x,y, pch=19,asp=1,cex=0.4,main="")
+
+# generate some lines
+# in this case we don't randomise the offset of the grid
+lt <- data.frame(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+# set sigma
+sigma <- 0.01
+# storage for detected distances
+detected_distances <- c()
+for(i in 1:5){
+  # calculate next strip location
+  lt$x <- lt$x+0.15
+  # plot the line transect
+  lines(rep(mean(range(lt$x)),2),c(0,1),col="red",lty=2)
+  # calculate the distances to animals from the line
+  distances <- abs(lt$x - x)
+  # randomly decide which were detected
+  detected <- exp(-distances^2/(2*sigma^2)) > runif(length(distances))
+  # plot those animals detected
+  points(x[detected],y[detected],pch=19,cex=0.4,col="red")
+  # collect the distances to detected objects
+  detected_distances <- c(detected_distances,distances[detected])
+}
+```
+
+Note that we miss some closer animals (some black dots very near the transect lines) but also detect some animals that are further away (red dots much further away than they were in the strip transect case). In an actual survey this would translate itself into acknowledging the fact that we miss some animals due to cover, or weather conditions etc however, we are not ignoring animals that we can plainly see but are outside of the strip or quadrat we are in. We wish to include data on as many of the animals we saw as possible, without biasing our results.
+
+What is also interesting is the pattern we see in the histrogram of the distances: large numbers of animals are seen at small distances, with numbers detected decreasing with increasing distance from the line. Again, this makes physical sense -- we should see those individuals that are near us more easily. Although this data is simulated and the pattern is a feature of the simulation setup, we will see throughout the book that this pattern is replicated in survey data.
+
+```{r fig.width=5, fig.height=5, fig.cap="Histogram of detected distances for the simulated population."}
+hist(detected_distances,xlab="Distance",main="")
+```
+
+In the previous examples, we were able to estimate the abundance in the study area by calculating density in the covered area and then multiplying density by the size study area. Mathematically:
+$$
+\hat{D} = n/a
+$$
+where $D$ is density (the hat indicates it's an estimate of density), $n$ is the  umber of animals we saw and $a$ is the area we covered during the survey. We can thing of $a$ as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multipled by its height, i.e. $a=2wKl$ where $K$ is the number of transects, $2w$ is the width (why we say $2w$ will become appparent below) and $l$ is the length. What is unclear in the line transect case I just presented is what $a$ is -- not just the quantity we should use but also its meaning.
+
+Looking at each component of $a$, the part that we are uncertain about is $2w$, what should this width be? One could make the argument that the largest observed distance is a good candidate for the width of the transect. This intuitively makes sense but it may be the case that there are outlying distances which are much much further than others which would be unrealistic to include (we will revist this in a more rigorous way later). For now let us choose a width that include almost all of our observations, throwing out only a few outliers. We now have a value for the area covered, but it's not quite right, if we used the estimator we've constructed so far, this is the same as the quadrat/strip estimator, not taking into account the probabalistic nature of the detections we made.
+
+```{r echo=FALSE}
+## calculate Nhat
+# calculate mu, since we know sigma and set w=0.02
+mu <- integrate(function(x)  exp(-x^2/(2*0.01^2)), lower=0,upper=0.02)$value
+# calculate p = mu/w
+p <- mu/0.02
+n<-length(detected_distances)
+a <- 2*0.02*4
+Nhat <- A*n/(a*p)
+```
+
+If we knew the probability of detecting an animal we could divide the estimate of density by this, thus inflating the according to this probability of detection. We would then have the following estimator:
+$$
+\hat{D} = \frac{n}{2wKl\hat{p}}
+$$
+where $\hat{p}$ is the probability of detecting an animal at any distance from the observer. For simplicity's sake let us assume that $\hat{p}=$ `r round(p,4)`, we can then use the above estimator to obtain $\hat{D}=$ `r round(Nhat,2)` animals/unit area. The rest of this chapter (and the entire body of work on distance sampling) focuses on models for $\hat{p}$.
 
 
 
 
-## Simple point transect example
 
 

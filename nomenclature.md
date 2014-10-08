@@ -10,3 +10,6 @@ This doesn't necessarily live in the book, but is used for consistency.
   * *surveyed area*: synonym for *covered area*.
   * *covered area*: the area actually covered in transects, where we looked for animals.
   * *animals*: usually is interchangable with plants.
+  * $y$ always refers to general distances
+  * $x$ always refers to perpendiculat distances
+  * $r$ always refers to radial distances
