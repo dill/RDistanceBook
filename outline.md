@@ -1,7 +1,6 @@
 ---
 title: Practical Distance Sampling in R
 author: David L. Miller
-bibliography: full.bib
 ---
 
 This document serves to outline the various chapters of the book *Practical Distance Sampling in R* and structure their content.
