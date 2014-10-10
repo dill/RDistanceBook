@@ -16,6 +16,7 @@ author: David L Miller
 
   * [ ] Cassey, P, and BH McArdle. “An Assessment of Distance Sampling Techniques for Estimating Animal Abundance.” Environmetrics 10, no. 3 (1999): 261–78.
   * [ ] Innes, S, MP Heide-Jorgensen, and JL Laake. “Surveys of Belugas and Narwhals in the Canadian High Arctic in 1996.” NAMMCO Scientific Publications, 2002.
+  * [ ] Laake, Jeff, Richard J Guenzel, John L Bengtson, Peter Boveng, Michael Cameron, and M Bradley Hanson. “Coping with Variation in Aerial Survey Protocol for Line-Transect Sampling.” Wildlife Research 35, no. 4 (2008): 289. doi:10.1071/WR07065.
   * [ ] Marques, TA, L Thomas, SG Fancy, and ST Buckland. “Improving Estimates of Bird Density Using Multiple-Covariate Distance Sampling.” The Auk 124, no. 4 (2007): 1229–43.
   * [ ] Marques, FFC, and ST Buckland. “Incorporating Covariates Into Standard Line Transect Analyses.” Biometrics 59, no. 4 (2003): 924–35.
   * [ ] Miller, DL and Thomas, L Mixture model paper
