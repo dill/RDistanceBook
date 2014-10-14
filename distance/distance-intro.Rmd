@@ -186,8 +186,9 @@ plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
 sigma <- 0.05
 # storage for detected distances
 detected_distances <- c()
-pt <- as.list(expand.grid(x=seq(0.1,0.9,len=3),y=c(0.2,0.65)))
-for(i in 1:6){
+# lay out a grid of points
+pt <- as.list(expand.grid(x=seq(0.15,0.85,len=3),y=seq(0.15,0.85,len=3)))
+for(i in 1:length(pt$x)){
   # generate point location
   # plot the line transect
   points(pt$x[i], pt$y[i], pch=19, col="blue",cex=0.7)
@@ -205,25 +206,23 @@ Looking at the histogram of distances:
 ```{r fig.width=5, fig.height=5, fig.cap="Histogram of detected distances using point transects to survey the simulated population."}
 hist(detected_distances,xlab="Distance",main="")
 ```
-As we saw with the line transects, the point transect distances see a similar drop-off in frequency with distance.
-
+As we saw with the line transects, the point transect distances see a similar drop-off in frequency with increasing distance. However, unlike the line transects we also see an increase as distance increases up to around 0.03. This is because of the geometry of the point transect samplng: at small distances (small radii) the area surveyed is small, this then increases quadratically (since the area of the circle is $\pi r^2$). So, up to a certain distance we see an increase in sightings, as we have an increasing area to survey, after than point the larger area becomes too big and the effect of detectability outweighs the effect of increasing area.
 
 ```{r calc-Nhat-point, echo=FALSE}
 ## calculate Nhat for point transects
 # calculate nu, since we know sigma and set w=0.1
-w <- 0.1
+w <- 0.14
 nu <- integrate(function(x)  x*exp(-x^2/(2*sigma^2)), lower=0,upper=w)$value
 p <- 2*nu/w^2
 n<-length(detected_distances)
-a <- 6*pi*w^2
+a <- 9*pi*w^2
 Nhat.pt <- A*n/(a*p)
 ```
-Now we can again calculate abundance, in a similar manner as above, but note that the covered area is $k\pi w^2$ where there are $k$ points, each with radius $w$. If we again say that we have estimated $\hat{p}$ by some process, and that $\hat{p}=$ `r round(p,4)`, we can calculate the abundance in the study area to be `r round(Nhat.pt,2)`.
-
+Now we can again calculate abundance, in a similar manner as above, but note that the covered area is $k\pi w^2$ where there are $k$ points, each with radius $w$ (again, we truncate at a distance $w$). If we again say that we have estimated $\hat{p}$ by some process, and that $\hat{p}=$ `r round(p,4)`, we can multiply the survey area by the probability of detection and calculate the abundance in the study area to be `r round(Nhat.pt,2)`.
 
 ## Recap
 
-In this chapter I showed how we can think about distance sampling line and point transect surveys as extensions of strip and quadrat surveys where we model the probability of detection as a function of distance (and perhaps other covariates). In the next chapter we'll see how to formulate these models mathematically and fit them to data using R.
+In this chapter I showed how we can think about distance sampling line and point transect surveys as extensions of strip and quadrat surveys where we model the probability of detection as a function of distance. Both line and point transect examples gave estimated abundances that were close to the true abundance without assuming that we saw all of the animals in the covered area. In the next chapter we'll see how to formulate these models mathematically and fit them to data using R.
 
 
 ## References
