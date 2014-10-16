@@ -82,6 +82,11 @@ author: David L. Miller
   * [ ] Hodges, James S, and Brian J Reich. “Adding Spatially-Correlated Errors Can Mess Up the Fixed Effect You Love.” The American Statistician 64, no. 4 (November 2010): 325–34. doi:10.1198/tast.2010.10052.
   * [ ] Viladomat, Júlia, Rahul Mazumder, Alex McInturff, Douglas J McCauley, and Trevor Hastie. “Assessing the Significance of Global and Local Correlations Under Spatial Autocorrelation: a Nonparametric Approach.” Biometrics 70, no. 2 (January 21, 2014): 409–18. doi:10.1111/biom.12139.
   * [ ] Crase, Beth, Adam Liedloff, Peter A Vesk, Yusuke Fukuda, and Brendan A Wintle. “Incorporating Spatial Autocorrelation Into Species Distribution Models Alters Forecasts of Climate-Mediated Range Shifts.” Global Change Biology 20, no. 8 (May 21, 2014): 2566–79. doi:10.1111/gcb.12598.
+  * [ ] http://theoreticalecology.wordpress.com/2012/05/12/spatial-autocorrelation-in-statistical-models-friend-or-foe/
+  * [X] Hawkins, BA. “Eight (and a Half) Deadly Sins of Spatial Analysis.” Journal of Biogeography 39, no. 1 (November 18, 2011): 1–9. doi:10.1111/j.1365-2699.2011.02637.x.
+    - "OLS regression" stable under autocorrelation? Check for stationarity! "Pocket plots" -- what are they? Why is non-stationarity present? "Pure" functions of space/other covariates vs. mixtures. "Grain size" (segment size) issues -- fewest false positives (see Hurlbert & Jetz, 2007; Hawkins et al., 2008). "A lack of knowledge about how processes influence patterns across scales also underlies the uncertainty associated with the interpretation of spatially explicit regression models." ~ "there is no effect" type assumptions are at least transparent?
+  * [X] Kühn, I, and CF Dormann. “Less Than Eight (and a Half) Misconceptions of Spatial Analysis.” Journal of Biogeography 39, no. 5 (2012): 995–98.
+    - spatial trends vs. autocorrelation. Contrary to the above, many papers claim spatial autocorrelation does affect coefficient estimates. Spatial autocorrelation in data vs. residuals. Spatial residual plots should be presented as part of the analysis!
 
 
 # Prediction:
