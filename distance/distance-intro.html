@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<title>Introduction to distance sampling</title>
+
+<script src="libs/jquery-1.11.0/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="libs/bootstrap-2.3.2/css/journal.min.css" rel="stylesheet" />
+<link href="libs/bootstrap-2.3.2/css/bootstrap-responsive.min.css" rel="stylesheet" />
+<script src="libs/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+
+<style type="text/css">
+
+/* padding for bootstrap navbar */
+body {
+  padding-top: 50px;
+  padding-bottom: 40px;
+}
+@media (max-width: 979px) {
+  body {
+    padding-top: 0;
+  }
+}
+
+/* offset scroll position for anchor links (for fixed navbar)  */
+@media (min-width: 980px) {
+  .section h2 {
+    padding-top: 52px;
+    margin-top: -52px;
+  }
+  .section h3 {
+    padding-top: 52px;
+    margin-top: -52px;
+  }
+}
+
+
+/* don't use link color in navbar */
+.dropdown-menu>li>a {
+  color: black;
+}
+
+/* some padding for disqus */
+#disqus_thread {
+  margin-top: 45px;
+}
+
+</style>
+
+<link rel="stylesheet" href="libs/font-awesome-4.1.0/css/font-awesome.min.css"/>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="libs/highlight/textmate.css"
+      type="text/css" />
+<script src="libs/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+<div class="container-fluid main-container">
+
+
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="brand" href="/">Distance sampling in R</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li><a href="/">Home</a></li>
+          <li class="dropdown">
+            <a href="ds" class="dropdown-toggle" data-toggle="dropdown">Distance sampling <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+               <li class="nav-header">Distance sampling</li>
+<li><a href="distance/distance-intro.html">Introduction to distance sampling</a></li>
+<li><a href="distance/distance-simpledf.html">Models for detectability</a></li>
+<li><a href="distance/distance-.html">What else affects detectability?</a></li>
+<li><a href="distance/distance-.html">Improving the fit of detection functions</a></li>
+<li><a href="distance/distance-.html">Estimating abundance</a></li>
+<li><a href="distance/distance-.html">How certain are we in our estimates?</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="dsm" class="dropdown-toggle" data-toggle="dropdown">Spatial modelling <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+               <li class="nav-header">Density surface modelling</li>
+<li><a href="dsm/dsm-.html">Why build spatial models?</a></li>
+<li><a href="dsm/dsm-.html">Survey set up</a></li>
+<li><a href="dsm/dsm-.html">Model formulation</a></li>
+<li><a href="dsm/dsm-.html">Crash course in GAMs</a></li>
+<li><a href="dsm/dsm-.html">Adding covariates</a></li>
+<li><a href="dsm/dsm-.html">Response distributions</a></li>
+<li><a href="dsm/dsm-.html">Estimating and mapping abundance</a></li>
+<li><a href="dsm/dsm-.html">Uncertainty estimation</a></li>
+<li><a href="dsm/dsm-.html">Advanced DSMs</a></li>
+            </ul>
+          </li>
+           <li class="dropdown">
+            <a href="appendix" class="dropdown-toggle" data-toggle="dropdown">Appendix <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+<li><a href="appendices/appendix-.html">Obtaining, constructing and selecting covariates</a></li>
+<li><a href="appendices/appendix-.html">Getting your data into shape</a></li>
+<li><a href="appendices/appendix-.html">Projections etc</a></li>
+               <li class="divider"></li>
+<li><a href="acknowledgements.html">Acknowledgements</a></li>
+<li><a href="rversions.html">R and package versions</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav pull-right">
+          <a class="btn btn-primary" href="https://github.com/dill/RDistanceBook">
+            <i class="fa fa-github fa-lg"></i>
+            GitHub
+          </a>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </div>
+</div>
+
+<div id="header">
+<h1 class="title">Introduction to distance sampling</h1>
+</div>
+
+
+<p>Abundance data is the gold standard in ecology <span class="citation">(Howard et al., 2014)</span>, knowing how many animals (or plants) there are in a given area not only tells us important management information – how big hunting quotas should be this year; where forest should be cut back; where we can site renewables – but can also unlock answers to important biological and ecological questions – which environmental factors drive distribution, which species are competing over a particular resource. These questions cannot be answered well with presence or presence/absence data alone, since we can’t quantify the popularity of the resource or area very well using data which consists of only whether animals occurred there: there is not enough information in just 1s and 0s.</p>
+<p>Since we are interested in abundance, it is important to ensure that the estimates of abundance are as accurate as possible. Our estimates of abundance will always be based on the observed counts – how many animals we saw – but, we may also want to think about what other factors affected that count, and model the <em>observation process</em> (contrast this to the paragraph about, where we were thinking about modelling the abundance as a function of environmental factors). There are many factors that can affect whether we see an animal, for example: how far away animals are, how brightly coloured they are, whether the observers are fresh grad students or older, seasoned observers. We might also like to think about whether animals are there to be seen at all – have cetaceans or seabirds dived too deep to be observed by any observer.</p>
+<p>The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology using a simulation.</p>
+<div id="why-distance-sampling" class="section level2">
+<h2>Why distance sampling?</h2>
+<p>Let’s first consider a simple example of a simulated population. Each point in the plot below represents an individual in our population – for simplicity’s sake let’s call them animals. One simple option to estimate how many animals there are in the study area (in our case the square from 0 to 1 in <span class="math"><em>x</em></span> and <span class="math"><em>y</em></span> directions) would be to survey quadrats (boxes) that were randomly placed within the region, count all the animals in each box.</p>
+<pre class="r"><code>set.seed(131) # same results every time
+library(mgcv) # for inSide</code></pre>
+<pre><code>## Loading required package: nlme
+## This is mgcv 1.8-2. For overview type &#39;help(&quot;mgcv-package&quot;)&#39;.</code></pre>
+<pre class="r"><code>N &lt;- 500
+# generate population locations
+x &lt;- runif(N)
+y &lt;- runif(N)
+# plot it
+plot(x,y, pch=19,asp=1,cex=0.4,main=&quot;&quot;,col=&quot;grey&quot;)
+
+# generate some quadrats
+quadrat &lt;- list(x=c(0,0,0.1,0.1,0),y=c(0,0.1,0.1,0,0))
+n &lt;- 0
+for(i in 1:10){
+  # randomly place a quadrat (and plot it)
+  this.quadrat &lt;- quadrat
+  this.quadrat$x &lt;- this.quadrat$x+runif(1)
+  this.quadrat$y &lt;- this.quadrat$y+runif(1)
+  polygon(this.quadrat,lty=2,border=&quot;blue&quot;)
+  # see which points are inside
+  inout &lt;- inSide(this.quadrat,x,y)
+  # count them
+  n &lt;- n + sum(inout)
+  # plot the points inside the quadrat in red
+  points(x[inout],y[inout],pch=19,cex=0.4,col=&quot;red&quot;)
+}</code></pre>
+<figure>
+<img src='distance-intro_files/figure-html/unnamed-chunk-2.png' width='480'height=''width.px='480'height.px='480' style='display: block'>
+<figcaption>
+Figure 1: Simulated population (grey points) with quadrats (blue dashed lines) overlaid, observed points are in red.
+</figcaption>
+</figure>
+<p>By dividing the number of animals we saw by the total area surveys (sum of the areas of all the quadrats), we can obtain an estimate of the abundance of the animals in the study area by multiplying this estimated density by the area of the study region.</p>
+<pre class="r"><code># covered area (10 quadrats, each a 0.1x0.1 square)
+covered &lt;- 10*0.1^2
+# estimate density
+D &lt;- n/covered
+# area of the survey region
+A &lt;- 1
+# estimate abundance
+Nhat &lt;- D*A</code></pre>
+<p>This estimator gives us an estimated abundance (<span class="math">$\hat{N}$</span>) of 520, relatively close to the true value of 500 (<code>N</code> in the above code).</p>
+<p>To simplify data collection from a logistical point of view, it seems simpler to have observers traverse lines and observe strips rather than have them investigate a square area. Using a regular grid of strips may also allow observers to move from one strip to the next most efficiently than between randomly positioned quadrats.</p>
+<pre class="r"><code>plot(x,y, pch=19,asp=1,cex=0.4,main=&quot;&quot;,col=&quot;grey&quot;)
+
+# zero the count from last time
+n &lt;- 0
+
+# generate some strips
+# in this case we don&#39;t randomise the offset of the grid
+strip &lt;- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+strip$x &lt;- strip$x + 0.1
+for(i in 1:5){
+  # plot the strip and its centreline
+  polygon(strip,lty=2,border=&quot;blue&quot;)
+  lines(rep(mean(range(strip$x)),2),c(0,1),col=&quot;blue&quot;)
+  # see what was inside the strip
+  inout &lt;- inSide(strip,x,y)
+  # count them
+  n &lt;- n + sum(inout)
+  # plot those animals within the strip
+  points(x[inout],y[inout],pch=19,cex=0.4,col=&quot;red&quot;)
+  # calculate next strip location
+  strip$x &lt;- strip$x+0.2
+}</code></pre>
+<figure>
+<img src='distance-intro_files/figure-html/unnamed-chunk-3.png' width='480'height=''width.px='480'height.px='480' style='display: block'>
+<figcaption>
+Figure 2: Simulated population (grey points) with strip transects (blue dashed lines) and strip centrelines (that observers walk/fly/drive/sail down; blue solid lines) overlaid, observed animals are in red.
+</figcaption>
+</figure>
+<p>Again, it’s straightforward to estimate abundance, via first finding the density:</p>
+<pre class="r"><code># covered area -- same area as for the quadrats
+covered &lt;- 5*1*0.025
+# estimate density
+D &lt;- n/covered
+# area of the survey region
+A &lt;- 1
+# estimate abundance
+Nhat &lt;- D*A</code></pre>
+<p>So the estimate of abundance, <span class="math">$\hat{N}=$</span> 480, again quite close to the true population size of 500.</p>
+<p>Both methodologies assume that all animals within the <em>covered area</em> (the area inside the red dashed lines in the figures above) are detected. Certain detection is possible, for example if video recording/digital photography are used <span class="citation">(Buckland et al., 2012)</span>, but not likely when human observers conduct surveying. Many factors will affect whether or not an animal is detected by an observer. For example: time of day, weather, the observer’s previous experience, environmental conditions and, of course, the distance to the animal from the observer. These factors and (importantly) combinations of these factors surely influence the number of animals seen and hence the final abundance estimate of the species of interest.</p>
+<p>As is usually the case in statistics, we can model this problem (<em>detectability</em>) but in order to do so we must pay the price of collecting more data. In the simplest distance sampling models we require not only the number of animals we saw, but also the distance from the observations to the observers. We can then use the extra data on distances to model detectability. We will go on to supplement this with data on other factors which affect detectability (like the ones listed in the previous paragraph).</p>
+<p>Returning to our example population, rather than think of boxes where we see everything in a given area, instead consider walking down a line (<em>transect</em>) and recording distances to the animals that we see. Let’s assume that detectability changes as a function of distance from the transect line and that relationship is governed by a <em>half-normal</em> relationship, that is: <br /><span class="math">$$
+\exp\left(-\frac{x^2}{2\sigma^2}\right),
+$$</span><br /> where <span class="math"><em>x</em></span> is the <em>perpendicular distance</em> from the line to the animal and <span class="math"><em>σ</em></span> controls how likely we are to see an animal at a given distance. The larger the <span class="math"><em>σ</em></span> the more likely we are to see animals at large distances. We’ll look at this relationship more closely and its relation to real data in the next chapter.</p>
+<pre class="r"><code>plot(x,y, pch=19,asp=1,cex=0.4,main=&quot;&quot;,col=&quot;grey&quot;)
+
+# generate some lines
+# in this case we don&#39;t randomise the offset of the grid
+lt &lt;- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+# set sigma
+sigma &lt;- 0.01
+# storage for detected distances
+detected_distances &lt;- c()
+for(i in 1:5){
+  # calculate next strip location
+  lt$x &lt;- lt$x+0.15
+  # plot the line transect
+  lines(rep(mean(range(lt$x)),2),c(0,1),col=&quot;blue&quot;,lty=2)
+  # calculate the distances to animals from the line
+  distances &lt;- abs(lt$x - x)
+  # randomly decide which were detected
+  detected &lt;- exp(-distances^2/(2*sigma^2)) &gt; runif(length(distances))
+  # plot those animals detected
+  points(x[detected],y[detected],pch=19,cex=0.4,col=&quot;red&quot;)
+  # collect the distances to detected objects
+  detected_distances &lt;- c(detected_distances,distances[detected])
+}</code></pre>
+<figure>
+<img src='distance-intro_files/figure-html/unnamed-chunk-4.png' width='480'height=''width.px='480'height.px='480' style='display: block'>
+<figcaption>
+Figure 3: Simulated population (grey points) with line transects (blue dashed lines), observed animals are in red.
+</figcaption>
+</figure>
+<p>Note that we miss some closer animals (some black dots very near the transect lines) but also detect some animals that are further away (red dots much further away than they were in the strip transect case). In an actual survey this would translate itself into acknowledging the fact that we miss some animals due to cover, or weather conditions etc. However, we are not ignoring animals that we can plainly see but are outside of the current strip or quadrat we are surveying. We wish to include data on as many of the animals we saw as possible without biasing our results.</p>
+<p>What is also interesting is the pattern we see in the histogram of the observed perpendicular distances: large numbers of animals are seen at small distances, with numbers detected decreasing with increasing distance from the line. Again, this makes physical sense – we should see those individuals that are near us more easily. Although this data is simulated and the pattern is a feature of the simulation setup, we will see throughout the book that this pattern is replicated in survey data.</p>
+<pre class="r"><code>hist(detected_distances,xlab=&quot;Distance&quot;,main=&quot;&quot;)</code></pre>
+<figure>
+<img src='distance-intro_files/figure-html/unnamed-chunk-5.png' width='480'height=''width.px='480'height.px='480' style='display: block'>
+<figcaption>
+Figure 4: Histogram of observed perpendicular distances using line transects to survey the simulated population.
+</figcaption>
+</figure>
+<p>In the previous examples, we were able to estimate the abundance in the study area by calculating density in the covered area and then multiplying density by the size study area. Mathematically: <br /><span class="math">$$
+\hat{D} = n/a,
+$$</span><br /> where <span class="math"><em>D</em></span> is density (the hat indicates it’s an estimate of density), <span class="math"><em>n</em></span> is the number of animals we saw and <span class="math"><em>a</em></span> is the area we covered during the survey. We can thing of <span class="math"><em>a</em></span> as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multiplied by its height, i.e. <span class="math"><em>a</em> = 2<em>w</em><em>K</em><em>l</em></span> where <span class="math"><em>K</em></span> is the number of transects, <span class="math">2<em>w</em></span> is the width (why we say <span class="math">2<em>w</em></span> will become apparent below) and <span class="math"><em>l</em></span> is the length. What is unclear in the line transect case I just presented is what <span class="math"><em>a</em></span> is – the quantity we should use but also its meaning.</p>
+<p>Looking at each component of <span class="math"><em>a</em></span>, the part that we are uncertain about is <span class="math">2<em>w</em></span>, what should this width be? One could make the argument that the largest observed distance is a good candidate for the width of the transect. This intuitively makes sense but it may be the case that there are outlying distances which are much much further than others which would be unrealistic to include (we will revisit this in a more rigorous way later); for that reason we refer to <span class="math"><em>w</em></span> as the <em>truncation</em> (or <em>truncation distance</em>). For now let us choose a truncation that include almost all of our observations, throwing out only a few outliers (say 0.02). We now have a value for the area covered, but it’s not quite right: the estimator we’ve constructed so far is the same as the quadrat/strip estimator, not taking into account the probabilistic nature of the detections we made. We’d really like to include the probability of seeing an animal, given its distance from the observer: this is how we missed some animals near to the line and saw some which were further away.</p>
+<p>If we knew the probability of detecting an animal we could divide the estimate of density by this, thus inflating the according to this probability of detection. We would then have the following estimator: <br /><span class="math">$$
+\hat{D} = \frac{n}{2wKl\hat{p}},
+$$</span><br /> where <span class="math">$\hat{p}$</span> is the probability of detecting an animal at any distance from the observer. For simplicity’s sake let us say we have estimated that <span class="math">$\hat{p}=$</span> 0.5981, we can then use the above estimator to obtain <span class="math">$\hat{N}=$</span> 512 animals area. The rest of this chapter (and the entire body of work on distance sampling) focuses on models for <span class="math">$\hat{p}$</span>.</p>
+<p>Two important pieces of information that must be collected have been mentioned so far: number of animals observed (counts) and distances to the animals. A third and equally important piece of information is the <em>effort</em> expended – how large an area was covered. It is essential that effort data is collected and recorded accurately, as otherwise abundance will be estimated incorrectly (as the denominator in our equations will not be correct). When thinking about line transects we use effort to refer to the total length of lines that we survey.</p>
+<div id="point-transects" class="section level3">
+<h3>Point transects</h3>
+<p>So far we have only talked about line transects. Rather than walking along lines we might prefer to stand at a point for some period of time and count how many animals we see or hear in that period of time. Such counts are common for avian studies as it’s often easier to hear small birds than see them in dense forest.</p>
+<p>Going back to our simulated example, we can say out 6 points to sample. At each point we use the same formulation for the detection (that detectability decreases with distance).</p>
+<pre class="r"><code>plot(x,y, pch=19,asp=1,cex=0.4,main=&quot;&quot;,col=&quot;grey&quot;)
+
+# set sigma
+sigma &lt;- 0.05
+# storage for detected distances
+detected_distances &lt;- c()
+# lay out a grid of points
+pt &lt;- as.list(expand.grid(x=seq(0.15,0.85,len=3),y=seq(0.15,0.85,len=3)))
+for(i in 1:length(pt$x)){
+  # generate point location
+  # plot the line transect
+  points(pt$x[i], pt$y[i], pch=19, col=&quot;blue&quot;,cex=0.7)
+  # calculate the distances to animals from the line
+  distances &lt;- sqrt((pt$x[i] - x)^2+(pt$y[i]-y)^2)
+  # randomly decide which were detected
+  detected &lt;- exp(-distances^2/(2*sigma^2)) &gt; runif(length(distances))
+  # plot those animals detected
+  points(x[detected],y[detected],pch=19,cex=0.4,col=&quot;red&quot;)
+  # collect the distances to detected objects
+  detected_distances &lt;- c(detected_distances,distances[detected])
+}</code></pre>
+<figure>
+<img src='distance-intro_files/figure-html/unnamed-chunk-6.png' width='480'height=''width.px='480'height.px='480' style='display: block'>
+<figcaption>
+Figure 5: Simulated population (grey points) with point transects (blue dots), observed animals are in red.
+</figcaption>
+</figure>
+<p>Looking at the histogram of distances:</p>
+<pre class="r"><code>hist(detected_distances,xlab=&quot;Distance&quot;,main=&quot;&quot;)</code></pre>
+<figure>
+<img src='distance-intro_files/figure-html/unnamed-chunk-7.png' width='480'height=''width.px='480'height.px='480' style='display: block'>
+<figcaption>
+Figure 6: Histogram of detected distances using point transects to survey the simulated population.
+</figcaption>
+</figure>
+<p>As we saw with the line transects, the point transect distances see a similar drop-off in frequency with increasing distance. However, unlike the line transects we also see an increase as distance increases up to around 0.03. This is because of the geometry of the point transect samplng: at small distances (small radii) the area surveyed is small, this then increases quadratically (since the area of the circle is <span class="math"><em>π</em><em>r</em><sup>2</sup></span>). So, up to a certain distance we see an increase in sightings, as we have an increasing area to survey, after than point the larger area becomes too big and the effect of detectability outweighs the effect of increasing area.</p>
+<p>Now we can again calculate abundance, in a similar manner as above, but note that the covered area is <span class="math"><em>k</em><em>π</em><em>w</em><sup>2</sup></span> where there are <span class="math"><em>k</em></span> points, each with radius <span class="math"><em>w</em></span> (again, we truncate at a distance <span class="math"><em>w</em></span>). If we again say that we have estimated <span class="math">$\hat{p}$</span> by some process, and that <span class="math">$\hat{p}=$</span> 0.25, we can multiply the survey area by the probability of detection and calculate the abundance in the study area to be 519.61.</p>
+</div>
+</div>
+<div id="recap" class="section level2">
+<h2>Recap</h2>
+<p>In this chapter I showed how we can think about distance sampling line and point transect surveys as extensions of strip and quadrat surveys where we model the probability of detection as a function of distance. Both line and point transect examples gave estimated abundances that were close to the true abundance without assuming that we saw all of the animals in the covered area. In the next chapter we’ll see how to formulate these models mathematically and fit them to data using R.</p>
+<div class="references">
+<h2>References</h2>
+<p>Buckland, S.T., Burt, M.L., Rexstad, E.A., Mellor, M., Williams, A.E. and Woodward, R. (2012) Aerial surveys of seabirds: the advent of digital methods. <em>Journal of Applied Ecology</em>, <strong>49</strong>, 960–967.</p>
+<p>Howard, C., Stephens, P.A., Pearce-Higgins, J.W., Gregory, R.D. and Willis, S.G. (2014) Improving species distribution models: the value of data on abundance. <em>Methods in Ecology and Evolution</em>, <strong>5</strong>, 506–513.</p>
+</div>
+</div>
+
+
+<!-- some extra javascript for older browsers -->
+<script type="text/javascript" src="libs/polyfill.js"></script>
+
+<script>
+
+// manage active state of menu based on current page
+$(document).ready(function () {
+
+    // active menu
+    href = window.location.pathname
+    href = href.substr(href.lastIndexOf('/') + 1)
+    $('a[href="' + href + '"]').parent().addClass('active');
+
+    // manage active menu header
+    if (href.startsWith('distance'))
+      $('a[href="' + 'ds' + '"]').parent().addClass('active');
+    else if (href.startsWith('dsm'))
+      $('a[href="' + 'dsm' + '"]').parent().addClass('active');
+    else if (href.startsWith('appendix'))
+      $('a[href="' + 'appendices' + '"]').parent().addClass('active');
+
+});
+
+</script>
+
+ <!-- mathjax config -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] }
+      });
+    </script>
+    <script type="text/javascript"
+      src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+    <!-- end mathjax config -->
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+
+</body>
+</html>

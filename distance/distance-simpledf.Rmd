@@ -1,0 +1,29 @@
+---
+title: Models for detectability
+bibliography: full.bib
+csl: biometrics.csl
+---
+
+```{r echo=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+```
+
+**From outline... Models for detectability: introduction   to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)**
+
+What became clear in the previous chapter is that when we model the effect of detectability in our surveys we can reliably estimate abundance.
+
+  * here is some real data
+  * oh right, you see that drop off?
+  * how do we fit a model
+  * what is that doing?
+  * let's talk about truncation
+  * let's talk about model selection
+  * point and lines
+  * estimating abundance HT etc
+
+
+
+## References
+
+
