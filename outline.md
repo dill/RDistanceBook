@@ -24,8 +24,8 @@ This document serves to outline the various chapters of the book *Practical Dist
 
 ## Outline
 
-  * [*Introduction to distance sampling*](distance/distance-intro.Rmd): why do distance sampling? Explanation of survey setup. What do distance sampling data look like?
-  * *Models for detectability*: introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)
+  * [*Introduction to distance sampling*](distance/distance-intro.html): why do distance sampling? Explanation of survey setup. What do distance sampling data look like?
+  * [*Models for detectability*](distance/distance-simpledf.html): introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)
   * *What else affects detectability?*: covariate models, selecting covariates, size bias.
   * *Improving the fit of detection functions*: adjustments and mixtures, other key functions. Model selection via AIC.
   * *Estimating abundance*: Horvitz-Thompson estimators, stratification (how and when).
@@ -44,15 +44,16 @@ Begin by having a vector of distances, make a `data.frame` then add columns as w
 Data available (able to be released with the book) which we can do "basic" distance sampling analyses on:
 
   * already "open" data:
-     * ducknests (line transect, binned)
-     * amakihi (point transect, exact)
-     * crabeater seals (line transect?, exact)
-     * pantropical dolphins (line transect, exact)
+    * ducknests (line transect, binned)
+    * amakihi (point transect, exact)
+    * pantropical dolphins (line transect, exact)
+    * crabeater seals (line transect?, exact) (only if we want to do the MRDS "reveal" at the end, otherwise it's just wrong!)
+    * golf tees (line transect, exact) (same problem as crabbies)
   * possibilities (need to check):
-     * Rob Williams cetaceans (?)
-     * URI seabirds aerial (line transect, binned)
-     * URI seabirds boat (line transect, exact)
-     * SCANS II ? (line transect, exact)
+    * Rob Williams cetaceans (?)
+    * URI seabirds aerial (line transect, binned)
+    * URI seabirds boat (line transect, exact)
+    * SCANS II ? (line transect, exact)
 
 What would be nice: a data set that fits okay with half-normal/hazard-rate, improves with adjustments/mixtures, has covariates. Need both point and line data.
 

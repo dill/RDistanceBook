@@ -110,7 +110,7 @@ Returning to our example population, rather than think of boxes where we see eve
 $$
 \exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
-where $x$ is the perpendicular distance from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship more closely and its relation to real data in the next chapter.
+where $x$ is the *perpendicular distance* from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship more closely and its relation to real data in the next chapter.
 
 ```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with line transects (blue dashed lines), observed animals are in red."}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
@@ -140,9 +140,9 @@ for(i in 1:5){
 
 Note that we miss some closer animals (some black dots very near the transect lines) but also detect some animals that are further away (red dots much further away than they were in the strip transect case). In an actual survey this would translate itself into acknowledging the fact that we miss some animals due to cover, or weather conditions etc. However, we are not ignoring animals that we can plainly see but are outside of the current strip or quadrat we are surveying. We wish to include data on as many of the animals we saw as possible without biasing our results.
 
-What is also interesting is the pattern we see in the histogram of the distances: large numbers of animals are seen at small distances, with numbers detected decreasing with increasing distance from the line. Again, this makes physical sense -- we should see those individuals that are near us more easily. Although this data is simulated and the pattern is a feature of the simulation setup, we will see throughout the book that this pattern is replicated in survey data.
+What is also interesting is the pattern we see in the histogram of the observed perpendicular distances: large numbers of animals are seen at small distances, with numbers detected decreasing with increasing distance from the line. Again, this makes physical sense -- we should see those individuals that are near us more easily. Although this data is simulated and the pattern is a feature of the simulation setup, we will see throughout the book that this pattern is replicated in survey data.
 
-```{r fig.width=5, fig.height=5, fig.cap="Histogram of detected distances using line transects to survey the simulated population."}
+```{r fig.width=5, fig.height=5, fig.cap="Histogram of observed perpendicular distances using line transects to survey the simulated population."}
 hist(detected_distances,xlab="Distance",main="")
 ```
 
