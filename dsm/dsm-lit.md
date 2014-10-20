@@ -121,6 +121,9 @@ author: David L. Miller
 # Visualisation:
 
   * [ ] Spiegelhalter, D, M Pearson, and I Short. “Visualizing Uncertainty About the Future.” Science 333, no. 6048 (September 8, 2011): 1393–1400. doi:10.1126/science.1191181.
+  * [X] Eddins, S. Rainbow Color Map Critiques: an Overview and Annotated Bibliography, MathWorks, 2014.
+    - don't use rainbow colour maps, for the usual obvious reasons. This was released as MATLAB stopped using rainbow as default colour map, short bulletpoint overview.
+  * [ ] Zeileis, A and Hornik, K and Murrell, P (2007) Escaping RGBland: Selecting Colors for Statistical Graphics. Research Report Series / Department of Statistics and Mathematics, 61. Department of Statistics and Mathematics, WU Vienna University of Economics and Business, Vienna.
 
 
 # Uncertainty:
