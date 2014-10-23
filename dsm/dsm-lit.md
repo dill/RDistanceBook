@@ -57,6 +57,8 @@ author: David L. Miller
   * [ ] Zipkin, Elise F, Jeffery B Leirness, Brian P Kinlan, Allan F O’Connell, and Emily D Silverman. “Fitting Statistical Distributions to Sea Duck Count Data: Implications for Survey Design and Abundance Estimation.” Statistical Methodology 17 (March 2014): 67–81. doi:10.1016/j.stamet.2012.10.002.
   * [ ] Musio, Monica, and Erik A Sauleau. “A Spatio-Temporal Model for Cancer Incidence Data with Zero-Inflation,” 2011.
   * [ ] Leemis, Lawrence M, and Jacquelyn T Mcqueston. “Univariate Distribution Relationships.” The American Statistician 62, no. 1 (February 1, 2008): 45–53. doi:10.1198/000313008X270448.
+  * [X] Harrison, X. A. (2014). Using observation-level random effects to model overdispersion in count data in ecology and evolution. PeerJ. doi:10.7717/peerj.616
+    - "Overdispersion occurs primarily for two reasons; ‘apparent overdispersion’ (Hilbe, 2011) arises when models have been poorly specified, for example by failing to include important predictors, interactions between predictors that have already been measured, or by specifying the incorrect link function (Hilbe, 2011). Conversely, ‘real overdispersion’ can arise when there is clustering in the count data, meaning observations are not truly independent of one another (Hilbe, 2011), when there is an excess number of zeroes in the data (zero-inflation) (Zuur et al., 2009), or when the variance of the response truly is greater than the mean". "It is perhaps reassuring, and not surprising, that modeling the data with the same structure that was used to generate the data recovers correct, unbiased estimates"
 
 
 # Model checking:
@@ -135,3 +137,5 @@ author: David L. Miller
 
 
 
+AIC/thumbs
+https://twitter.com/random_fish/status/525067649303478272
