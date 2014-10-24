@@ -59,6 +59,7 @@ author: David L. Miller
   * [ ] Leemis, Lawrence M, and Jacquelyn T Mcqueston. “Univariate Distribution Relationships.” The American Statistician 62, no. 1 (February 1, 2008): 45–53. doi:10.1198/000313008X270448.
   * [X] Harrison, X. A. (2014). Using observation-level random effects to model overdispersion in count data in ecology and evolution. PeerJ. doi:10.7717/peerj.616
     - "Overdispersion occurs primarily for two reasons; ‘apparent overdispersion’ (Hilbe, 2011) arises when models have been poorly specified, for example by failing to include important predictors, interactions between predictors that have already been measured, or by specifying the incorrect link function (Hilbe, 2011). Conversely, ‘real overdispersion’ can arise when there is clustering in the count data, meaning observations are not truly independent of one another (Hilbe, 2011), when there is an excess number of zeroes in the data (zero-inflation) (Zuur et al., 2009), or when the variance of the response truly is greater than the mean". "It is perhaps reassuring, and not surprising, that modeling the data with the same structure that was used to generate the data recovers correct, unbiased estimates"
+  * [X] Diagram of distribution relationships http://www.johndcook.com/distribution_chart.html
 
 
 # Model checking:
