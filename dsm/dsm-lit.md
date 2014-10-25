@@ -119,6 +119,7 @@ author: David L. Miller
   * [ ] Paxton, Charles GM, M Louise Burt, Sharon L Hedley, Gísli A Víkingsson, Thorvaldur Gunnlaugsson, and Geneviève Desportes. “Density Surface Fitting to Estimate the Abundance of Humpback Whales Based on the NASS-95 and NASS-2001 Aerial and Shipboard Surveys.” NAMMCO Scientific Publications 7 (2009): 143–60.
   * [ ] HOEKMAN, STEVEN T, BRENDAN J MOyNAHAN, MARK S LINDBERG, LEWIS C SHARMAN, and WILLIAM F JOHNSON. “Line Transect Sampling for Murrelets: Accounting for Incomplete Detection and Identification.” Marine Ornithology 39 (2011): 35–44.
   * [ ] Ridgway, Mark S. “Line Transect Distance Sampling in Aerial Surveys for Double-Crested Cormorants in Coastal Regions of Lake Huron.” Journal of Great Lakes Research 36, no. 3 (September 2010): 403–10. doi:10.1016/j.jglr.2010.06.003.
+  * [ ] Augiron, S., Gangloff, B., Brodier, S., & Chevreux, F. (2015). Winter spatial distribution of threatened acridivorous avian predators: Implications for their conservation in a changing landscape. Journal of Arid Landscapes. doi:10.1016/j.jaridenv.2014.10.001
 
 
 # Visualisation:
