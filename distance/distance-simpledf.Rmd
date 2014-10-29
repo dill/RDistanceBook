@@ -13,12 +13,11 @@ source("../figure-captions.R")
 
 What became clear in the previous chapter is that when we model the effect of detectability in our surveys we can reliably estimate abundance. Let's begin by looking at some data collected on pantropical dolphins in the Gulf of Mexico[^gomdata]. **Further explanation of data here**.
 
-We can start by loading the data (which is in the `dsm` package) and looking at a histogram of the distances, as we did previously:
+We can start by loading the `Distance2` package which contains both the data we want to analyse and the functions we'll use later. Looking at a histogram of the distances, as we did previously:
 ```{r mex-dolphin-plot, fig.width=5, fig.height=5, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico from the South East Fisheries Science Center's GoMex Oceanic 1996 survey."}
-library(dsm) # package with the dolphin data
+library(Distance2) # package with the dolphin data
 data(mexdolphins) # attach the dolphin data
-dolphin_dist <- mexdolphins$distdata # data.frame with distances in them
-hist(dolphin_dist$distance,main="",xlab="Distance (metres)")
+hist(mexdolphins$distance,main="",xlab="Distance (metres)")
 ```
 As with the data we simulated, we can see that there is a decrease in frequency with increasing distance from the observer. If we had the strip or quadrat situation from the previous chapter then the histogram would be flat, indicating that we had seen everything out to the furthest distance.
 
@@ -37,7 +36,7 @@ $$
 g(x; \sigma)=\exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
 here we denote the parameter we estimate as $\sigma$, which we call the *scale parameter* as it changes the scale of the function (but not it's shape). We can half-normal detection functions defined over $(0,1)$ with some different scale parameters below:
-```{r hn-scale-par-comp, fig.width=10, fig.height=3, fig.cap="Half-normal detection function with varying scale parameter (from left to right $\\sigma=0.05, 0.25, 1$ and $10$). Note that the shape of the detection function stays the same in each plot, as the scale increases.", echo=FALSE}
+```{r hn-scale-par-comp, fig.width=10, fig.height=3, fig.cap="Half-normal detection function with varying scale parameter (from left to right $\\sigma=0.05, 0.25, 1$ and $10$). Note that the shape of the detection function stays the same in each plot, as the scale increases. From left to right, the study species becomes more detectable (higher probability of detection at larger distances).", echo=FALSE}
 par(mfrow=c(1,4))
 g.hn <- function(x,sigma) exp(-x^2/(2*sigma^2))
 x <- seq(0,1,len=200)
@@ -51,26 +50,32 @@ for(this.sig in c(0.05, 0.25, 1, 10)){
 
 We'd like to have the shape of the detection function mimic the shape of the histogram; we'll go into more detail on how that's done below but for now let's try to fit a detection function to the Gulf of Mexico dolphin data...
 ```{r fit-dolphins-hn}
-library(Distance) # load the Distance library
 # fit a detection function to the data
-hn.df <- ds(dolphin_dist, truncation=8000, adjustment=NULL)
+hn.df <- ds(mexdolphins, truncation=8000)
 ```
-The function `ds` will fit the detection function for us, we set the `truncation` to be 8000m and set `adjustment=NULL` to fit a simple half-normal model (more on this option in the next chapter). We can see that the fitting procedure reports that the model has an AIC of `r round(hn.df$ddf$criterion,3)`. Let's see what that looks like before we examine the model in further detail:
+The function `ds` will fit the detection function for us, we set the `truncation` to be 8000m and fit a simple half-normal model (more on this option in the next chapter). We can see that the fitting procedure reports that the model has an AIC of `r round(hn.df$AIC, 3)`. Let's see what that looks like before we examine the model in further detail:
 ```{r dolphins-hn-plot, fig.width=5, fig.height=5, fig.cap="Half-normal detection function (solid black line) fitted to the Gulf of Mexico dolphin data (histogram)"}
-plot(hn.df, showpoints=FALSE, pl.den=0)
+#plot(hn.df)
 ```
 
 As with most R objects, we can use the `summary` function to find out further information about our fitted detection function:
 ```{r dolphins-hn-summary}
 summary(hn.df)
 ```
-The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, parameter estimates and finally the "`Average p`" and "`N in covered region`" (along with uncertainty). Before we go on to talk about these last two important items, it is first worth noting that the parameter estimate (marked `(Intercept)`) is on the log scale, so $\sigma=\exp$ `r round(hn.df$ddf$par,2)` (why the parameters are reported in this way will become apparent in the next chapter).
+The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, parameter estimates and finally the "`Average p`" and "`N in covered region`" (along with uncertainty). Before we go on to talk about these last two important items, it is first worth noting that the parameter estimate (marked `(Intercept)`) is on the log scale, so $\sigma=\exp$ `r round(hn.df$par,2)` (why the parameters are reported in this way will become apparent in the next chapter).
 
 
 ## Average detectability and abundance in the covered area
 
-The last two rows of the summary report statistics about "`Average p`" and "`N in covered region`", but what does this mean? The former refers to average detectability, that is the probability of observing an animal regardless of its distance from the line. The latter gives an estimate of the abundance within the transects that were surveyed.
+The last two rows of the summary report statistics about "`Average p`" and "`N in covered region`", but what is the meaning of these two quantities?
 
+### Average detectability
+
+With a fitted detection function we can evaluate the probability of observing an animal given its distance but what we rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we can simply integrate out distance from the detection function -- getting rid of the conditioning on the distance. Denoting the average probability of detection as $\hat{P_a}$, we can write:
+$$
+\hat{P_a} = \int_0^w g(x;\boldsymbol{\theta}) \text{d}x
+$$
+where $w$ denotes the truncation distance. So, for the pantropical dolphins we have that the above integral evaluates to $\hat{P_a}=$ `r round(predict(hn.df)[1],4)`
 
 
 
