@@ -9,9 +9,11 @@ html: $(HTML_FILES)
 
 %.html: %.Rmd
 				R --vanilla --slave -e "rmarkdown::render('$<')"
+				mv $@ site/
 
 %.html: %.md
 				R --vanilla --slave -e "rmarkdown::render('$<')"
+				mv $@ site/
 
 .PHONY: clean
 clean:

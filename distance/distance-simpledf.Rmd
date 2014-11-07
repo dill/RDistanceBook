@@ -9,21 +9,22 @@ csl: biometrics.csl
 source("../figure-captions.R")
 ```
 
-**From outline... Models for detectability: introduction   to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)**
+What became clear in the previous chapter is that when we model the effect of detectability in our surveys we can reliably estimate abundance. Let's begin by looking at data collected on pantropical spotted dolphins in the Gulf of Mexico[^gomdata]. Data was collected by NOAA's Southeast Fisheries Science Centre and comes from several shipboard surveys in the Gulf of Mexico during 1996 as part of the GulfCet II Program. 47 groups of pantropical spotted dolphins were observed by the crew of the Oregon II.
 
-What became clear in the previous chapter is that when we model the effect of detectability in our surveys we can reliably estimate abundance. Let's begin by looking at some data collected on pantropical dolphins in the Gulf of Mexico[^gomdata]. **Further explanation of data here**.
-
-We can start by loading the `Distance2` package which contains both the data we want to analyse and the functions we'll use later. Looking at a histogram of the distances, as we did previously:
-```{r mex-dolphin-plot, fig.width=5, fig.height=5, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico from the South East Fisheries Science Center's GoMex Oceanic 1996 survey."}
-library(Distance2) # package with the dolphin data
-data(mexdolphins) # attach the dolphin data
-hist(mexdolphins$distance,main="",xlab="Distance (metres)")
+We can start by loading the `Distance2` package which contains both the data we want to analyse and the functions we'll use later.
+```{r load-datapkg}
+library(Distance2)
+data(mexdolphins)
 ```
-As with the data we simulated, we can see that there is a decrease in frequency with increasing distance from the observer. If we had the strip or quadrat situation from the previous chapter then the histogram would be flat, indicating that we had seen everything out to the furthest distance.
-
-We now want to model that decrease in order to correct the counts we have, and go on to estimate abundance.
+Looking at a histogram of the distances, as we did previously:
+```{r mex-dolphin-plot, fig.width=5, fig.height=5, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico from the South East Fisheries Science Center's GoMex Oceanic 1996 survey."}
+hist(mexdolphins$distance, main="", xlab="Distance (m)")
+```
+As with the data we simulated in the previous chapter, we can see that there is a decrease in frequency with increasing distance from the observer (though this is a little less well behaved in reality). If the assumption of strip transect sampling were true this histogram would be flat, indicating that we had seen everything out to the furthest distance.
 
 ## Detection functions
+
+We now want to model the decrease in the histogram of distances in order to correct the counts we have, and go on to estimate abundance.
 
 The relationship between count frequency and distance is described by a *detection function*. More formally, we model the probability that we detect an animal given that it is at a certain distance ($x$, say) from the line, mathematically:
 $$
@@ -36,26 +37,24 @@ $$
 g(x; \sigma)=\exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
 here we denote the parameter we estimate as $\sigma$, which we call the *scale parameter* as it changes the scale of the function (but not it's shape). We can half-normal detection functions defined over $(0,1)$ with some different scale parameters below:
-```{r hn-scale-par-comp, fig.width=10, fig.height=3, fig.cap="Half-normal detection function with varying scale parameter (from left to right $\\sigma=0.05, 0.25, 1$ and $10$). Note that the shape of the detection function stays the same in each plot, as the scale increases. From left to right, the study species becomes more detectable (higher probability of detection at larger distances).", echo=FALSE}
+```{r hn-scale-par-comp, fig.width=10, fig.height=3, fig.cap="Half-normal detection functions with varying scale parameter ($\\sigma$ values are given above the plots). Note that the shape of the detection function stays the same in each plot, as the scale increases. From left to right, the study species becomes more detectable (higher probability of detection at larger distances).", echo=FALSE}
 par(mfrow=c(1,4))
 g.hn <- function(x,sigma) exp(-x^2/(2*sigma^2))
 x <- seq(0,1,len=200)
 for(this.sig in c(0.05, 0.25, 1, 10)){
-  plot(x, g.hn(x,this.sig),
+  plot(x, g.hn(x,this.sig), main=bquote(sigma == .(this.sig)),
        xlab="Distance", ylab="Detection probability",
        type="l", xlim=c(0,1), ylim=c(0,1), asp=1)
 }
-
 ```
 
 We'd like to have the shape of the detection function mimic the shape of the histogram; we'll go into more detail on how that's done below but for now let's try to fit a detection function to the Gulf of Mexico dolphin data...
 ```{r fit-dolphins-hn}
-# fit a detection function to the data
 hn.df <- ds(mexdolphins, truncation=8000)
 ```
-The function `ds` will fit the detection function for us, we set the `truncation` to be 8000m and fit a simple half-normal model (more on this option in the next chapter). We can see that the fitting procedure reports that the model has an AIC of `r round(hn.df$AIC, 3)`. Let's see what that looks like before we examine the model in further detail:
-```{r dolphins-hn-plot, fig.width=5, fig.height=5, fig.cap="Half-normal detection function (solid black line) fitted to the Gulf of Mexico dolphin data (histogram)"}
-#plot(hn.df)
+The function `ds` will fit the detection function for us (to data set `mexdolphins`), we set the `truncation` to be 8000m and fit a simple half-normal model (the default, other options are covered in Chapter 4). Let's see what that looks like before we examine the model in further detail:
+```{r dolphins-hn-plot, fig.width=5, fig.height=5, fig.cap="Half-normal detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
+plot(hn.df)
 ```
 
 As with most R objects, we can use the `summary` function to find out further information about our fitted detection function:
@@ -64,37 +63,146 @@ summary(hn.df)
 ```
 The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, parameter estimates and finally the "`Average p`" and "`N in covered region`" (along with uncertainty). Before we go on to talk about these last two important items, it is first worth noting that the parameter estimate (marked `(Intercept)`) is on the log scale, so $\sigma=\exp$ `r round(hn.df$par,2)` (why the parameters are reported in this way will become apparent in the next chapter).
 
-
-## Average detectability and abundance in the covered area
-
-The last two rows of the summary report statistics about "`Average p`" and "`N in covered region`", but what is the meaning of these two quantities?
-
-### Average detectability
-
-With a fitted detection function we can evaluate the probability of observing an animal given its distance but what we rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we can simply integrate out distance from the detection function -- getting rid of the conditioning on the distance. Denoting the average probability of detection as $\hat{P_a}$, we can write:
+The half-normal is not the only option for modelling $g$ (indeed, there are many options as we will see in the next chapter). Another possibility is the *hazard-rate detection function*, which is more flexible, but requires the estimation of an extra parameter. The plot below shows examples of hazard-rate detection functions.
+```{r hr-par-comp, fig.width=10, fig.height=3, fig.cap="Hazard-rate detection function with varying scale and shape parameters (given above each plot). Compared to the half-normal, the hazard-rate as a more prominent \"shoulder\".", echo=FALSE}
+par(mfrow=c(1, 4))
+g.hr <- function(x, sigma, b) 1 - exp(-(x/sigma)^-b)
+x <- seq(0, 1, len=200)
+for(this.sig in c(0.1, 0.5)){
+  for(this.b in c(5, 1)){
+    plot(x, g.hr(x, this.sig, this.b),
+         main=bquote(sigma == .(this.sig) ~ .("b") == .(this.b)),
+         xlab="Distance", ylab="Detection probability",
+         type="l", xlim=c(0,1), ylim=c(0,1), asp=1)
+  }
+}
+```
+Mathematically the hazard-rate detection function is defined as:
 $$
-\hat{P_a} = \int_0^w g(x;\boldsymbol{\theta}) \text{d}x
+g(x; \sigma, b)=1-\exp\left(-\left(\frac{x}{\sigma}\right)^{-b}\right).
 $$
-where $w$ denotes the truncation distance. So, for the pantropical dolphins we have that the above integral evaluates to $\hat{P_a}=$ `r round(predict(hn.df)[1],4)`
+The hazard-rate detection function has two parameters: $\sigma$, the scale parameter as in the half-normal and $b$, which is a *shape* parameter. The role of the shape parameter is to control the size of the *shoulder* of the detection function -- how far detection remains certain. We can see it's effect in comparing between plots where $b=5$ and $b=1$, a larger $b$ gives a longer distance out to which we observe animals with certainty.
+
+We can fit a hazard-rate detection function to the dolphin data in a similar way to half-normal, though now we must specify a detection function model:
+```{r fit-dolphins-hr}
+hr.df <- ds(mexdolphins, truncation=8000, model=df(model=~hr))
+```
+we can then plot this, as before:
+```{r dolphins-hr-plot, fig.width=5, fig.height=5, fig.cap="Hazard-rate detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
+plot(hr.df)
+```
+We can again use the `summary` function:
+```{r dolphins-hr-summary}
+summary(hr.df)
+```
+Note that there are now two rows of parameters, one for scale and then one for shape.
+
+The hazard-rate model has a rather different average detection probability from the half-normal model (`r round(predict(hr.df)[1],4)` rather than `r round(predict(hn.df)[1],4)` for the half-normal) and hence rather different abundance estimates. How do we decide between these two models?
+
+## What makes a good detection function?
+
+In general, we'd like to fit a number of different detection functions, choose the best and use that for our subsequent inference. In order to choose which detection function is "best", we must first define what we mean by "best". One can view this as a three stage process:
+
+  1. amongst the candidate models, which are "reasonable",
+  2. perform goodness of fit testing on the reasonable models,
+  3. amongst those reasonable, well fitting models, which is the best.
+
+### Reasonable models
+
+First we need to ensure that the models that we are comparing are "reasonable". What I mean by this is they pass the following checks:
+
+  * **Biologically reasonable**: It's important, before fitting models, to ensure that models are biologically plausible. Rexstad and coauthors [-@Rexstad:1988vz] show that one can easily construct datasets that apparently contain "useful" predictors but are actually total garbage. Although their example is deliberately silly, it highlights an important principle: avoiding a modelling philosophy of "throw everything in and see what happens". This will be particularly pertinent in the next chapter, when we talk about factors other than distance that affect detectability.
+  * **Convergent**: It is sometimes the case that when fitting a model, an warning will be reported about the optimisation not having converged. In this case the results are not necessarily reliable. We'll cover troubleshooting such models in Chapter **XXX**, offering some ways to fix non-convergent models. For now, let's just say that it's generally a bad idea to include such models in the model selection process.
+  * **Eyeball test**: Inspecting fitted model plots can tell you a lot. One should not underestimate the amount of information that can be gleaned from simply plotting the detection function. It is possible that a model can converge but with rather "wacky" parameters leaving a model that doesn't resemble the data at all. Ensuring that such models are investigated (again, more in this in Chapter **XXX**) and excluded is another important step towards model selection.
 
 
+### Goodness of fit testing
+
+Three statistical tests are commonly used to assess goodness of fit for detection functions, these are: $\chi^2$, Kolmogorov-Smirnov and Cramer-von Mises tests. The latter two tests are based on quantifying the results of quantile-quantile plots (Q-Q plots). Goodness of fit testing involves measuring discrepancies in what the model predicts (expected values) and what the data say (observed values). Goodness of fit tests give **absolute** measure of model fit.
+
+**Maybe write this so that the QQ plots are first and then we go onto K-S and C-vM from that, leaving $chi^2$ to last as a binned data option? Maybe cover in a later section?**
+
+#### $\chi^2$ test
+
+
+
+#### Q-Q plots
+
+The Q-Q plot compares the quantiles from the fitted model with those from the data. The fitted model's cumulative distribution function (CDF; probability that a distance is less than or equal to a given value) is plotted against the *empirical distribution function* (proportion of distances in the data that are less than or equal to the given value). If our model fits well then we should have agreement between these two measures so plotting them against each other should lead to a straight line at $x=y$.
+
+
+
+
+#### Kolmogorov-Smirnov test
+
+We can formalise the Q-Q plot into a statistical test.
+
+#### Cramer-von Mises test
+
+
+
+### Model selection
+
+Now we have a reasonable set of models, we want to be able to rank them in order of how well they represent the data. It is relatively easy to ensure that the model fits the data too well (as we can make our model arbitrarily complex and reproduce the histogram of distances. To avoid this, we penalise our model based on the number of parameters we use -- making us justify the use of the extra complexity by an appropriately-sized payoff in fit. Akaike's Information Criterion (AIC) is the metric that we'll use to perform model selection for the detection function. This ensures that we pick models that represent the data well while ensuring we have parsimonious models. In contrast to goodness of fit testing, AIC only gives a **relative** measure of model fit.
+
+We see the AIC reported for the two models above in the summaries. We can also access the AIC via the `$AIC` element of the model object:
+```{r aic-element}
+hn.df$AIC
+hr.df$AIC
+```
+A smaller AIC is better, but if the AICs are closer than 2 and differ by only one parameter (as we see in the two detection functions above), we can discard the more complex model as it only marginally decreases the AIC at the cost of one additional parameter: hardly parsimonious.
+
+At this point it's worth noting that we're never interested in the absolute values of the AIC, but rather the different between the best candidate model's AIC and the others. Articles will often include tables with a column labelled $\Delta$AIC containing these differences. Burnham and Anderson [-@Burnham:2002tk] is a thorough treatment of AIC in an ecological modelling context, as well as a more philosophical guide on statistical modelling.
+
+# Model outputs
+
+Having selected the half-normal model, we can return to the `summary` results above. The last two rows of the summary report statistics about `Average p` and `Nhat in covered region`, but what is the meaning of these two quantities?
+
+## Average detectability
+
+With a fitted detection function we can evaluate the probability of observing an animal given its distance but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we can simply integrate out distance from the detection function -- getting rid of the conditioning on the distance. Denoting the average probability of detection as $\hat{P_a}$, we can write:
+$$
+\hat{P_a} = \frac{1}{w}\int_0^w g(x;\boldsymbol{\theta}) \text{d}x
+$$
+where $w$ denotes the truncation distance (which we set to 8000m). For the pantropical dolphins we obtain $\hat{P_a}=$ `r round(predict(hn.df)[1],4)` (see also the output of the `summary`, under `Average p`/`Estimate`).
+
+
+## Abundance in covered area
+
+The row `Nhat in covered area` gives an estimate of the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote \hat{N}) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection. That is, if we saw 1 dolphin in this study, we should actually inflate this by $1/\hat{P_a}$. Mathematically, we write:
+$$
+\hat{N} = \sum_{i=1}^n \frac{s_i}{\hat{P_a}},
+$$
+where $s_i$ is the size of the group of the $i^\text{th}$ observation. In the dolphin data group size ranges from `r min(mexdolphins$size)` to `r max(mexdolphins$size)`. We can look at a histogram of the observed distances:
+
+```{r dolphins-size-hist, fig.width=5, fig.height=5, fig.cap="Histogram of observed group sizes of dolphins in the Gulf of Mexico."}
+hist(mexdolphins$size, main="", xlab="Observed group size", breaks=seq(0, 700, by=25))
+```
+
+**comment on the outlier!!** talk about groups etc
+
+The Horvitz-Thompson-like estimator above is used in the `summary` of the model so calculate the abundance in the covered area. We may also want to extrapolate and estimate abundance in a larger area outside where we covered (though still within reasonable geographic/environmental limits of the area covered by the surveys). In the simplest case, we can simply divide our estimate of $\hat{N}$ through by the covered area (twice the truncation multiplied by length of transects, multiplied by the average detectability, $2wL\hat{P_a}$), however we'll cover this in a little more detail and subtlety below.
 
 
 ## TODO
 
   * how do we fit a model
   * what is that doing?
+  * what does this data look like
   * let's talk about truncation
-  * let's talk about model selection
   * point and lines
-  * estimating abundance via H-T
 
 **Should I plot the spatial distribution or transect lines here?**
 
+# Abundance in the study area
+
+So far we have only investigated the abundance in the covered area -- the area that we physically walked (or flew or steamed etc) through. Generally we're interested in extrapolating beyond that, to the rest of a forest or area of the sea etc. In some systems it may be reasonable to assume that the whole study area is homogeneous (e.g. if it's at the same altitude/depth or has the same flora growing there or similar geographical features). Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a stratified analysis.
+
+**Write code for this**
 
 ## References
 
 
 
-[^gomdata]: For convenience the data are bundled in an R-friendly format, although all of the code necessary for creating the data from the Distance project files is available at [github.com/dill/mexico-data](http://github.com/dill/mexico-data). The OBIS-SEAMAP page for the data may be found at the [SEFSC GoMex Oceanic 1996 survey page](http://seamap.env.duke.edu/dataset/25).
+[^gomdata]: For convenience the data are bundled in an R-friendly format, although all of the code necessary for creating the data from the Distance project files is available at [github.com/dill/mexico-data](http://github.com/dill/mexico-data). The original OBIS-SEAMAP page for the data may be found at the [SEFSC GoMex Oceanic 1996 survey page](http://seamap.env.duke.edu/dataset/25).
 
