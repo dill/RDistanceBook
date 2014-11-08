@@ -17,7 +17,7 @@ library(Distance2)
 data(mexdolphins)
 ```
 Looking at a histogram of the distances, as we did previously:
-```{r mex-dolphin-plot, fig.width=5, fig.height=5, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico from the South East Fisheries Science Center's GoMex Oceanic 1996 survey."}
+```{r mex-dolphin-plot, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico from the South East Fisheries Science Center's GoMex Oceanic 1996 survey."}
 hist(mexdolphins$distance, main="", xlab="Distance (m)")
 ```
 As with the data we simulated in the previous chapter, we can see that there is a decrease in frequency with increasing distance from the observer (though this is a little less well behaved in reality). If the assumption of strip transect sampling were true this histogram would be flat, indicating that we had seen everything out to the furthest distance.
@@ -53,7 +53,7 @@ We'd like to have the shape of the detection function mimic the shape of the his
 hn.df <- ds(mexdolphins, truncation=8000)
 ```
 The function `ds` will fit the detection function for us (to data set `mexdolphins`), we set the `truncation` to be 8000m and fit a simple half-normal model (the default, other options are covered in Chapter 4). Let's see what that looks like before we examine the model in further detail:
-```{r dolphins-hn-plot, fig.width=5, fig.height=5, fig.cap="Half-normal detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
+```{r dolphins-hn-plot, fig.cap="Half-normal detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
 plot(hn.df)
 ```
 
@@ -88,7 +88,7 @@ We can fit a hazard-rate detection function to the dolphin data in a similar way
 hr.df <- ds(mexdolphins, truncation=8000, model=df(model=~hr))
 ```
 we can then plot this, as before:
-```{r dolphins-hr-plot, fig.width=5, fig.height=5, fig.cap="Hazard-rate detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
+```{r dolphins-hr-plot, fig.cap="Hazard-rate detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
 plot(hr.df)
 ```
 We can again use the `summary` function:
@@ -118,27 +118,78 @@ First we need to ensure that the models that we are comparing are "reasonable". 
 
 ### Goodness of fit testing
 
-Three statistical tests are commonly used to assess goodness of fit for detection functions, these are: $\chi^2$, Kolmogorov-Smirnov and Cramer-von Mises tests. The latter two tests are based on quantifying the results of quantile-quantile plots (Q-Q plots). Goodness of fit testing involves measuring discrepancies in what the model predicts (expected values) and what the data say (observed values). Goodness of fit tests give **absolute** measure of model fit.
-
-**Maybe write this so that the QQ plots are first and then we go onto K-S and C-vM from that, leaving $chi^2$ to last as a binned data option? Maybe cover in a later section?**
-
-#### $\chi^2$ test
-
+Three statistical tests are commonly used to assess goodness of fit for detection functions, these are: $\chi^2$, Kolmogorov-Smirnov and Cramer-von Mises tests. The latter two tests are based on quantifying the results of quantile-quantile plots (Q-Q plots). Goodness of fit testing involves measuring discrepancies in how the model describes the data and the data themselves. Goodness of fit tests give **absolute** measure of model fit.
 
 
 #### Q-Q plots
 
-The Q-Q plot compares the quantiles from the fitted model with those from the data. The fitted model's cumulative distribution function (CDF; probability that a distance is less than or equal to a given value) is plotted against the *empirical distribution function* (proportion of distances in the data that are less than or equal to the given value). If our model fits well then we should have agreement between these two measures so plotting them against each other should lead to a straight line at $x=y$.
+A Q-Q plot allows us to graphically assess how similar samples from two distributions are.As a way to judge goodness of fit for detection functions, we are interested in comparing the cumulative distribution function (CDF) and empirical distribution function (EDF). The CDF evaluates the probability of observing an animal at a distance less than or equal to a given value; we usually denote the CDF as $F(x)$, where $x$ is the value we want to use. The empirical distribution function gives the proportion of observations which have evaluations of the CDF (i.e. $F(x)$ where we set $x$ to be the observed distances) less than or equal to a given value. In other words, we're judging whether the number of observations less than or equal to a given value are in line with what the model says they should be. The "given values" that we use are the observed distances. If our model fits well then we should have agreement between these two measures so plotting them against each other should lead to a straight line at $y=x$.
 
-
+We can plot a Q-Q plot for our fitted detection functions using the `gof_tests` function in `Distance2`:
+```{r dolphin-hn-gof, fig.cap="Quantile-quantile plot for the half-normal detection function fitted to the dolphin data."}
+gof_tests(hn.df)
+```
+The function also prints out some statistics for the two tests we'll investigate next. First let's look at the plot. The grey line indicates the $y=x$ line, we can see that there seem to be rather more points below that line than above, this indicates that we may have a problem with our model fit. To further investigate this we need to formalise what we mean by "far from the line $y=x$", which we'll achieve by looking at two statistical tests.
 
 
 #### Kolmogorov-Smirnov test
 
-We can formalise the Q-Q plot into a statistical test.
+We can see from the above Q-Q plot that there are some deviations from the line $y=x$. The Kolmogorov-Smirnov test uses this idea and asks the question "what's the largest vertical distance between a point and the $y=x$ line?" It uses this distance as it's test statistic to test the null hypothesis that the samples (EDF and CDF in our case) are from the same distribution (and hence our model fits well). If the deviation between the $y=x$ line and the points is too large we reject the null hypothesis and say the model doesn't have a good fit. The $p$-value for the test is given in the `gof_tests` output and is `r round(gof_tests(hn.df)$kolmogorov_smirnov$p, 4)`, telling us we should not reject the null hypothesis, this deviation from the line is tolerable.
+
 
 #### Cramer-von Mises test
 
+Rather than looking at the single biggest difference between the $y=x$ line and the points in the Q-Q plot, we might prefer to think about all the differences between line and points, since there may be many smaller differences that we want to take into account rather than looking for one large deviation. In this case the Cramer-von Mises test can help us. Its null hypothesis is the same, but sum the distances from each of the point to the line. For the half-normal detection function we can see above that the $p$-value (of `r round(gof_tests(hn.df)$cramer_vonMises$p, 4)`) also doesn't indicate that we should reject the null hypothesis.
+
+To illustrate these ideas further, we can perform the goodness of fit testing for the hazard-rate model:
+```{r dolphin-hr-gof}
+gof_tests(hr.df, plot=FALSE)
+```
+using the `plot=FALSE` argument, we can prevent the plot from being shown and just give the test statistics and $p$-values. The output for the hazard-rate model gives us weak evidence that we should reject our hypothesis that the distributions of the CDF and EDF are the same. The Cramer-von Mises test is more powerful (since we are using more information in calculating its statistic), so we should usually pay it more attention.
+
+The next plot shows the Q-Q plot for the hazard-rate model, with the Kolmogorov-Smirnov test statistic highlighted in blue and the differences used in the calculation of the Cramer-von Mises statistic highlighted in red.
+
+```{r dolphin-hr-gof-plot, echo=FALSE, fig.cap="Quantile-quantile plot for the hazard-rate detection function fitted to the dolphin data. The blue line is the Kolmogorov-Smirnov test statistic and the red lines are used in the calculation of the Cramer-von Mises statistic."}
+gof_tests(hr.df)
+# from gof_tests internals
+gof_tests_statplot <- function(model){
+  int_f <- model$df_obj$integrate_df
+  # calculate the CDF values
+  cdf_values <- rep(NA, nrow(model$data))
+  for(i in 1:nrow(model$data)){
+    this_data <- model$data[i,, drop=FALSE]
+    cdf_values[i] <- int_f(0, model$data$distance[i], model$df_obj, model$par,
+                           data=this_data)
+  }
+  # integrate over full range and divide by that to get CDF
+  pdf_normalisation <- int_f(0, model$df_obj$truncation$right, model$df_obj,
+                             model$par, data=model$data)
+  # divide through and sort
+  cdf_values <- sort(cdf_values/pdf_normalisation)
+
+  # calculate EDF values -- number of values less than or equal to each
+  #  value
+  edf_values <- vapply(cdf_values, function(x,y) sum(y<=x), y=cdf_values,
+                       numeric(1))/length(cdf_values)
+
+  # plot Cramer-von Mises distances
+  Map(function(edf, cdf){
+       lines(x=rep(edf,2), y=c(edf, cdf), lwd=1.5, col="red")
+      }, edf_values, cdf_values)
+
+  # find & plot which line-point distance is the test statistic for K-S test
+  ks.ind <- which.max(abs(cdf_values-edf_values))
+  lines(x=rep(edf_values[ks.ind],2), y=c(edf_values[ks.ind], cdf_values[ks.ind]), lwd=1.5, col="blue")
+
+
+  invisible()
+}
+gof_tests_statplot(hr.df)
+```
+
+
+
+$\chi^2$ tests are omitted here. They're most appropriate for binned data, so we'll come back to them when we look at binning distances in Chapter **XXX**.
 
 
 ### Model selection
