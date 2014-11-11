@@ -1,0 +1,28 @@
+---
+title: What else affects detectability?
+bibliography: full.bib
+csl: biometrics.csl
+---
+
+```{r echo=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+```
+
+*From outline: What else affects detectability?: covariate models, selecting covariates, size bias*
+
+
+
+# Abundance in the study area
+
+So far we have only investigated the abundance in the covered area -- the area that we physically walked (or flew or steamed etc) through. Generally we're interested in extrapolating beyond that, to the rest of a forest or area of the sea etc. In some systems it may be reasonable to assume that the whole study area is homogeneous (e.g. if it's at the same altitude/depth or has the same flora growing there or similar geographical features). Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a stratified analysis.
+
+**Write code for this**
+
+**Should I plot the spatial distribution or transect lines here?**
+
+
+
+## References
+
+

@@ -26,7 +26,7 @@ This document serves to outline the various chapters of the book *Practical Dist
 
   * [*Introduction to distance sampling*](distance/distance-intro.html): why do distance sampling? Explanation of survey setup. What do distance sampling data look like?
   * [*Models for detectability*](distance/distance-simpledf.html): introduction to the detection function, what makes a good detection function? (Only presenting half-normal and hazard-rate models here.)
-  * *What else affects detectability?*: covariate models, selecting covariates, size bias.
+  * [*What else affects detectability?*](distance/distance-covardf.html): covariate models, selecting covariates, size bias.
   * *Improving the fit of detection functions*: adjustments and mixtures, other key functions. Model selection via AIC.
   * *Estimating abundance*: Horvitz-Thompson estimators, stratification (how and when).
   * *How certain are we in our estimates?*: uncertainty estimation, explanation of variance components (more diagnostics?).
