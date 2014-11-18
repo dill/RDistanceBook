@@ -9,14 +9,16 @@ csl: biometrics.csl
 source("../figure-captions.R")
 ```
 
-What became clear in the previous chapter is that when we model the effect of detectability in our surveys we can reliably estimate abundance. Let's begin by looking at data collected on pantropical spotted dolphins in the Gulf of Mexico[^gomdata]. Data was collected by NOAA's Southeast Fisheries Science Centre and comes from several shipboard surveys in the Gulf of Mexico during 1996 as part of the GulfCet II Program. 47 groups of pantropical spotted dolphins were observed by the crew of the Oregon II.
+What became clear in the previous chapter is that when we model the effect of detectability in our surveys we can reliably estimate abundance. The previous examples were simulations, so we knew the truth; it's now time to get our hands dirty with some survey data.
+
+Let's begin by looking at data collected on pantropical spotted dolphins (*Stenella attenuata*) in the Gulf of Mexico[^gomdata]. Data was collected by NOAA's Southeast Fisheries Science Centre and comes from several shipboard surveys in the Gulf of Mexico during 1996 as part of the GulfCet II Program. 47 groups of pantropical spotted dolphins were observed by the crew of the Oregon II.
 
 We can start by loading the `Distance2` package which contains both the data we want to analyse and the functions we'll use later.
 ```{r load-datapkg}
 library(Distance2)
 data(mexdolphins)
 ```
-Looking at a histogram of the distances, as we did previously:
+For now we'll ignore the exact format of the data (which is simply a `data.frame`, we'll investigate it's columns in the next chapter), for now we'll concentrate on the `distance` column. Looking at a histogram of the distances, as we did previously:
 ```{r mex-dolphin-plot, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico from the South East Fisheries Science Center's GoMex Oceanic 1996 survey."}
 hist(mexdolphins$distance, main="", xlab="Distance (m)")
 ```
@@ -54,7 +56,7 @@ hn.df <- ds(mexdolphins, truncation=8000)
 ```
 The function `ds` will fit the detection function for us (to data set `mexdolphins`), we set the `truncation` to be 8000m and fit a simple half-normal model (the default, other options are covered in Chapter 4). Let's see what that looks like before we examine the model in further detail:
 ```{r dolphins-hn-plot, fig.cap="Half-normal detection function (solid black line) fitted to the Gulf of Mexico dolphin observed distances (histogram)."}
-plot(hn.df)
+plot(hn.df, main="")
 ```
 
 As with most R objects, we can use the `summary` function to find out further information about our fitted detection function:
@@ -123,7 +125,7 @@ Three statistical tests are commonly used to assess goodness of fit for detectio
 
 #### Q-Q plots
 
-A Q-Q plot allows us to graphically assess how similar samples from two distributions are.As a way to judge goodness of fit for detection functions, we are interested in comparing the cumulative distribution function (CDF) and empirical distribution function (EDF). The CDF evaluates the probability of observing an animal at a distance less than or equal to a given value; we usually denote the CDF as $F(x)$, where $x$ is the value we want to use. The empirical distribution function gives the proportion of observations which have evaluations of the CDF (i.e. $F(x)$ where we set $x$ to be the observed distances) less than or equal to a given value. In other words, we're judging whether the number of observations less than or equal to a given value are in line with what the model says they should be. The "given values" that we use are the observed distances. If our model fits well then we should have agreement between these two measures so plotting them against each other should lead to a straight line at $y=x$.
+A Q-Q plot allows us to graphically assess how similar samples from two distributions are. To judge goodness of fit for detection functions, we are interested in comparing the cumulative distribution function (CDF) and empirical distribution function (EDF). The CDF (of the detection function) evaluates the probability of observing an animal at a distance less than or equal to a given value ($x$, say); we usually denote the CDF as $F(x)$. The empirical distribution function gives the proportion of observations which have evaluations of the CDF less than or equal to a given value (here we evaluate $F(x)$ where we set $x$ to be the observed distances). In other words, we're judging whether the number of observations less than or equal to a given value are in line with what the model says they should be. The "given values" that we use are the observed distances. If our model fits well then we should have agreement between these two measures so plotting them against each other should lead to a straight line at $y=x$. Points above the line indicate that the model thinks there should be more observations than there were, points below the line indicate that there were more observations than the model thinks.
 
 We can plot a Q-Q plot for our fitted detection functions using the `gof_tests` function in `Distance2`:
 ```{r dolphin-hn-gof, fig.cap="Quantile-quantile plot for the half-normal detection function fitted to the dolphin data."}
@@ -174,8 +176,9 @@ gof_tests_statplot <- function(model){
 
   # plot Cramer-von Mises distances
   Map(function(edf, cdf){
-       lines(x=rep(edf,2), y=c(edf, cdf), lwd=1.5, col="red")
-      }, edf_values, cdf_values)
+        lines(x=rep(edf,2), y=c(edf, cdf), lwd=1.5, col="red")
+      },
+      edf_values, cdf_values)
 
   # find & plot which line-point distance is the test statistic for K-S test
   ks.ind <- which.max(abs(cdf_values-edf_values))
@@ -187,21 +190,21 @@ gof_tests_statplot <- function(model){
 gof_tests_statplot(hr.df)
 ```
 
+The results from the goodness of fit tests show that neither of our proposed detection functions lead to a particularly poor fit. We therefore go on to think about comparing the models to each other.
+
+*$\chi^2$ tests have been omitted here. They're most appropriate for binned data, so we'll come back to them when we look at binning distances in Chapter **XXX**.*
 
 
-$\chi^2$ tests are omitted here. They're most appropriate for binned data, so we'll come back to them when we look at binning distances in Chapter **XXX**.
+### Model selection by AIC
 
+Once we have a reasonable set of models, we want to be able to rank them in order of how well they represent the data. It is relatively easy to ensure that the model fits the data too well (as we can make our model for the detection function arbitrarily complex and reproduce the histogram of distances). To avoid this, we can penalise our measure of model fit based on the number of parameters we use -- making us justify the use of the extra complexity by an appropriately-sized payoff in fit. Akaike's Information Criterion (AIC) is the metric that we'll use to perform model selection for the detection function. This ensures that we pick models that represent the data well while ensuring we have parsimonious models. In contrast to goodness of fit testing, AIC only gives a **relative** measure of model fit.
 
-### Model selection
-
-Now we have a reasonable set of models, we want to be able to rank them in order of how well they represent the data. It is relatively easy to ensure that the model fits the data too well (as we can make our model arbitrarily complex and reproduce the histogram of distances. To avoid this, we penalise our model based on the number of parameters we use -- making us justify the use of the extra complexity by an appropriately-sized payoff in fit. Akaike's Information Criterion (AIC) is the metric that we'll use to perform model selection for the detection function. This ensures that we pick models that represent the data well while ensuring we have parsimonious models. In contrast to goodness of fit testing, AIC only gives a **relative** measure of model fit.
-
-We see the AIC reported for the two models above in the summaries. We can also access the AIC via the `$AIC` element of the model object:
+We see the AIC reported for the two models above in their summaries. We can also access the AIC via the `$AIC` element of the model object:
 ```{r aic-element}
 hn.df$AIC
 hr.df$AIC
 ```
-A smaller AIC is better, but if the AICs are closer than 2 and differ by only one parameter (as we see in the two detection functions above), we can discard the more complex model as it only marginally decreases the AIC at the cost of one additional parameter: hardly parsimonious.
+A smaller AIC is better, but if the AICs are closer than 2 and differ by only one parameter (as we see in the two detection functions above), we can discard the more complex model as it only marginally decreases the AIC at the cost of one additional parameter: hardly parsimonious. Based on this, we can discard the hazard-rate model, leaving the half-normal as our chosen detection function at this point.
 
 At this point it's worth noting that we're never interested in the absolute values of the AIC, but rather the different between the best candidate model's AIC and the others. Articles will often include tables with a column labelled $\Delta$AIC containing these differences. Burnham and Anderson [-@Burnham:2002tk] is a thorough treatment of AIC in an ecological modelling context, as well as a more philosophical guide on statistical modelling.
 
@@ -211,7 +214,7 @@ Having selected the half-normal model, we can return to the `summary` results ab
 
 ## Average detectability
 
-With a fitted detection function we can evaluate the probability of observing an animal given its distance but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we can simply integrate out distance from the detection function -- getting rid of the conditioning on the distance. Denoting the average probability of detection as $\hat{P_a}$, we can write:
+With a fitted detection function we can evaluate the probability of observing an animal given its distance but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we can simply integrate out distance from the detection function -- removing the conditioning on the distance. Denoting the average probability of detection as $\hat{P_a}$, we can write:
 $$
 \hat{P_a} = \frac{1}{w}\int_0^w g(x;\boldsymbol{\theta}) \text{d}x
 $$
@@ -220,40 +223,111 @@ where $w$ denotes the truncation distance (which we set to 8000m). For the pantr
 
 ## Abundance in covered area
 
-The row `Nhat in covered area` gives an estimate of the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote \hat{N}) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection. That is, if we saw 1 dolphin in this study, we should actually inflate this by $1/\hat{P_a}$. Mathematically, we write:
+Although the average probability of detection is an interesting quantity in its own right, we are primarily interested in estimating abundance. The row `Nhat in covered area` gives an estimate of the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection. That is, if we saw 1 dolphin in this study, we should actually inflate this by $1/\hat{P_a}$.
+
+The Horvitz-Thompson estimator is defined as:
 $$
 \hat{N} = \sum_{i=1}^n \frac{s_i}{\hat{P_a}},
 $$
 where $s_i$ is the size of the group of the $i^\text{th}$ observation. In the dolphin data group size ranges from `r min(mexdolphins$size)` to `r max(mexdolphins$size)`. We can look at a histogram of the observed distances:
 
-```{r dolphins-size-hist, fig.width=5, fig.height=5, fig.cap="Histogram of observed group sizes of dolphins in the Gulf of Mexico."}
+```{r dolphins-size-hist, fig.width=5, fig.height=5, fig.cap="Histogram of observed group sizes of dolphins in the Gulf of Mexico. Most groups are in the size range 15-200, but there are a few much larger groups, these have a much larger effect on the Hovitz-Thompson estimator."}
 hist(mexdolphins$size, main="", xlab="Observed group size", breaks=seq(0, 700, by=25))
 ```
 
-**comment on the outlier!!** talk about groups etc
-
-The Horvitz-Thompson-like estimator above is used in the `summary` of the model so calculate the abundance in the covered area. We may also want to extrapolate and estimate abundance in a larger area outside where we covered (though still within reasonable geographic/environmental limits of the area covered by the surveys). In the simplest case, we can simply divide our estimate of $\hat{N}$ through by the covered area (twice the truncation multiplied by length of transects, multiplied by the average detectability, $2wL\hat{P_a}$), however we'll cover this in a little more detail and subtlety below.
+The Horvitz-Thompson-like estimator above is used in the `summary` of the model so calculate the abundance in the covered area. We may also want to extrapolate and estimate abundance in a larger area outside where we covered (though still within reasonable geographic/environmental limits of the area covered by the surveys). In the simplest case, we can simply divide our estimate of $\hat{N}$ through by the covered area (twice the truncation multiplied by length of transects, multiplied by the average detectability, $2wL\hat{P_a}$), however we'll cover this in a little more detail and subtlety in the next chapter.
 
 
-## TODO
 
-  * how do we fit a model
-  * what is that doing?
-  * what does this data look like
-  * let's talk about truncation
-  * point and lines
+# Point transects
 
-**Should I plot the spatial distribution or transect lines here?**
+So far we've looked at the dolphin data from the Gulf of Mexico, which consists of line transects. Now let's look at point transect data and show that fitting a detection function to that data and estimating abundance is not significantly different.
 
-# Abundance in the study area
+We'll be looking at data consisting of 1485 observations of amakihi (*Hemignathus virens*), a bird species native to Hawaii[^amakihi]. As for the dolphins we can again load the data, which is bundled with `Distance2`:
+```{r amakihi-data}
+data(amakihi)
+```
+Plotting the histogram of observed distances:
+```{r amakihi-plot, fig.cap="Histogram of observed distances to amakihi observations."}
+hist(amakihi$distance, main="", xlab="Distance (m)")
+```
+The histogram is the shape we saw in the previous chapter, an increase up to a point (due to the geometry of the sampler), then a drop off after that point. We also notice that unlike the dolphin example, the observed distances trail off rather more gradually, with a few distances higher than 200m (the median observed distance is `r round(median(amakihi$distance),2)`. We don't really want to model the long tail in the distances as they are likely outliers, so we will *truncate* the data. Before we do let's see what happens when we don't truncate.
 
-So far we have only investigated the abundance in the covered area -- the area that we physically walked (or flew or steamed etc) through. Generally we're interested in extrapolating beyond that, to the rest of a forest or area of the sea etc. In some systems it may be reasonable to assume that the whole study area is homogeneous (e.g. if it's at the same altitude/depth or has the same flora growing there or similar geographical features). Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a stratified analysis.
+```{r amakihi-notrunc}
+hn.df.notrunc <- ds(amakihi, transect="point")
+```
+Notice two differences here in our call to `ds`: we supply `transect="point"` to tell `ds` that our model is of point transect data and that we didn't include a `truncation`. When we don't supply a truncation distance `ds` uses the largest observed distance and warns us that is happening.
 
-**Write code for this**
+We can again look at summary information for the fitted model
+```{r amakihi-notrunc-summary}
+summary(hn.df.notrunc)
+```
+from the summary, we can see that we estimate $P_a=$`r round(predict(hn.df.notrunc)[1],4)` and plot the resulting model along with goodness of fit information:
+```{r amakihi-notrunc-plot, fig.width=9, fig.cap="Plots of a half-normal detection function fitted to the amakihi point transect data. Left: the fitted detection function with histogram of distances (rescaled according to the change in area due to point transect sampler geometry); the detection function drops to zero at around 150m. Right: quantile-quantile plot, showing that the model does not fit well (many dots below the line $y=x$)."}
+par(mfrow=c(1,2))
+plot(hn.df.notrunc, xlab="Distance (m)", main="")
+gof_tests(hn.df.notrunc)
+```
+We can see that many points lie below the line $y=x$, indicating that the model thinks there should be fewer observations up to each distance than were observed (the $p$-values of the goodness of fit tests also reflect this). This, combined with the detection function going to zero well before the truncation (largest observed distance was `r round(max(amakihi$distance),2)`m), at a little less than 150m. Note that the histogram plotted with the detection function here has been rescaled to take into account the increasing area searched with increasing radial distance. We can plot the fitted model's probability density function with the unscaled histogram by supplying the `pdf=TRUE` option to `plot` (note that this has no effect on the shape of the plot for line transect data/models):
+```{r amakihi-notrunc-plot-pdf, fig.cap="Plot of the probability density function for the model fitted to the amakihi data with histogram of observed distances."}
+plot(hn.df.notrunc, xlab="Distance (m)", pdf=TRUE, main="")
+```
+We can see again in the plot that the density for distances $>150$m is very very small.
+
+## Truncation
+
+Given the poor goodness of fit results, it seems sensible to truncate the data to improve the fit of the detection function. A perennial question in distance sampling is "at what distance do I truncate?" We'd rather not throw-away too much of our (or our field workers') hard-earned data, only enough to improve the fit of our model. There is no general rule for when and where to truncate however Buckland et al [@Buckland:2001vm] suggest for line transects that a truncation is chosen such that $g(w) \approx 0.15$ (p. 103) and for point transect (due to the aforementioned geometry considerations) we choose the truncation such that $g(w) \approx 0.1$ (p. 151). These rules of thumb may or may not make sense in a given situation, for example for the pantropical dolphins we didn't truncate at the analysis stage, as it appeared that truncation had occurred during data collection (there are no "outliers" as there are for the amakihi data).
+
+A typical procedure to ensure that the truncation used is "right" is to fit many models with different truncation and try to ensure that the truncation you choose has good goodness of fit results and few (or no) outliers.
+
+We'll try compare two further truncation distances, one at 150m, and one at 82.5m (which was used in [@Marques:2007vm]).
+```{r amakihi-truncated}
+hn.df.trunc.150 <- ds(amakihi, transect="point", truncation=150)
+hn.df.trunc.82.5 <- ds(amakihi, transect="point", truncation=82.5)
+```
+Having fitted the models, we can again compare summaries and goodness of fit, along with detection function plots.
+```{r amakihi-trunc-summaries}
+summary(hn.df.trunc.150)
+summary(hn.df.trunc.82.5)
+```
+Summaries show although there is not a large change in parameter estimate between the two models, this (along with the change in truncation) does lead to a large change in the average detectability and therefore abundance estimate. Note that we can't directly compare the AICs of models with different truncations, as they use different data.
+
+```{r amakihi-trunc-plots, results="hide", echo=FALSE, fig.width=9, fig.height=9, fig.cap="Plots of a half-normal detection function fitted to the amakihi point transect data at two different truncation distances: 150m on the left and 82.5m on the right. Top row shows the fitted detection function with histogram of distances. Bottom row shows quantile-quantile plots."}
+par(mfrow=c(2,2))
+plot(hn.df.trunc.150, xlab="Distance (m)", main="")
+plot(hn.df.trunc.82.5, xlab="Distance (m)", main="")
+gof_tests(hn.df.trunc.150)
+gof_tests(hn.df.trunc.82.5)
+```
+We can see that the quantile-quantile plots are much improved when truncation is set at 82.5m (right side), points are closer to the line $y=x$. Though, looking at the goodness of fit test results, we don't see a very compelling story for this model.
+```{r amakihi-hn-trunc-gof}
+gof_tests(hn.df.trunc.82.5, plot=FALSE)
+```
+
+At this point we'll stop looking at the truncation and turn back to detection function model selection and compare the half-normal with hazard-rate model, keeping the truncation at 82.5m.
+```{r amakihi-trunc-hr}
+hr.df.trunc.82.5 <- ds(amakihi, transect="point", truncation=82.5, model=df(model=~hr))
+summary(hr.df.trunc.82.5)
+```
+We can see that this model has a much better AIC than the half-normal model (hazard-rate: `r sprintf( "%.2f",hr.df.trunc.82.5$AIC)`, versus `r sprintf( "%.2f",hn.df.trunc.82.5$AIC)` for half-normal). Plotting the detection function and performing goodness of fit tests indicates that this model is much better than the half-normal.
+```{r amakihi-hr-trunc-plots, echo=FALSE, fig.width=9, fig.cap="Plots of a hazard-rate detection function fitted to the amakihi point transect data. Left plot shows the fitted detection function with histogram of distances and the right shows quantile-quantile plots."}
+par(mfrow=c(1,2))
+plot(hr.df.trunc.82.5, xlab="Distance (m)", main="")
+gof_tests(hr.df.trunc.82.5)
+```
+
+# Conclusion
+
+This chapter has given a whirlwind tour of how detection functions are fitted in `Distance2` and how to select a good detection function. We covered both line and point transects as well as how to select the truncation distance.
+
+In the next chapter we'll look at different models for the detection function and how we can use additional data to model detectability when it relies on other variables as well as distance.
+
+
+
 
 ## References
 
 
 
 [^gomdata]: For convenience the data are bundled in an R-friendly format, although all of the code necessary for creating the data from the Distance project files is available at [github.com/dill/mexico-data](http://github.com/dill/mexico-data). The original OBIS-SEAMAP page for the data may be found at the [SEFSC GoMex Oceanic 1996 survey page](http://seamap.env.duke.edu/dataset/25).
-
+[^amakihi]: Data are again bundled with `Distance2`. Thanks go to Steven Fancy for providing the data. A more detailed analysis is provided in the associated paper [@Marques:2007vm].

@@ -21,6 +21,13 @@ So far we have only investigated the abundance in the covered area -- the area t
 
 **Should I plot the spatial distribution or transect lines here?**
 
+## TODO
+
+  * say something about $1/\hat{f}(0)$ and it's relation to $\mu$
+  * how do we fit a model -- what is that doing?
+  * what does this data look like
+  * binning?
+
 
 
 ## References

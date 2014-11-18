@@ -41,6 +41,8 @@ The aim of the book is to introduce researchers to performing analyses of distan
 
 The book is be written in `knitr`, so all plots, models and so on will be produced, fitted etc as the book is "built". All data sets will be available for readers to investigate independently.
 
+Most quantities that appear in the book are computed during book "compilation", so if you're unsure where a number or figure came from, you can look at the source of the chapter and see what code generated that result.
+
 ## A book written in the open...
 
 I'm writing the book "in the open" in the hope that those interested will contribute suggestions as I'm going. All content will be available on this website, as well as the files used to generate the figures and models referenced in the book.
