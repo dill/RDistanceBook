@@ -1,0 +1,24 @@
+---
+title: Improving the fit of detection functions
+bibliography: full.bib
+csl: biometrics.csl
+---
+
+```{r echo=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+```
+
+
+## TODO
+
+  * how do we fit a model -- what is that doing?
+
+
+
+
+
+## References
+
+
+

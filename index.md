@@ -33,6 +33,8 @@ Initially the book will consist of two parts, though this may well get expanded 
   * *Estimating and mapping abundance*: Prediction grids: how to build them, what resolutions make sense, extrapolation issues. Making predictions, plotting them.
   * *Uncertainty estimation*: explanation of boostrap and analytical approaches. Uncertainty in point estimates. Uncertainty maps: CV vs. SE vs. confidence intervals. Uncertainty from the detection function.
   * *Advanced DSMs*: autocorrelation, temporal models.
+3. Appendices
+  * *Data format*: A guide to getting your data into the right format for distance sampling analyses.
 
 
 ## A book using R...
