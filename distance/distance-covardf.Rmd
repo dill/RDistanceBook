@@ -127,8 +127,10 @@ summary(hn.dolphins.beaufort)
 We can now build a table:
 
 ```{r df-dolphin-table, results="asis", echo=FALSE}
-res.table <- data.frame("Model"   = c("hn","hn(size)","hn(beaufort)",
-                                      "hn(size+beaufort)"),
+res.table <- data.frame("Model"   = c("Half-normal",
+                                      "Half-normal (`size`)",
+                                      "Half-normal (`beaufort`)",
+                                      "Half-normal (`size + beaufort`)"),
                         "Average $p$" = c(summary(hn.df)$pN[1,1],
                                           summary(hn.dolphins.size)$pN[1,1],
                                    summary(hn.dolphins.beaufort)$pN[1,1],
@@ -145,6 +147,8 @@ res.table <- data.frame("Model"   = c("hn","hn(size)","hn(beaufort)",
                                      hn.dolphins.size$AIC,
                                      hn.dolphins.beaufort$AIC,
                                      hn.dolphins.size.beaufort$AIC))
+names(res.table)[2] <- "Average $p$"
+names(res.table)[4] <- "s.e. abundance"
 kable(res.table, format="pandoc")
 ```
 
