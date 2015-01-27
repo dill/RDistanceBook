@@ -1,63 +1,61 @@
 
 <div class="navbar navbar-default navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container">
-      <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+  <div class="container">
+    <div class="navbar-header">
+      <a href="../" class="navbar-brand">Distance Samping in R</a>
+      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="brand" href="/">Distance sampling in R</a>
-      <div class="nav-collapse collapse">
-        <ul class="nav">
-          <li><a href="/">Home</a></li>
-          <li class="dropdown">
-            <a href="ds" class="dropdown-toggle" data-toggle="dropdown">Distance sampling <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-               <li class="nav-header">Distance sampling</li>
-<li><a href="distance-intro.html">Introduction to distance sampling</a></li>
-<li><a href="distance-simpledf.html">Models for detectability</a></li>
-<li><a href="distance-covardf.html">What else affects detectability?</a></li>
-<li><a href="distance-moredf.html">Improving the fit of detection functions</a></li>
-<li><a href="distance-abundance.html">Estimating abundance</a></li>
-<li><a href="distance-.html">How certain are we in our estimates?</a></li>
-            </ul>
-          </li>
-          <li class="dropdown">
-            <a href="dsm" class="dropdown-toggle" data-toggle="dropdown">Spatial modelling <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-               <li class="nav-header">Density surface modelling</li>
-<li><a href="dsm-.html">Why build spatial models?</a></li>
-<li><a href="dsm-.html">Survey set up</a></li>
-<li><a href="dsm-.html">Model formulation</a></li>
-<li><a href="dsm-.html">Crash course in GAMs</a></li>
-<li><a href="dsm-.html">Adding covariates</a></li>
-<li><a href="dsm-.html">Response distributions</a></li>
-<li><a href="dsm-.html">Estimating and mapping abundance</a></li>
-<li><a href="dsm-.html">Uncertainty estimation</a></li>
-<li><a href="dsm-.html">Advanced DSMs</a></li>
-            </ul>
-          </li>
-           <li class="dropdown">
-            <a href="appendix" class="dropdown-toggle" data-toggle="dropdown">Appendix <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-<li><a href="appendix-.html">Obtaining, constructing and selecting covariates</a></li>
-<li><a href="appendix-.html">Getting your data into shape</a></li>
-<li><a href="appendix-.html">Projections etc</a></li>
-               <li class="divider"></li>
-<li><a href="acknowledgements.html">Acknowledgements</a></li>
-<li><a href="rversions.html">R and package versions</a></li>
-            </ul>
-          </li>
-        </ul>
-        <ul class="nav pull-right">
-          <a class="btn btn-primary" href="https://github.com/dill/RDistanceBook">
-            <i class="fa fa-github fa-lg"></i>
-            GitHub
-          </a>
-        </ul>
-      </div><!--/.nav-collapse -->
+    </div>
+    <div class="navbar-collapse collapse" id="navbar-main">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="ds">Distance sampling <span class="caret"></span></a>
+          <ul class="dropdown-menu" aria-labelledby="ds">
+            <li><a href="distance-intro.html">Introduction to distance sampling</a></li>
+            <li><a href="distance-simpledf.html">Models for detectability</a></li>
+            <li><a href="distance-covardf.html">What else affects detectability?</a></li>
+            <li><a href="distance-moredf.html">Improving the fit of detection functions</a></li>
+            <li><a href="distance-abundance.html">Estimating abundance</a></li>
+            <li><a href="distance-.html">How certain are we in our estimates?</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="sp">Spatial modelling <span class="caret"></span></a>
+          <ul class="dropdown-menu" aria-labelledby="sp">
+            <li><a href="dsm-.html">Why build spatial models?</a></li>
+            <li><a href="dsm-.html">Survey set up</a></li>
+            <li><a href="dsm-.html">Model formulation</a></li>
+            <li><a href="dsm-.html">Crash course in GAMs</a></li>
+            <li><a href="dsm-.html">Adding covariates</a></li>
+            <li><a href="dsm-.html">Response distributions</a></li>
+            <li><a href="dsm-.html">Estimating and mapping abundance</a></li>
+            <li><a href="dsm-.html">Uncertainty estimation</a></li>
+            <li><a href="dsm-.html">Advanced DSMs</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="ap">Appendix <span class="caret"></span></a>
+          <ul class="dropdown-menu" aria-labelledby="ap">
+            <li><a href="appendix-.html">Obtaining, constructing and selecting covariates</a></li>
+            <li><a href="appendix-.html">Getting your data into shape</a></li>
+            <li><a href="appendix-.html">Projections etc</a></li>
+                           <li class="divider"></li>
+            <li><a href="acknowledgements.html">Acknowledgements</a></li>
+            <li><a href="rversions.html">R and package versions</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        <li><a class="btn btn-primary" href="https://github.com/dill/RDistanceBook">
+          <i class="fa fa-github fa-lg"></i>
+          GitHub
+        </a></li>
+      </ul>
+
     </div>
   </div>
 </div>
-
