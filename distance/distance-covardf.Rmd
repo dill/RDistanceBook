@@ -103,7 +103,7 @@ We can add the Beaufort sea state covariate into the model, alongside group size
 hn.dolphins.size.beaufort <- ds(mexdolphins, truncation=8000, model=df(scale=~size+beaufort))
 summary(hn.dolphins.size.beaufort)
 ```
-As Beaufort sea state is included as a factor covariate[^beaufort], which gives us a number of extra parameters in the model. We can see the affect of adding the covariate in a plot:
+As Beaufort sea state is included as a factor covariate, which gives us a number of extra parameters in the model. We can see the affect of adding the covariate in a plot:
 ```{r dolphins-covar-beaufort-plot, fig.height=4, fig.width=9, fig.cap="Fitted detection function for the pantropical spotted dolphin data where the size and Beaufort sea state were included as covariates. Left plot shows the detection function when size and Beaufort sea state are fixed at their median value; the middle plot shows the detection function with size held at its median value and Beaufort sea state varying where as the right plot shows the effect varying group size over its quantile values and fixing Beaufort sea state at its median."}
 plot(hn.dolphins.size.beaufort)
 ```
@@ -168,3 +168,4 @@ In this chapter we've seen how adding covariates to the detection function can a
 [^beaufort]: The scale actually goes up to 12 ("hurricane") and beyond, see [https://en.wikipedia.org/wiki/Beaufort_scale](https://en.wikipedia.org/wiki/Beaufort_scale) and [http://www.metoffice.gov.uk/media/pdf/4/4/Fact_Sheet_No._6_-_Beaufort_Scale.pdf](http://www.metoffice.gov.uk/media/pdf/4/4/Fact_Sheet_No._6_-_Beaufort_Scale.pdf) for more information. One may often find that Beaufort sea state is recorded as decimals (state of 4.5 for example), it's tricky to work out what to do with these and is worth consulting those who collected the data.
 [^paverages]: Note that when we talked about "average detection probability" in the previous chapter, the average was taken over the distances. Here we are talking about an average over the observations. To avoid confusion the average over the observations is always mentioned explicitly and "average detection probability" is not referenced when talking about covariate models.
 [^pcovfun]: Strictly speaking we can write the probability of detection as a function of the covariates: $\hat{p_i}(z_i)$, though the shorter $p_i$ form is used to save space. Hopefully the subscript will be a sufficient reminder.
+
