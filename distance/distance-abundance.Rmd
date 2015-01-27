@@ -17,6 +17,20 @@ So far we have only investigated the abundance in the covered area -- the area t
 
 Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a stratified analysis.
 
+
+## Scaling up abundance estimates
+
+
+
+
+## Southern Ocean minke whales
+
+To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research programme 1992-1993 austral summer surveys [@Branch:2001ua].
+
+
+
+
+
 **Write code for this**
 
 **Should I plot the spatial distribution or transect lines here?**
