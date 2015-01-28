@@ -10,7 +10,7 @@ source("../figure-captions.R")
 library(Distance2)
 ```
 
-The half-nformal and hazard-rate detection functions seen in the previous chapters appear to give adequate fit for the datasets we've addressed so far, but there are a number of other modelling options available for the detection function. This chapter will give an overview of these models and how they can be fitted using `Distance2`.
+The half-normal and hazard-rate detection functions seen in the previous chapters appear to give adequate fit for the datasets we've addressed so far, but there are a number of other modelling options available for the detection function. This chapter will give an overview of these models and how they can be fitted using `Distance2`.
 
 ## Additional models for the detection function
 
@@ -19,17 +19,18 @@ Here we'll look at two classes of detection function: "key plus adjustment" (K+A
 
 ### Key plus adjustment models
 
-Both the half-normal and hazard-rate detection functions are somewhat limited in their flexibility. A simple adaptation of these detection funcions is to consider them to be "key" functions which can be augmented with one or more "adjustment" terms [@Buckland:1992wy; @Buckland:2001vm]. The general form of these models mathematically is:
-$$
+Both the half-normal and hazard-rate detection functions are somewhat limited in their flexibility. A simple adaptation of these detection functions is to consider them to be "key" functions which can be augmented with one or more "adjustment" terms [@Buckland:1992wy; @Buckland:2001vm]. The general form of these models mathematically is:
+\begin{equation}
 g(y) = \frac{k(y)\left[ 1 + \sum_{j=2}^J \alpha_j a_j(y)\right]}{k(0)\left[ 1 + \sum_{j=2}^J \alpha_j a_j(0)\right]}
-$$
-where we are modelling our detection function $g(y)$ with the key function $k(y)$ (either half-normal or hazard-rate) and $J$ adjustment functions $a_j$ which are multiplied by corresponding coefficents $\alpha_j$ to be estimated. The denominator (which is simply the function evaluated at zero distance) ensures that the detection probability is certain at zero distance ($g(0)=1$). Different adjustments functions are considered to be appropriate for each key function.
+\label{ka-form}
+\end{equation}
+where we are modelling our detection function $g(y)$ with the key function $k(y)$ (either half-normal or hazard-rate) and $J$ adjustment functions $a_j$ which are multiplied by corresponding coefficients $\alpha_j$ to be estimated. The denominator (which is simply the function evaluated at zero distance) ensures that the detection probability is certain at zero distance ($g(0)=1$). Different adjustments functions are considered to be appropriate for each key function.
 
 In general we add up to $J$ adjustments, this means that adjustments of *order* $2, \dots, J$ are included[^adjorders]. It is rarely that case that a $J>3$ yields a model selected by AIC.
 
 Which key and adjustment combinations and the particular orders that are appropriate are down to ensuring that the functions are *orthogonal*, which in simple terms mathematically describes the "overlap" between the two functions; we'd like the functions not to overlap as we want each adjustment to contribute something different to the detection function.
 
-There is some controversy in the distance sampling community over whether one should include covariates in K+A models. Leaving aside the more philosophical issue of whether one *should* include covariates in a model that includes adjustments, we are left with an issue of practicality. It's highly likley that the model for the detection function will become overparameterised in this case, so in general the use of adjustments when covariates are used in the model is not encouraged. There are additional considerations covered in the "Monotonicity" and "Model selection" sections below.
+There is some controversy in the distance sampling community over whether one should include covariates in K+A models. Leaving aside the more philosophical issue of whether one *should* include covariates in a model that includes adjustments, we are left with an issue of practicality. It's highly likely that the model for the detection function will become overparameterised in this case, so in general the use of adjustments when covariates are used in the model is not encouraged. There are additional considerations covered in the "Monotonicity" and "Model selection" sections below.
 
 
 #### Half-normal K+A models
@@ -100,7 +101,7 @@ dolphins.hn_cos <- ds(mexdolphins,truncation=8000, df(model=~hn+cos(2)))
 dolphins.hn_hermite <- ds(mexdolphins,truncation=8000, df(model=~hn+hermite(2)))
 ```
 Plotting these detection functions along with our half-normal model from the previous chapter, we can see that the Hermite polynomial adjustments have had no effect on the fit, where as the cosine adjustments have made the function rather too wiggly:
-```{r hn-adj-dolphins-plot, fig.width=10, fig.height=4, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data, left to right: half-normal, half-normal with cosine adjustment of order 2, half-normal with Hermite polynomials of order 2."}
+```{r hn-adj-dolphins-plot, fig.width=10, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data, left to right: half-normal, half-normal with cosine adjustment of order 2, half-normal with Hermite polynomials of order 2."}
 dolphins.hn <- ds(mexdolphins,truncation=8000, df(model=~hn))
 par(mfrow=c(1,3))
 plot(dolphins.hn, main="")
@@ -115,8 +116,7 @@ dolphins.hn_hermite$par
 ```
 which the curves above are identical.
 
-Second, the half-normal with cosine model begins by decreasing but then ends up increasing again before finally decreasing. We refer to this behaviour as *non-monotonic* and would prefer our detection functions to be *monotonically decreasing*; that is, as the distance from the observer increases we should see fewer animals. This makes sense as we are much more likely to see animals directly infront of us than those which are further away. If fitted detection functions exhibit this kind of monotonicity then it
-s possible that there were problem with the survey setup (for example that transects were placed running parallel to features such as roads or hedgerows) or may simple be down to random variation in the data; either way we'd rather not include these features in our detection function. We'll cover this in more detail in the "Monotonicity" section, below.
+Second, the half-normal with cosine model begins by decreasing but then ends up increasing again before finally decreasing. We refer to this behaviour as *non-monotonic* and would prefer our detection functions to be *monotonically decreasing*; that is, as the distance from the observer increases we should see fewer animals. This makes sense as we are much more likely to see animals directly in front of us than those which are further away. If fitted detection functions exhibit this kind of monotonicity then it's possible that there were problem with the survey setup (for example that transects were placed running parallel to features such as roads or hedgerows) or may simple be down to random variation in the data; either way we'd rather not include these features in our detection function. We'll cover this in more detail in the "Monotonicity" section, below.
 
 
 
@@ -156,7 +156,7 @@ dolphins.hr_cos <- ds(mexdolphins,truncation=8000, df(model=~hr+cos(2)))
 dolphins.hr_poly <- ds(mexdolphins,truncation=8000, df(model=~hr+poly(2)))
 ```
 We can again plot the resulting models:
-```{r hr-adj-dolphins-plot, fig.width=10, fig.height=4, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data, left to right: hazard-rate, half-normal with cosine adjustment of order 2, half-normal with simple polynomial of order 2."}
+```{r hr-adj-dolphins-plot, fig.width=10, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data, left to right: hazard-rate, half-normal with cosine adjustment of order 2, half-normal with simple polynomial of order 2."}
 dolphins.hr <- ds(mexdolphins,truncation=8000, df(model=~hr))
 par(mfrow=c(1,3))
 plot(dolphins.hr, main="")
@@ -172,6 +172,8 @@ A final set of detection function models that fit into the "key plus adjustments
 $$
 g(y) = \frac{\frac{1}{w}\left[ 1 + \sum_{j=1}^J \alpha_j \cos \left( \frac{j \pi y}{w} \right) \right]}{\frac{1}{w}\left[ 1 + \sum_{j=1}^J \alpha_j \cos(0)\right]}
 $$
+Note that the main differences here compared to \ref{ka-form} here the key "function" is $1/w$ and the
+
 We can again look at the function graphically:
 ```{r fourier-plot, fig.cap="Fourier detection function; uniform key with cosine adjustments of order 1 and 2. Solid line black shows the detection function, solid grey line is the constant uniform key and the dashed grey show the two adjustments (scaled and shifted to be on the same axes).", echo=FALSE}
 g.hn <- function(x,sigma=0.25, j=0, adjp=1){
@@ -200,7 +202,7 @@ dolphins.fourier1 <- ds(mexdolphins,truncation=8000, df(model=~unif+cos(1)))
 dolphins.fourier12 <- ds(mexdolphins,truncation=8000, df(model=~unif+cos(1,2)))
 ```
 We can again plot the fitted models and observe the non-monotonic detection function when cosine adjustments of order 1 and 2 are used:
-```{r unif-adj-dolphins-plot, fig.width=7, fig.height=4, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data. Left: uniform with cosine adjustment of order 1. Right: uniform with cosine adjustments of order 1 and 2."}
+```{r unif-adj-dolphins-plot, fig.width=7, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data. Left: uniform with cosine adjustment of order 1. Right: uniform with cosine adjustments of order 1 and 2."}
 par(mfrow=c(1,2))
 plot(dolphins.fourier1, main="")
 plot(dolphins.fourier12, main="")
@@ -209,7 +211,7 @@ plot(dolphins.fourier12, main="")
 
 #### Recap
 
-So far we've looked at some new options for modelling the detection function. They are summarised in the folowing table:
+So far we've looked at some new options for modelling the detection function. They are summarised in the following table:
 
 Key function   Mathematical form                                          Adjustment          Mathematical form
 -------------- ---------------------------------------------------------- ------------------- ----------------------------------------
@@ -225,7 +227,7 @@ hazard-rate    $1-\exp\left[-\left(\frac{y}{\sigma}\right)^{-b}\right]$   cosine
 
 As noted when looking at the plots of the fitted models above, sometimes the detection function will not be monotonic over the whole of the range $(0,w)$. In this case we suspect that there has been some problem during the survey (some features that have caused animals to appear to "clump together" at a certain distance) or that the detection function is overfitting to random variation in the data (by chance there are more observations at one distance further away than others).
 
-In either case we can find out whether and where the detection functions are non-monotonic using the `df_check_mono()` function in `Distance2`. We run the function on a fitted detection function object, if the function is montonic then it will return `TRUE`. If the function is non-monotonic, then `df_check_mono` will return `FALSE` and will give warnings explaining how the non-monotonicity has manifested itself.
+In either case we can find out whether and where the detection functions are non-monotonic using the `df_check_mono()` function in `Distance2`. We run the function on a fitted detection function object, if the function is monotonic then it will return `TRUE`. If the function is non-monotonic, then `df_check_mono` will return `FALSE` and will give warnings explaining how the non-monotonicity has manifested itself.
 
 Using the last example of the Fourier type analysis to illustrate the checking function:
 ```{r check-fourier}
@@ -273,48 +275,78 @@ lines(x, g.hn(x, c(0.15), j=1), lty=2, col="grey")
 ```
 In the above plot the two dashed lines are added (with equal weighting of $1/2$ each) to produce the bold line. Because each component is monotonic, the black line is guaranteed to be monotonic.
 
-Fitting a mixture model detection function is as straightforward as the K+A models described above:
-```{r hn-mix-dolphins}
-# 2-point mixture model
-dolphins.hn_mix2 <- ds(mexdolphins,truncation=8000, df(model=~hn+mix(2)))
-# 3-point mixture model
-dolphins.hn_mix3 <- ds(mexdolphins,truncation=8000, df(model=~hn+mix(3)))
-# 2-point including covariates
-dolphins.hn_mix2.beau <- ds(mexdolphins,truncation=8000,
-                            df(model=~hn+mix(2), formula=~beaufort))
+Since the simplest mixture model detection function uses 3 parameters, it's recommended that the formulation is used for relatively large data sets. For that reason we'll switch to the amakihi data we saw in the previous chapter to illustrate how to fit the model:
+```{r hn-mix-amakihi}
+data(amakihi)
+# again, we'll truncate at 82.5m
+# 1-point mixture -- just a half-normal model
+amakihi.hn_mix1 <- ds(amakihi, transect="point", truncation=82.5, model=df(~hn+mix(1)))
+# 2-point mixture
+amakihi.hn_mix2 <- ds(amakihi, transect="point", truncation=82.5, model=df(~hn+mix(2)))
+# 2-point mixture with observer as a covariate
+amakihi.hn_mix2_obs <- ds(amakihi, transect="point", truncation=82.5, model=df(~hn+mix(2), scale=~obs))
+
+```
+We can again plot the resulting models:
+```{r hn-mix-amakihi-plot, fig.width=7, echo=FALSE, fig.cap="Mixture model detection functions fitted to the Hawaiian amakihi data. Left: 1-point half-normal mixture model (equivanelent to using `~hn`). Right: 2-point mixture of half-normals."}
+par(mfrow=c(1,2))
+plot(amakihi.hn_mix1, main="")
+plot(amakihi.hn_mix2, main="")
 ```
 
+```{r hn-mix-amakihi-obs-plot, fig.width=7, echo=FALSE, fig.cap="Mixture model detection function with 2 components fitted to the Hawaiian amakihi data with observer included as a factor covariate."}
+plot(amakihi.hn_mix2_obs, main=c("Average detection function","Levels of observer"))
+```
 
 Note that a "1-point" mixture is simply a half-normal detection function as descibed in [Models for detectability](distance-simpledf.html).
 
 
 ### Model selection
 
+At this point we have quite a lot of models (7 for the dolphins and 3 for the amakihi) and it would be nice to return to the topic of model selection. Fortunately, all of the models described here fit into the AIC framework that we saw in the previous chapters. We can also use the goodness of fit procedures that we've seen so far.
 
-talk about how covariates + adjustments are overparametrised
+Ignoring goodness of fit for now, we can use the `summarize_models` function in `Distance2` to create a table of model results (sorted by AIC) for easy comparison. For example, for the models of dolphins we can produce the results table by simply giving the function the models we wish to consider as arguments.
+```{r dolphin-results-table}
+summarize_models(dolphins.hn_cos, dolphins.hn_hermite, dolphins.hr_cos, dolphins.hr_poly, dolphins.fourier1, dolphins.fourier12)
+```
+Note that the numbering of rows corresponds to the order in which the models were passed to `summarize_models`. Columns are as follows:
 
+  * `Model` gives a short description of fitted model (this may be ambiguous so the row numbers may be helpful in working out which model is which).
+  * `Formula` describes the covariate model (just `~1` when there are no covariates).
+  * `# pars` gives the number of parameters in the model.
+  * `P_a` lists the average probability of detection.
+  * `CV(P_a)` gives the coefficient of variation of average probability of detection giving an indication of uncertainty in the model (more on this in [How certain are we in our estimates?](distance-uncertainty.html)).
+  * `AIC` finally lists Akaike's information criterion for the model.
+
+We can do the same thing for the detection functions fitted to the amakihi data too:
+```{r amakihi-results-table}
+summarize_models(amakihi.hn_mix1, amakihi.hn_mix2, amakihi.hn_mix2_obs)
+```
+The `Formula` column now includes `~obs` for the model fitted with observer as a covariate.
+
+These tables can provide a useful summary when many models have been fitted, but don't excuse the investigator from performing model checking and plotting as described previously. They are a convenient utility not a fast track to completing an analysis.
+
+As mentioned above, we don't recommend adding adjustments to models when covariates are included, as they can lead to detection probabilities that are greater than 1 for some distances and make it difficult to diagnose monotonicity problems. However another potential problem is that in general we don't expect detection function models to have many parameters (usually models with fewer than 5 parameters are enough to encapsulate a sufficient information about the shape of the detection functions). Although the "parameter hungry" argument can also be levelled against mixture model detection functions, they at least do not suffer from the additional issues of implausible function shape.
+
+## Recap
+
+In this chapter we looked at additional models for the detection function that can be used in a variety of different situations when simple half-normal or hazard-rate detection functions are not flexible enough. All these models can be selected by AIC and checked for goodness of fit via Kolmogorov-Smirnov and Cramer-von Mises tests. The `summarize_models` function then allows one to easily review fitted models. In the next chapter we'll look at how we can estimate abundance once we've fitted and selected out detection function.
 
 
 
 ## Further reading
 
-  * Gamma 
-  * 2-part normal
-  * exponential power series
-  * negative exponential
+The models described above expand the set of possibilities considerably on those from the previous chapters. There are yet more models for the detection function to consider, though unfortunately not enough time here to give details on them all. A brief summary:
 
-
-
-
-
-
-
+  * *Gamma* and *2-part normal* detection functions are useful when we can assume that detectability is certain at some point but that point is not at zero distance. This can happen during aerial surveys when observers struggle to see what is directly below them but can spot animals at a given distance with certainty.
+  * *Exponential power series* is a more flexible alternative to the hazard-rate.
+  * *Negative exponential*: can be useful when very spiked data are collected but usually is only recommended to salvage a survey gone badly wrong (as the negative exponential has no "shoulder"). A mixture model approach is usually more reliable when data are very spiked.
 
 
 ## References
 
 
 [^adjorders]: It doesn't really make sense to include only higher order terms, i.e. ignoring order 2 and only including order 3 rather than both 2 and 3. As the adjustment order increases the complexity of the adjustment increases and each term is orthogonal.
-[^order]: Note that we refer to $j$ as the order, rather than $2j$ so we can be consittent over different adjustment functions.
+[^order]: Note that we refer to $j$ as the order, rather than $2j$ so we can be consistent over different adjustment functions.
 [^hermite]: Further mathematical details of Hermite polynomials can be found in many textbooks, [Wolfram's page is a good starting point](http://functions.wolfram.com/Polynomials/HermiteH/02/0001/).
 
