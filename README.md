@@ -11,9 +11,6 @@ You can read the outline of the book at [outline.md](outline.md).
 
 ## Building the book
 
-This is broken at the moment.
-
-The plan is to generate both an HTML and PDF version.
-
+Calling `make` will build the website, in a directory called `site`.
 
 
