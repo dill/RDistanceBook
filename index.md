@@ -56,6 +56,6 @@ A `git` repository containing the text of the book [can be found on github](http
 
 If you're a publisher and you'd like to print a dead tree version of these pages, I'd be very interested in talking to you.
 
-If you are interested in obtaining a dead tree copy of these pages, then please let me know by [filling in this Google Form](https://docs.google.com/forms/d/1z5bFFd_GpUXeVzbr5wuwoUKT5wvhNizrGpEOiCZik58/viewform); having evidence of demand will make it more likely that paper copy will exist. If you fill in the form, I'll e-mail you if a paper copy becomes available but won't use your address for any other reason.
+If you are interested in obtaining a dead tree copy of these pages, then please let me know by [filling in this Google Form](https://docs.google.com/forms/d/1z5bFFd_GpUXeVzbr5wuwoUKT5wvhNizrGpEOiCZik58/viewform); having evidence of demand will make it more likely that paper copy will exist. If you fill in the form, I'll e-mail you if a paper copy becomes (or is likely to become) available but won't use your address for any other reason.
 
 
