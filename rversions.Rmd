@@ -9,9 +9,9 @@ print(R.version)
 Main package versions were:
 
 ```{r}
-packageVersion("Distance")
-packageVersion("mrds")
-packageVersion("dsm")
+packageVersion("Distance2")
+packageVersion("rmarkdown")
+packageVersion("knitr")
 ```
 
 
