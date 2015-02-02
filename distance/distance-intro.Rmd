@@ -111,11 +111,16 @@ Both methodologies assume that all animals within the *covered area* (the area i
 
 As is usually the case in statistics, we choose to model this problem. The price we must pay to model detectability is that we must collect more data. In the simplest distance sampling models we require not only the number of animals we saw, but also the distance from the observations to the observers. We will go on to supplement this with data on other factors which affect detectability.
 
-Returning to our example population, rather than think of boxes where we see everything in a given area, instead consider walking down a line (*transect*) and recording distances to the animals that we see. Let's assume that detectability changes as a function of distance from the transect line and that relationship is governed by a *half-normal* relationship, that is:
+Returning to our example population, rather than think of boxes where we see everything in a given area, instead consider walking down a line (*transect*) and recording distances to the animals that we see. Let's assume that detectability changes as a function of distance from the transect line and that relationship is governed by a *half-normal* relationship, that is that the probability of detecting an animal, if it's at a distance $x$ from the observer is:
 $$
 \exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
-where $x$ is the *perpendicular distance* from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship in more detail in the next chapter.
+where $x$ is the *perpendicular distance* from the transect line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. Graphically the detection function used in the example below looks like this:
+
+```{r hn-df-ex, fig.cap="Example of a half-normal detection function where $\\sigma=0.01$. The curve describes how detectabiluty decreases as distance from the observer increases.", echo=FALSE}
+curve(exp(-x^2/(2*0.01^2)), from=0, to=0.0125, xlab="Distance", ylab="Probability of detection")
+```
+The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship in more detail in the next chapter, [Models for detectability](distance-simpledf.html).
 
 ```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with line transects (blue dashed lines) and observed animals (red points)."}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
