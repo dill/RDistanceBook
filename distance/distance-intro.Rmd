@@ -2,6 +2,7 @@
 title: Introduction to distance sampling
 bibliography: full.bib
 csl: biometrics.csl
+animation: true
 ---
 
 ```{r echo=FALSE}
@@ -9,11 +10,13 @@ csl: biometrics.csl
 source("../figure-captions.R")
 ```
 
-Abundance data is the gold standard in ecology [@Howard:2014bw], knowing how many animals (or plants) there are in a given area not only tells us important management information -- how big hunting quotas should be this year; where forest should be cut back; where we can site renewables -- but can also unlock answers to important biological and ecological questions -- which environmental factors drive distribution, which species are competing over a particular resource. These questions cannot be answered well with presence or presence/absence data alone, since we can't quantify the popularity of the resource or area very well using data which consists of only whether animals occurred there: there is not enough information in just 1s and 0s.
+In this first chapter I want to give a brief refresher on distance sampling, building up from simpler sampling techniques to show how they relate to distance sampling. I'll show this via some simulations in R. Understanding the code is not as important as understanding the concepts, but it'll help.
 
-Since we are interested in abundance, it is important to ensure that the estimates of abundance are as accurate as possible. Our estimates of abundance will always be based on the observed counts -- how many animals we saw -- but, we may also want to think about what other factors affected that count, and model the *observation process* (contrast this to the paragraph about, where we were thinking about modelling the abundance as a function of environmental factors). There are many factors that can affect whether we see an animal, for example: how far away animals are, how brightly coloured they are, whether the observers are fresh grad students or older, seasoned observers. We might also like to think about whether animals are there to be seen at all -- have cetaceans or seabirds dived too deep to be observed by any observer.
+Before diving into the sampling we should first think a little about why we're doing distance sampling. Really what we are interested in is estimating the abundance of some biological population. Knowing how many animals (or plants) there are in a given area not only tells us important management information --- how big hunting quotas should be this year; where forest should be cut back; where we can site renewables --- but can also unlock answers to important biological and ecological questions. With abundance data we can ask questions such as: which environmental factors drive distribution, which species are competing over a particular resource. These questions cannot be answered well with presence or presence/absence data alone, since we can't quantify the "popularity" of, say, a resource or area very well using data which consists of only whether animals occurred there: there is not enough information in just 1s and 0s. For this reason abundance is considered to be a "gold standard" in ecology[^presencecaveat] [@Howard:2014bw].
 
-The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology using a simulation.
+Since we are interested in abundance, it is important to ensure that the estimates of abundance are as accurate as possible. Our estimates of abundance will always be based on the observed counts -- how many animals we saw. We may also want to think about what other factors affected that count, and model the *observation process* (contrast this to the paragraph about, where we were thinking about modelling the abundance as a function of environmental factors). There are many factors that can affect whether we see an animal, for example: how far away animals are, how brightly coloured they are, whether the observers are fresh grad students or older, seasoned field biologists. We might also like to think about whether animals are there to be seen at all -- have cetaceans or seabirds dived and are now too deep to be detected?
+
+The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology using a simple simulation in R.
 
 
 ## Why distance sampling?
@@ -38,18 +41,20 @@ n <- 0
 for(i in 1:10){
   # randomly place a quadrat (and plot it)
   this.quadrat <- quadrat
-  this.quadrat$x <- this.quadrat$x+runif(1)
-  this.quadrat$y <- this.quadrat$y+runif(1)
-  polygon(this.quadrat,lty=2,border="blue")
+  this.quadrat$x <- this.quadrat$x + runif(1)
+  this.quadrat$y <- this.quadrat$y + runif(1)
+  polygon(this.quadrat, lty=2, border="blue")
   # see which points are inside
-  inout <- inSide(this.quadrat,x,y)
+  inout <- inSide(this.quadrat, x, y)
   # count them
   n <- n + sum(inout)
   # plot the points inside the quadrat in red
-  points(x[inout],y[inout],pch=19,cex=0.4,col="red")
+  points(x[inout], y[inout], pch=19, cex=0.4, col="red")
 }
 ```
+
 By dividing the number of animals we saw by the total area surveys (sum of the areas of all the quadrats), we can obtain an estimate of the abundance of the animals in the study area by multiplying this estimated density by the area of the study region.
+
 ```{r quadrat-abundance}
 # covered area (10 quadrats, each a 0.1x0.1 square)
 covered <- 10*0.1^2
@@ -62,7 +67,7 @@ Nhat <- D*A
 ```
 This estimator gives us an estimated abundance ($\hat{N}$) of `r round(Nhat,2)`, relatively close to the true value of 500 (`N` in the above code).
 
-To simplify data collection from a logistical point of view, it seems simpler to have observers traverse lines and observe strips rather than have them investigate a square area. Using a regular grid of strips may also allow observers to move from one strip to the next most efficiently than between randomly positioned quadrats.
+To simplify data collection from a logistical point of view, it seems simpler to have observers traverse lines and observe strips rather than have them walk between randomly placed squares. Using a regular grid of strips (offset randomly) allows observers to move from one strip to the next most efficiently.
 
 
 ```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with strip transects (blue dashed lines) and strip centrelines (that observers walk/fly/drive/sail down; blue solid lines) overlaid, observed animals are in red."}
@@ -73,18 +78,18 @@ n <- 0
 
 # generate some strips
 # in this case we don't randomise the offset of the grid
-strip <- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+strip <- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125), y=c(0,1,1,0,0))
 strip$x <- strip$x + 0.1
 for(i in 1:5){
   # plot the strip and its centreline
-  polygon(strip,lty=2,border="blue")
-  lines(rep(mean(range(strip$x)),2),c(0,1),col="blue")
+  polygon(strip, lty=2, border="blue")
+  lines(rep(mean(range(strip$x)),2), c(0,1), col="blue")
   # see what was inside the strip
   inout <- inSide(strip,x,y)
   # count them
   n <- n + sum(inout)
   # plot those animals within the strip
-  points(x[inout],y[inout],pch=19,cex=0.4,col="red")
+  points(x[inout], y[inout], pch=19, cex=0.4, col="red")
   # calculate next strip location
   strip$x <- strip$x+0.2
 }
@@ -102,22 +107,22 @@ Nhat <- D*A
 ```
 So the estimate of abundance, $\hat{N}=$ `r round(Nhat,2)`, again quite close to the true population size of 500.
 
-Both methodologies assume that all animals within the *covered area* (the area inside the red dashed lines in the figures above) are detected. Certain detection is possible, for example if video recording/digital photography are used [@Buckland:2012ua], but not likely when human observers conduct surveying. Many factors will affect whether or not an animal is detected by an observer. For example: time of day, weather, the observer's previous experience, environmental conditions and, of course, the distance to the animal from the observer. These factors and (importantly) combinations of these factors surely influence the number of animals seen and hence the final abundance estimate of the species of interest.
+Both methodologies assume that all animals within the *covered area* (the area inside the blue dashed lines in the figures above) are detected. Certain detection is possible, for example if video recording/digital photography are used [@Buckland:2012ua], but not likely when human observers conduct surveying. Many factors will affect whether or not an animal is detected by an observer. For example: time of day, weather, the observer's previous experience, environmental conditions and, of course, the distance to the animal from the observer. These factors and (importantly) combinations of these factors surely influence the number of animals seen and hence the final abundance estimate of the species of interest.
 
-As is usually the case in statistics, we can model this problem (*detectability*) but in order to do so we must pay the price of collecting more data. In the simplest distance sampling models we require not only the number of animals we saw, but also the distance from the observations to the observers. We can then use the extra data on distances to model detectability. We will go on to supplement this with data on other factors which affect detectability (like the ones listed in the previous paragraph).
+As is usually the case in statistics, we choose to model this problem. The price we must pay to model detectability is that we must collect more data. In the simplest distance sampling models we require not only the number of animals we saw, but also the distance from the observations to the observers. We will go on to supplement this with data on other factors which affect detectability.
 
 Returning to our example population, rather than think of boxes where we see everything in a given area, instead consider walking down a line (*transect*) and recording distances to the animals that we see. Let's assume that detectability changes as a function of distance from the transect line and that relationship is governed by a *half-normal* relationship, that is:
 $$
 \exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
-where $x$ is the *perpendicular distance* from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship more closely and its relation to real data in the next chapter.
+where $x$ is the *perpendicular distance* from the line to the animal and $\sigma$ controls how likely we are to see an animal at a given distance. The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship in more detail in the next chapter.
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with line transects (blue dashed lines), observed animals are in red."}
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with line transects (blue dashed lines) and observed animals (red points)."}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
 
 # generate some lines
 # in this case we don't randomise the offset of the grid
-lt <- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125),y=c(0,1,1,0,0))
+lt <- list(x=c(-0.0125,-0.0125,0.0125,0.0125,-0.0125), y=c(0,1,1,0,0))
 # set sigma
 sigma <- 0.01
 # storage for detected distances
@@ -126,19 +131,19 @@ for(i in 1:5){
   # calculate next strip location
   lt$x <- lt$x+0.15
   # plot the line transect
-  lines(rep(mean(range(lt$x)),2),c(0,1),col="blue",lty=2)
+  lines(x=rep(mean(range(lt$x)),2), y=c(0,1), col="blue",lty=2)
   # calculate the distances to animals from the line
   distances <- abs(lt$x - x)
   # randomly decide which were detected
   detected <- exp(-distances^2/(2*sigma^2)) > runif(length(distances))
   # plot those animals detected
-  points(x[detected],y[detected],pch=19,cex=0.4,col="red")
+  points(x[detected], y[detected], pch=19, cex=0.4, col="red")
   # collect the distances to detected objects
-  detected_distances <- c(detected_distances,distances[detected])
+  detected_distances <- c(detected_distances, distances[detected])
 }
 ```
 
-Note that we miss some closer animals (some black dots very near the transect lines) but also detect some animals that are further away (red dots much further away than they were in the strip transect case). In an actual survey this would translate itself into acknowledging the fact that we miss some animals due to cover, or weather conditions etc. However, we are not ignoring animals that we can plainly see but are outside of the current strip or quadrat we are surveying. We wish to include data on as many of the animals we saw as possible without biasing our results.
+Note that we miss some closer animals (some grey dots very near the transect lines) but also detect some animals that are further away (red dots much further away than they were in the strip transect case). In an actual survey this would translate itself into acknowledging the fact that we miss some animals due to cover, or weather conditions etc. However, we are not ignoring animals that we can plainly see but are outside of the current strip or quadrat we are surveying. We wish to record every animal we saw and include this data in our model without biasing our results.
 
 What is also interesting is the pattern we see in the histogram of the observed perpendicular distances: large numbers of animals are seen at small distances, with numbers detected decreasing with increasing distance from the line. Again, this makes physical sense -- we should see those individuals that are near us more easily. Although this data is simulated and the pattern is a feature of the simulation setup, we will see throughout the book that this pattern is replicated in survey data.
 
@@ -150,9 +155,9 @@ In the previous examples, we were able to estimate the abundance in the study ar
 $$
 \hat{D} = n/a,
 $$
-where $D$ is density (the hat indicates it's an estimate of density), $n$ is the number of animals we saw and $a$ is the area we covered during the survey. We can thing of $a$ as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multiplied by its height, i.e. $a=2wKl$ where $K$ is the number of transects, $2w$ is the width (why we say $2w$ will become apparent below) and $l$ is the length. What is unclear in the line transect case I just presented is what $a$ is -- the quantity we should use but also its meaning.
+where $D$ is density (the hat indicates it's an estimate of density), $n$ is the number of animals we saw and $a$ is the area we covered during the survey. We can think of $a$ as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multiplied by its height, i.e. $a=2wKl$ where $K$ is the number of transects, $2w$ is the width (why we say $2w$ will become apparent below) and $l$ is the length. What is unclear in the *line transect* case is what $a$ is -- not only the quantity we should use, but also its meaning.
 
-Looking at each component of $a$, the part that we are uncertain about is $2w$, what should this width be? One could make the argument that the largest observed distance is a good candidate for the width of the transect. This intuitively makes sense but it may be the case that there are outlying distances which are much much further than others which would be unrealistic to include (we will revisit this in a more rigorous way later); for that reason we refer to $w$ as the *truncation* (or *truncation distance*). For now let us choose a truncation that include almost all of our observations, throwing out only a few outliers (say 0.02). We now have a value for the area covered, but it's not quite right: the estimator we've constructed so far is the same as the quadrat/strip estimator, not taking into account the probabilistic nature of the detections we made. We'd really like to include the probability of seeing an animal, given its distance from the observer: this is how we missed some animals near to the line and saw some which were further away.
+Looking at each component of $a$, the part that we are uncertain about is $2w$, what should this width be? One could make the argument that the largest observed distance is a good candidate for the width of the transect. This can easily be too large if we observe a few outlying distances which are much much further than others (we will revisit this in a more rigorous way later). Since we may want to discard these outlying distances we refer to $w$ as the *truncation* (or *truncation distance*). For now let us choose a truncation that include almost all of our observations, throwing out only a few outliers (say $w=0.02$). We now have a value for the area covered, but it's not quite right: the estimator we've constructed so far is the same as the quadrat/strip estimator, not taking into account the probabilistic nature of the detections we made.
 
 ```{r calc-Nhat-line, echo=FALSE}
 ## calculate Nhat
@@ -169,17 +174,17 @@ If we knew the probability of detecting an animal we could divide the estimate o
 $$
 \hat{D} = \frac{n}{2wKl\hat{p}},
 $$
-where $\hat{p}$ is the probability of detecting an animal at any distance from the observer. For simplicity's sake let us say we have estimated that $\hat{p}=$ `r round(p,4)`, we can then use the above estimator to obtain $\hat{N}=$ `r round(Nhat.lt,2)` animals area. The rest of this chapter (and the entire body of work on distance sampling) focuses on models for $\hat{p}$.
+where $\hat{p}$ is the probability of detecting an animal at any distance from the observer. For simplicity's sake let us say we have estimated that $\hat{p}=$ `r round(p,4)`, we can then use the above estimator to obtain $\hat{N}=$ `r round(Nhat.lt,2)` animals in the area. The rest of this chapter (and the distance sampling literature) focuses on models for $\hat{p}$.
 
-Two important pieces of information that must be collected have been mentioned so far: number of animals observed (counts) and distances to the animals. A third and equally important piece of information is the *effort* expended -- how large an area was covered. It is essential that effort data is collected and recorded accurately, as otherwise abundance will be estimated incorrectly (as the denominator in our equations will not be correct). When thinking about line transects we use effort to refer to the total length of lines that we survey.
+Two important pieces of information that must be collected have been mentioned so far: number of animals observed (counts) and distances to the animals. A third and equally important piece of information is the *effort* expended -- how large an area was covered by the observers during the survey. It is essential that effort is collected and recorded accurately, otherwise abundance will be estimated incorrectly (as the denominator in our equations will not be correct). When thinking about line transects we use the term "effort" to refer to the total length of lines that we survey, as this is fixed once the survey has been carried out ($w$ may be changed during the analysis).
 
 ### Point transects
 
 So far we have only talked about line transects. Rather than walking along lines we might prefer to stand at a point for some period of time and count how many animals we see or hear in that period of time. Such counts are common for avian studies as it's often easier to hear small birds than see them in dense forest.
 
-Going back to our simulated example, we can say out 6 points to sample. At each point we use the same formulation for the detection (that detectability decreases with distance).
+Going back to our simulated example, we will pick out 6 points to sample. At each point we again assume that detectability decreases with distance.
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with point transects (blue dots), observed animals are in red."}
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with point transects (blue points) and observed animals (red points)."}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
 
 # set sigma
@@ -222,9 +227,10 @@ Now we can again calculate abundance, in a similar manner as above, but note tha
 
 ## Recap
 
-In this chapter I showed how we can think about distance sampling line and point transect surveys as extensions of strip and quadrat surveys where we model the probability of detection as a function of distance. Both line and point transect examples gave estimated abundances that were close to the true abundance without assuming that we saw all of the animals in the covered area. In the next chapter we'll see how to formulate these models mathematically and fit them to data using R.
+In this chapter I showed how we can think about distance sampling line and point transect surveys as extensions of strip and quadrat surveys where we model the probability of detection as a function of distance. Both line and point transect examples gave estimated abundances that were close to the true abundance, without assuming that we saw all of the animals in the covered area. In the next chapter we'll see how to formulate these models mathematically and fit them to data using R.
 
 
 ## References
 
 
+[^presencecaveat]: Of course there are situations in which only presence/absence data is available or practical. We won't look at them here and instead concentrate on abundance.
