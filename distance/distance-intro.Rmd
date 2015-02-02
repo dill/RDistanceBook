@@ -223,7 +223,7 @@ n<-length(detected_distances)
 a <- 9*pi*w^2
 Nhat.pt <- A*n/(a*p)
 ```
-Now we can again calculate abundance, in a similar manner as above, but note that the covered area is $k\pi w^2$ where there are $k$ points, each with radius $w$ (again, we truncate at a distance $w$). If we again say that we have estimated $\hat{p}$ by some process, and that $\hat{p}=$ `r round(p,4)`, we can multiply the survey area by the probability of detection and calculate the abundance in the study area to be `r round(Nhat.pt,2)`.
+Now we can again calculate abundance, in a similar manner as above, but note that the covered area is $k\pi w^2$ where there are $k$ points, each with radius $w$ (again, we truncate at a distance $w$). If we again say that we have estimated $\hat{p}$ (somehow), and that $\hat{p}=$ `r round(p,4)`, we can multiply the survey area by the probability of detection and calculate the abundance in the study area to be `r round(Nhat.pt,2)`.
 
 ## Recap
 
@@ -233,4 +233,4 @@ In this chapter I showed how we can think about distance sampling line and point
 ## References
 
 
-[^presencecaveat]: Of course there are situations in which only presence/absence data is available or practical. We won't look at them here and instead concentrate on abundance.
+[^presencecaveat]: Of course there are situations in which only presence/absence data is available or practical. We won't look at them here and instead concentrate on estimating abundance.
