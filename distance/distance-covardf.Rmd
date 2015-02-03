@@ -9,12 +9,12 @@ csl: biometrics.csl
 source("../figure-captions.R")
 ```
 
-In the last chapter we looked at how we could use data collected on the distances from the observations to the observers could be used to fit detection functions -- modelling the probability of an animal being detected. A little thought leads us to believe that in addition to distance, other factors will influence this probability. For example, a pod of 50 whales will be much easier to spot than a single whale, it's harder to see birds early in the morning when it's dark and perhaps misty and it's much more difficult to see anything when the sea is extremely choppy. We'd like to take these factors into account when we're building our detection function, to ensure that we can model the detection process as accurately as possible.
+In the last chapter we looked at how we could model the probability of an animal being detected using the distances to the animals from the observers. A little thought leads us to believe that in addition to distance, other factors will influence the detection probability. For example: a pod of 50 whales will be much easier to spot than a single whale; it's harder to see birds early in the morning when it's dark and misty; and it's much more difficult to see (or do) anything when the sea is extremely choppy. We'd like to take these factors into account when we're building our detection function, to ensure that we can model the detection process as accurately as possible.
 
-Distance sampling methods have a property known as pooling robustness which means that if we assume that the heterogeneity in detectability is relatively small (i.e. there's not much variation between animals in how detectable they are), then estimates of abundance will not be biased (though they might have high variance; [@burnham:2004vd] Section 11.12). This means that usually we do not need to worry about bias but if we can model the heterogeneity in detectability then we can improve the precision of our abundance estimates.
+Distance sampling methods have a property known as *pooling robustness* which means that if we assume that the heterogeneity in detectability is relatively small (i.e. there's not much variation between animals in how detectable they are), then estimates of abundance will not be biased (though they might have high variance; @burnham:2004vd, Section 11.12). This means that usually we do not need to worry about bias but if we can model the heterogeneity in detectability then we can improve the precision of our abundance estimates.
 
-Let's return to the pantropical spotted dolphin example from the previous chapter. During the survey data was collected on Beaufort sea state -- a measure of how choppy the sea is (1 is "light air", with small waves to 5 ""fresh breeze", with moderate waves[^beaufort]). We also have the size of each group of dolphins that were detected. We can plot these against the observed distances...
-```{r dolphins-seastate-size-distance, fig.width=9, echo=FALSE, result="hide", fig.cap="Exploratory data analysis for the effects on recorded distance of Beaufort sea state (left) and observed group size (right). Dashed lines indicate the fit of a linear model through the data (giving a slightly decreasing distance with increasing sea state and increasing distance with increasing group size. Solid lines show a LOESS [@Cleveland:1991ug] smooth through the data. Note that the data shown have had the observations with the two largest observed group sizes removed.", message=FALSE}
+Let's return to the pantropical spotted dolphin example from the previous chapter. During the survey data was collected on Beaufort sea state -- a measure of the roughness of the sea (1 is "light air" with small waves,  5 ""fresh breeze" with moderate waves[^beaufort]). Observers also recorded the size of each group of dolphins that were detected. We can plot these against the observed distances...
+```{r dolphins-seastate-size-distance, fig.width=9, echo=FALSE, result="hide", fig.cap="Exploratory data analysis for the effects on recorded distance of Beaufort sea state (left) and observed group size (right). Dashed lines indicate the fit of a linear model through the data (giving a slightly decreasing distance with increasing sea state and increasing distance with increasing group size. Solid lines show a LOESS smooth through the data. Note that the data shown have had the observations with the two largest observed group sizes removed.", message=FALSE}
 library(Distance2)
 data(mexdolphins)
 par(mfrow=c(1,2))
@@ -41,20 +41,20 @@ lines(x=preddat$size, y=predict(lmm, preddat),lty=2)
 lines(x=preddat$size, y=predict(lo, preddat))
 ```
 
-The plot indicates that there is some effect of both of these covariates on the distances that we can observe dolphins at. As one might expect, the rougher the sea (i.e. higher Beaufort), the shorter distance one observes animals at (though there is an odd spike at sea state 2; left panel). For the group size, we see an increase in observed distance as the size increases (solid line is a linear fit through the data, the dashed line is a simple LOESS smooth [@Cleveland:1991ug] which highlights the steep increase at smaller group sizes (right panel). It's worth bearing in mind that sea state and group size both affect the observed distances in different ways and the above plots are only taking two dimensional slices through their effects (e.g. small groups in choppy seas are not very visible but large groups may be) -- so the above plots shouldn't be over-interpreted.
+The plot indicates that there is some effect of both of these covariates on the distances that we can observe dolphins at. As one might expect, the rougher the sea (i.e. higher Beaufort), the shorter distance one observes animals at (though there is an odd spike at sea state 2; left panel). For the group size, we see an increase in observed distance as the size increases (solid line is a linear fit through the data, the dashed line is a LOESS smooth [@Cleveland:1991ug] which highlights the steep increase at smaller group sizes (right panel). It's worth bearing in mind that sea state and group size both affect the observed distances in different ways and the above plots are only taking two dimensional slices through their effects (e.g. small groups in choppy seas are probably not very visible but larger groups may be) -- so the above plots shouldn't be over-interpreted.
 
 
 # Adding covariates into our models
 
 The above plots plus some simple physical reasoning lead us to believe that the covariates have an effect on the detection probability -- how do we include the covariates in our models though?
 
-In the half-normal detection function we looked at in the last chapter, we saw that $\sigma$, the scale parameter, was the only parameter of the model. Making $\sigma$ smaller meant that the function "dropped off" quicker than of it were larger (and then had a higher value for larger distances). We might expect that the covariates had a similar effect: animals are visible at larger distances when their groups are bigger: changing the rate of the drop-off in the detection function. If we are to embed the covariate effects in the scale parameter, we could re-write the scale as:
+In the half-normal detection function we looked at in the last chapter, we saw that the scale parameter ($\sigma$) was the only parameter of the model. Decreasing $\sigma$ made the detection function go to zero more quickly. We might expect that the covariates had a similar effect: animals are visible at larger distances when their groups are bigger: changing the rate of the drop-off in the detection function. If we are to embed the covariate effects in the scale parameter, we could re-write the scale as:
 $$
 \sigma_i = \exp\left( \beta_0 + \sum_{k=1}^K \beta_k z_{ik} \right)
 $$
 now we're not estimating the scale parameters, but rather the $\beta_k$ parameters. $\beta_0$ represents a kind of "intercept" (in the sense that it's the value that the scale parameter will take when all covariates are zero; $\beta_k$ for $k=1,\ldots,K$ give the parameters to be estimates for the $K$ covariates, which for a given observation, $i$ are $z_{ik}$. Usually $K$ is relatively small (we usually only include a couple of covariates in our model).
 
-Now we've seen how covariates can be justified and included from a mathematical perspective, we can see how to actually fit such a model in `Distance2`. Let's start by fitting a model with group size as a covariate:
+Now we've seen how covariates can be justified and included from a mathematical perspective, we can see how to actually fit such a model in `Distance2`. Let's start by fitting a model with group size as a covariate[^sizecovar] :
 ```{r dolphins-covar}
 hn.dolphins.size <- ds(mexdolphins, truncation=8000, model=df(scale=~size))
 summary(hn.dolphins.size)
@@ -64,12 +64,12 @@ summary(hn.dolphins.size)
 hn.df <- ds(mexdolphins, truncation=8000)
 ```
 We can see that the summary now includes an additional row of parameters, giving the effect of the parameter for group size. One way to investigate the effect of adding the size covariate graphically by plotting the fitted model:
-```{r dolphins-covar-plot, fig.width=9, fig.cap="Fitted detection function for the pantropical spotted dolphin data where the size was included as a covariate. Left plot shows the detection function when size is fixed at its median value; right plot shows the detection function with size varying over its quantile values."}
+```{r dolphins-covar-plot, fig.width=9, fig.cap="Fitted detection function for the pantropical spotted dolphin data where the size was included as a covariate. Left plot shows the detection function when size is fixed at its median value. Right plot shows the detection function evaluated with the detection function set to the 25%, 50% and 75% quantiles of group size."}
 plot(hn.dolphins.size)
 ```
 The right panel of the plot shows that larger groups are easier to detect than smaller ones.
 
-Methods for including covariates in distance sampling detection functions have a long history (going back to [@Beavers:1998wk] and before). The beginning of a rigorous approach to such models is [@Marques:2003vb], though [@Marques:2007vm] is somewhat more approachable.
+Methods for including covariates in distance sampling detection functions have a long history (@Beavers:1998wk is an early contribution to this area). The beginning of a rigorous approach to such models is @Marques:2003vb, though @Marques:2007vm is somewhat more accessible.
 
 For the half-normal model we obtained an average detectability of `r round(predict(hn.df)[1],4)`, where as now the average probability of detection is `r round(summary(hn.dolphins.size)$pN[1,1],4)`. Though this is the *average* (across observed covariates)[^paverages] detectability, for a given group size we have a different value of the detectability, mathematically we can now view the probability of detection and the detection function as functions of the covariates[^pcovfun]. So now, for each observed value of a covariate we have a probability of detection. Mathematically:
 $$
@@ -79,22 +79,26 @@ we can look at the values of $\hat{p_i}$ for our dolphin model by calling the `p
 ```{r hn-dolpins-size-pred}
 predict(hn.dolphins.size)
 ```
-where probabilities are in order of the observations. It's perhaps more useful to look at the quantiles:
+where probabilities are in order of the observations. It's easier to look at the quantiles:
 ```{r hn-dolpins-size-pred-quant}
 quantile(predict(hn.dolphins.size))
 ```
-in both preceeding results we see there is a wide range of probabilities of detection. These differences become important when using the Horvitz-Thompson-like estimator we saw in the previous chapter.
+in both preceding results we see there is a wide range of probabilities of detection. These differences become important when using the Horvitz-Thompson-like estimator we saw in the previous chapter.
 
+We can look again at the question asked at the start of this chapter and ask how does group size affect probability of detection?
+```{r hn-dolphins-detection-groupsize, fig.cap="Probability of detection plotted against observed group size, we can see that with increasing group size, we have increasing probability of detection."}
+plot(mexdolphins$size, predict(hn.dolphins.size), xlab="Group size", ylab="Probability of detection")
+```
 
 ## Estimating abundance
 
-To estimate abundance when covariates are included in the detection function we generalize the Horvitz-Thompson-like estimator we used previously, simply by indexing the probabilities of detection:
+To estimate abundance when covariates are included in the detection function we use the Horvitz-Thompson-like estimator, simply indexing the probabilities of detection:
 $$
 \hat{N} = \sum_{i=1}^n \frac{s_i}{\hat{p_i}},
 $$
 this formula is used to calculate the `Nhat in covered area` given in the `summary` output above. As in the previous chapter we are taking each group we observed and inflating its size based on the probability of detecting that group.
 
-Using this Horvitz-Thompson-like estimator we can calculate an average detectability over the observations. This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above.
+Using this Horvitz-Thompson-like estimator we can calculate an average detectability over the observations. This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above (calculated as $\hat{P_a} = n/\hat{N}$).
 
 ## Adding and selecting covariates
 
@@ -103,7 +107,7 @@ We can add the Beaufort sea state covariate into the model, alongside group size
 hn.dolphins.size.beaufort <- ds(mexdolphins, truncation=8000, model=df(scale=~size+beaufort))
 summary(hn.dolphins.size.beaufort)
 ```
-As Beaufort sea state is included as a factor covariate, which gives us a number of extra parameters in the model. We can see the affect of adding the covariate in a plot:
+As Beaufort sea state is included as a factor covariate, which gives us a number of extra parameters in the model. We can see the effect of adding the covariate in a plot:
 ```{r dolphins-covar-beaufort-plot, fig.height=4, fig.width=9, fig.cap="Fitted detection function for the pantropical spotted dolphin data where the size and Beaufort sea state were included as covariates. Left plot shows the detection function when size and Beaufort sea state are fixed at their median value; the middle plot shows the detection function with size held at its median value and Beaufort sea state varying where as the right plot shows the effect varying group size over its quantile values and fixing Beaufort sea state at its median."}
 plot(hn.dolphins.size.beaufort)
 ```
@@ -112,7 +116,7 @@ The middle plot above shows that there is little difference in the lower sea sta
 Just as when deciding between the half-normal and hazard-rate detection functions in the previous chapter, we can use the AIC to evaluate relative model fit and goodness of fit testing/Q-Q plots to evaluate absolute model fit.
 
 We can see some improvement in the Q-Q plot results between the model with and without the group size covariate in the following plot:
-```{r dolphins-qq-covars, fig.width=9, fig.cap="Comparison of quantile-quantile plots for two models fitted to the spotted dolphin data. Left plot shows the model without any covariates, the right with observed group size included as a covariate. Note that the points in the right plot are much closer to the line $y=x$.", echo=FALSE}
+```{r dolphins-qq-covars, fig.width=9, fig.cap="Comparison of quantile-quantile plots for two models fitted to the spotted dolphin data. Left plot shows the model without any covariates, the right with observed group size included as a covariate. Note that the points in the right plot are much closer to the line $y=x$.", echo=FALSE, results='hide'}
 par(mfrow=c(1,2))
 gof_tests(hn.df)
 gof_tests(hn.dolphins.size)
@@ -124,41 +128,21 @@ hn.dolphins.beaufort <- ds(mexdolphins, truncation=8000, model=df(scale=~beaufor
 summary(hn.dolphins.beaufort)
 ```
 
-We can now build a table:
+We can now build a table[^resultstable] :
 
 ```{r df-dolphin-table, results="asis", echo=FALSE}
-res.table <- data.frame("Model"   = c("Half-normal",
-                                      "Half-normal (`size`)",
-                                      "Half-normal (`beaufort`)",
-                                      "Half-normal (`size + beaufort`)"),
-                        "Average $p$" = c(summary(hn.df)$pN[1,1],
-                                          summary(hn.dolphins.size)$pN[1,1],
-                                   summary(hn.dolphins.beaufort)$pN[1,1],
-                                   summary(hn.dolphins.size.beaufort)$pN[1,1]),
-                        "Abundance" = c(summary(hn.df)$pN[2,1],
-                                          summary(hn.dolphins.size)$pN[2,1],
-                                   summary(hn.dolphins.beaufort)$pN[2,1],
-                                   summary(hn.dolphins.size.beaufort)$pN[2,1]),
-                        "s.e. abundance" = c(summary(hn.df)$pN[2,2],
-                                          summary(hn.dolphins.size)$pN[2,2],
-                                   summary(hn.dolphins.beaufort)$pN[2,2],
-                                   summary(hn.dolphins.size.beaufort)$pN[2,2]),
-                        "AIC"    = c(hn.df$AIC,
-                                     hn.dolphins.size$AIC,
-                                     hn.dolphins.beaufort$AIC,
-                                     hn.dolphins.size.beaufort$AIC))
-names(res.table)[2] <- "Average $p$"
-names(res.table)[4] <- "s.e. abundance"
-kable(res.table, format="pandoc")
+mod_table <- summarize_models(hn.df, hn.dolphins.size, hn.dolphins.beaufort, hn.dolphins.size.beaufort)
+names(mod_table)[4:5] <- c("$P_a$", "$\\text{CV}(P_a)$")
+kable(mod_table, format="pandoc")
 ```
 
-Using the table, we can see that there is relatively little difference in the abundance and detectability estimates. The best model by AIC is the one with only size included as a covariate. Also note that the AIC-best model also has the lowest standard error (in general we expect covariate models to be more precise [@Marques:2007vm]).
+Using the table, we can see that the best model by AIC is the one with only size included as a covariate. Also note that the AIC-best model also has the lowest coefficient of variation ($\text{CV}(P_a)$; in general we expect covariate models to be more precise @Marques:2007vm).
 
 
 
 # Conclusion
 
-In this chapter we've seen how adding covariates to the detection function can account of heterogeneity in the detection probability of observations and improve precision of estimates of abundance. Covariate models make intuitive sense too, since we do not expect all individuals (or groups) in the population to have the same detectability at a given distance. This intuitive interpretation allows for direct interpretation of covariates, which may be biologically interesting. The ability to include covariates in an analysis will be particularly useful in the upcoming chapter on abundance estimation, where we will be able to stratify our abundance estimates by covariate.
+In this chapter we've seen how adding covariates to the detection function can account for heterogeneity in the detection probability and improve precision of estimates of abundance. Covariate models make intuitive sense too, since we do not expect all individuals (or groups) in the population to have the same detectability at a given distance. This intuitive interpretation allows for direct interpretation of covariates, which may be biologically interesting. The ability to include covariates in an analysis will be particularly useful in [Adundance estimation](distance-abundance.html), where we will investigate stratification of abundance estimates by covariate.
 
 
 ## References
@@ -166,6 +150,8 @@ In this chapter we've seen how adding covariates to the detection function can a
 
 
 [^beaufort]: The scale actually goes up to 12 ("hurricane") and beyond, see [https://en.wikipedia.org/wiki/Beaufort_scale](https://en.wikipedia.org/wiki/Beaufort_scale) and [http://www.metoffice.gov.uk/media/pdf/4/4/Fact_Sheet_No._6_-_Beaufort_Scale.pdf](http://www.metoffice.gov.uk/media/pdf/4/4/Fact_Sheet_No._6_-_Beaufort_Scale.pdf) for more information. One may often find that Beaufort sea state is recorded as decimals (state of 4.5 for example), it's tricky to work out what to do with these and is worth consulting those who collected the data.
-[^paverages]: Note that when we talked about "average detection probability" in the previous chapter, the average was taken over the distances. Here we are talking about an average over the observations. To avoid confusion the average over the observations is always mentioned explicitly and "average detection probability" is not referenced when talking about covariate models.
+[^sizecovar]: Note that a covariate called `size` has a special meaning in `Distance2` as it is used in the estimation of abundance via the Horvitz-Thompson estimator (see [Models for detectability](distance-simpledf.html)).
+[^paverages]: Note that when we refer to $P_a$ as the "average detection probability". The average is calculated over the *observations*. We used the same term for $P_a$ in the previous chapter when talking about non-covariate models to be consistent with what is reported in `Distance2`.
+[^resultstable]: More details on how this was done in [Improving the fit of detection functions](distance-moredf.html).
 [^pcovfun]: Strictly speaking we can write the probability of detection as a function of the covariates: $\hat{p_i}(z_i)$, though the shorter $p_i$ form is used to save space. Hopefully the subscript will be a sufficient reminder.
 
