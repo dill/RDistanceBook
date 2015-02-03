@@ -221,7 +221,11 @@ Having selected the half-normal model, we can return to the `summary` results ab
 
 ## Average detectability
 
-With a fitted detection function we can evaluate the probability of observing an animal given its distance (from the definition of the detection function, $g$) but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we can simply integrate out distance from the detection function -- removing the conditioning on the distance. Denoting the average probability of detection as $\hat{P_a}$, we can write:
+With a fitted detection function we can evaluate the probability of observing an animal given its distance (from the definition of the detection function, $g$) but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we want to integrate distance out of the detection function -- removing the conditioning on the distance.
+
+Before we do that, it's important to remember that in order to do distance sampling we have to make some assumption about the distribution of the animals with respect to the transects. If we design our survey well we can assume that animals are *uniformly distributed with respect to the transect* -- meaning there not "clumps" of animals at certain distances[^uniformassumption]. We denote the distribution of all animals with respect to the transect with $\pi_y(y)$ in general. For line transects, we let $\pi_x(x)=1/w$ (since we are assuming the distribution is uniform between 0 and the truncation distance). We need to include this assumption in our calculation of average detectability.
+
+Denoting the average probability of detection as $\hat{P_a}$, for line transects we can write[^generalpdefn] :
 $$
 \hat{P_a} = \frac{1}{w}\int_0^w g(x;\boldsymbol{\theta}) \text{d}x
 $$
@@ -252,7 +256,10 @@ The Horvitz-Thompson-like estimator above is used in the `summary` of the model 
 
 So far we've looked at the dolphin data from the Gulf of Mexico, a line transect survey. Now let's look at point transect data and show that fitting a detection function to that data and estimating abundance is not significantly different.
 
-We'll be looking at data consisting of 1485 observations of [amakihi](https://en.wikipedia.org/wiki/Hawai%CA%BBi_%CA%BBamakihi) (*Hemignathus virens*), a bird species native to Hawaii[^amakihi]. As for the dolphins we can again load the data, which is bundled with `Distance2`:
+We'll be looking at data consisting of 1485 observations of [amakihi](https://en.wikipedia.org/wiki/Hawai%CA%BBi_%CA%BBamakihi) (*Hemignathus virens*), a bird species native to Hawaii[^amakihi]. Data were collected as part of a larger survey (of many species) on the island of Hawaii. The surveys were performed over 7 periods between July 1992 and April 1995. There were 41 point transects, although they were not all surveyed every time.
+
+
+As for the dolphins we can again load the data, which is bundled with `Distance2`:
 ```{r amakihi-data}
 data(amakihi)
 ```
@@ -271,7 +278,13 @@ We can again look at summary information for the fitted model
 ```{r amakihi-notrunc-summary}
 summary(hn.df.notrunc)
 ```
-We estimate $P_a=$`r round(predict(hn.df.notrunc)[1],4)` and can plot the resulting model along with goodness of fit information:
+We estimate $P_a=$`r round(predict(hn.df.notrunc)[1],4)`. This time we use $\pi_r(r)=2r/w^2$, so
+$$
+\hat{P_a} = \frac{2}{w^2}\int_0^w r g(r;\boldsymbol{\theta}) \text{d}r,
+$$
+for point transects.
+
+As for line transects we can plot the resulting model along with goodness of fit information:
 ```{r amakihi-notrunc-plot, fig.width=9, fig.cap="Plots of a half-normal detection function fitted to the amakihi point transect data. Left: the fitted detection function with histogram of distances (rescaled according to the change in area due to point transect sampler geometry); the detection function drops to zero at around 150m. Right: quantile-quantile plot, showing that the model does not fit well (many dots below the line $y=x$)."}
 par(mfrow=c(1,2))
 plot(hn.df.notrunc, xlab="Distance (m)", main="")
@@ -331,7 +344,7 @@ gof_tests(hr.df.trunc.82.5)
 
 # Conclusion
 
-This chapter shown how detection functions are fitted in `Distance2` and how to select a good detection function. We covered both line and point transects as well as how to select the truncation distance.
+This chapter shown how detection functions are fitted in `Distance2` and how to select a detection function. We covered both line and point transects as well as how to select the truncation distance.
 
 In the next chapter we'll look at different models for the detection function and how we can use additional data to model detectability when it relies on other variables as well as distance.
 
@@ -343,5 +356,7 @@ In the next chapter we'll look at different models for the detection function an
 
 
 [^gomdata]: For convenience the data are bundled in an R-friendly format, although all of the code necessary for creating the data from the Distance project files is available at [github.com/dill/mexico-data](http://github.com/dill/mexico-data). The original OBIS-SEAMAP page for the data may be found at the [SEFSC GoMex Oceanic 1996 survey page](http://seamap.env.duke.edu/dataset/25).
+[^uniformassumption]: One such problem is when line transects are positioned to run parallel to some geographical feature that attracts animals (e.g. hedgerows). A number of articles try to address issues arising from such surveys by modelling the effect of the feature [@Marques:2010he, @Cox:2011uo, @Marques:2012fy].
+[^generalpdefn]: More generally, we'd write $\hat{P_a} = \int_0^w g(y;\boldsymbol{\theta}) \pi_y(y) \text{d}y$.
 [^groupsize]: For now we're assuming that we were able to count the group size accurately, though this can be a serious problem especially in marine surveys. We'll revisit this topic when we talk about spatial modelling in the second part of the book.
 [^amakihi]: Data are again bundled with `Distance2`. Thanks go to Steven Fancy of the National Parks Service for providing the data. A more detailed analysis is provided in the associated paper [@Marques:2007vm].
