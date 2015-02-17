@@ -87,7 +87,7 @@ Mathematically the hazard-rate detection function is defined as:
 $$
 g(x; \sigma, b)=1-\exp\left(-\left(\frac{x}{\sigma}\right)^{-b}\right).
 $$
-The hazard-rate detection function has two parameters: $\sigma$, the scale parameter as in the half-normal and $b$, which is called the *shape* parameter. The role of the shape parameter is to control the size of the *shoulder* of the detection function -- how far detection remains certain. We can see it's effect in comparing between plots where $b=5$ and $b=1$, a larger $b$ gives a longer distance out to which we observe animals with certainty.
+The hazard-rate detection function has two parameters: $\sigma$, the scale parameter as in the half-normal and $b$, which is called the *shape* parameter. The role of the shape parameter is to control the size of the *shoulder* of the detection function -- how far detection remains certain. We can see its effect in comparing between plots where $b=5$ and $b=1$, a larger $b$ gives a longer distance out to which we observe animals with certainty.
 
 We can fit a hazard-rate detection function to the dolphin data in a similar way to half-normal, though now we must specify a detection function model:
 ```{r fit-dolphins-hr}
