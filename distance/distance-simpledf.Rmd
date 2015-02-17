@@ -40,7 +40,7 @@ In the previous chapter, we looked at a *half-normal detection function*:
 $$
 g(x; \sigma)=\exp\left(-\frac{x^2}{2\sigma^2}\right),
 $$
-here we denote the parameter we estimate as $\sigma$, which we call the *scale parameter* as it changes the scale of the function. We look at different possible half-normal detection functions (assuming that our distances range between 0 and 1) with some different scale parameters below:
+here we denote the parameter we wish to estimate as $\sigma$, which we call the *scale parameter*, the parameter can stretch or squash the function. We look at different possible half-normal detection functions (assuming that our distances range between 0 and 1) with some different scale parameters below:
 ```{r hn-scale-par-comp, fig.width=10, fig.height=3, fig.cap="Half-normal detection functions with varying scale parameter ($\\sigma$ values are given above the plots). From left to right, the study species becomes more detectable (higher probability of detection at larger distances).", echo=FALSE}
 par(mfrow=c(1,4))
 g.hn <- function(x,sigma) exp(-x^2/(2*sigma^2))
