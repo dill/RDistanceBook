@@ -185,7 +185,7 @@ Two important pieces of information that must be collected have been mentioned s
 
 ### Point transects
 
-So far we have only talked about line transects. Rather than walking along lines we might prefer to stand at a point for some period of time and count how many animals we see or hear in that period of time. Such counts are common for avian studies as it's often easier to hear small birds than see them in dense forest.
+So far we have only talked about line transects. Rather than walking along lines we might prefer to stand at a point for some period of time and count how many animals we see or hear in that period of time. Such counts are common for avian studies as it's often easier to hear small birds than see them in dense forest and hearing can be degraded while observers are walking.  It is also the case that multiple species are detected.  Therefore the observer must be able to make a determination of species, measure the distance from the point to the bird, and record information about species and distance in a short amount of time.  Consequently, relieving the observer of the process of navigation during all of this leads to the idea of the observer remaining roughly stationary at a point while collecting data.
 
 Going back to our simulated example, we will pick out 6 points to sample. At each point we again assume that detectability decreases with distance.
 
