@@ -362,7 +362,7 @@ The models described above expand the set of possibilities considerably on those
 
   * *Gamma* and *2-part normal* detection functions are useful when we can assume that detectability is certain at some point but that point is not at zero distance. This can happen during aerial surveys when observers struggle to see what is directly below them but can spot animals at a given distance with certainty. Gamma detection functions are covered in @Becker:2009vm.
   * *Exponential power series* is a more flexible alternative to the hazard-rate [@Otto:1990kk].
-  * *Negative exponential*: can be useful when very spiked data are collected but usually is only recommended to salvage a survey gone badly wrong (as the negative exponential has no "shoulder"). A mixture model approach is usually more reliable when data are very spiked (see e.g. @Buckland:1992wy, @Buckland:2001vm, Eidous:2011ua).
+  * *Negative exponential*: can be useful when very spiked data are collected but usually is only recommended to salvage a survey gone badly wrong (as the negative exponential has no "shoulder"). A mixture model approach is usually more reliable when data are very spiked [see e.g. @Buckland:1992wy; @Buckland:2001vm; @Eidous:2011ua].
 
 
 ## References
