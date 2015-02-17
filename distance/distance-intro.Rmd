@@ -216,7 +216,12 @@ Looking at the histogram of distances:
 ```{r fig.width=5, fig.height=5, fig.cap="Histogram of detected distances using point transects to survey the simulated population."}
 hist(detected_distances,xlab="Distance",main="")
 ```
-As we saw with the line transects, the point transect distances see a similar drop-off in frequency with increasing distance. However, unlike the line transects we also see an increase as distance increases up to around 0.03. This is because of the geometry of the point transect samplng: at small distances (small radii) the area surveyed is small, this then increases quadratically (since the area of the circle is $\pi r^2$). So, up to a certain distance we see an increase in sightings, as we have an increasing area to survey, after than point the larger area becomes too big and the effect of detectability outweighs the effect of increasing area.
+As we saw with the line transects, the point transect distances see a similar drop-off in frequency with increasing distance. However, unlike the line transects we also see an increase as distance increases up to around 0.03. The shape of the histogram is down to two competing processes during sampling:
+
+1) as the radius increases, the area surveyed increases -- so there are more animals available to be detected, this increases quadratically (since the area of the circle is $\pi r^2$).
+2) At the same time, we are increasing the distance from the point to the animals in question, this is the same problem as described for line transects: as animals are further away, they are harder to detect.
+
+So, up to a certain distance we see an increase in sightings, as we have an increasing numbers of animals that we can detect but after some distance the area becomes too big and the effect of detectability outweighs the effect of increasing area.
 
 ```{r calc-Nhat-point, echo=FALSE}
 ## calculate Nhat for point transects
