@@ -24,7 +24,7 @@ For now we'll ignore the exact format of the data (which is simply a `data.frame
 ```{r mex-dolphin-plot, fig.cap="Histogram of observed distances to pantropical spotted dolphins in the Gulf of Mexico."}
 hist(mexdolphins$distance, main="", xlab="Distance (m)")
 ```
-As with the data we simulated in the previous chapter, we can see that there is a decrease in frequency with increasing distance from the observer (though this is a little less well behaved in reality). If the assumption of strip transect sampling were true this histogram would be flat, indicating that the dolphins could be detected with certainty.
+As with the data we simulated in the previous chapter, we can see that there is a decrease in frequency with increasing distance from the transect line (though this is a little less well behaved in reality). If the assumption of strip transect sampling were true this histogram would be flat, indicating that the dolphins could be detected with certainty at all distances.
 
 ## Detection functions
 
@@ -221,7 +221,7 @@ Having selected the half-normal model, we can return to the `summary` results ab
 
 ## Average detectability
 
-With a fitted detection function we can evaluate the probability of observing an animal given its distance (from the definition of the detection function, $g$) but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we want to integrate distance out of the detection function -- removing the conditioning on the distance.
+With a fitted detection function we can evaluate the probability of observing an animal given its distance from the transect (the definition of the detection function, $g$) but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we want to integrate distance out of the detection function -- removing the conditioning on the distance.
 
 Before we do that, it's important to remember that in order to do distance sampling we have to make some assumption about the distribution of the animals with respect to the transects. If we design our survey well we can assume that animals are *uniformly distributed with respect to the transect* -- meaning there not "clumps" of animals at certain distances[^uniformassumption]. We denote the distribution of all animals with respect to the transect with $\pi_y(y)$ in general. For line transects, we let $\pi_x(x)=1/w$ (since we are assuming the distribution is uniform between 0 and the truncation distance). We need to include this assumption in our calculation of average detectability.
 
