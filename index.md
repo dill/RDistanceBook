@@ -12,7 +12,7 @@ During 2014-2015, I ([Dave Miller](http://converged.yt)) am writing a book about
 
 **Audience**: ecology/biology masters and PhD students, field researchers, environmental consultants, wildlife/natural resources scientists.
 
-**Audience background**: "quantitatively minded" but not statisticians by training, (e.g. you should be comfortable with fitting and explaining results of a GLM in R). It'll be assumed that those reading will be familiar with R (i.e. know what `data.frame`s are, how to build them, general "data-mudging", though not consider themselves "programmers").
+**Audience background**: "quantitatively minded" but not statisticians by training, (e.g. you should be comfortable with fitting and explaining results of a GLM in R). It'll be assumed that those reading will be familiar with R (i.e. know what `data.frame`s are, how to build them, general "data-mudging", though not consider themselves "programmers"; if you're new to R I recommend [R for cats](http://rforcats.net/) as a primer).
 
 Initially the book will consist of two parts, though this may well get expanded to further parts:
 
