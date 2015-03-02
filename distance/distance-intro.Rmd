@@ -10,7 +10,7 @@ animation: true
 source("../figure-captions.R")
 ```
 
-In this first chapter I want to give a brief refresher on distance sampling, building up from simpler sampling techniques to show how they relate to distance sampling. I'll show this via some simulations in R. Understanding the code is not as important as understanding the concepts, but it'll help.
+In this first chapter I want to give a brief refresher on distance sampling, building up from simpler sampling techniques to show how they relate to distance sampling. I'll show this via some simulations in R. (Understanding the code is not as important as understanding the concepts, but it'll help; the source for this document can be found [here](https://github.com/dill/RDistanceBook/blob/master/distance/distance-intro.Rmd), showing how the plots were made).
 
 Before diving into the sampling we should first think a little about why we're doing distance sampling. Really what we are interested in is estimating the abundance of some biological population. Knowing how many animals (or plants) there are in a given area can tell us important management information as well as help to answer ecological questions.
 
@@ -24,7 +24,7 @@ The rest of this chapter will show how common survey techniques (quadrat and str
 Let's first consider a simple example of a simulated population. Each point in the plot below represents an individual in our population -- for simplicity's sake let's call them animals. One simple option to estimate how many animals there are in the study area (in our case the square from 0 to 1 in $x$ and $y$ directions) would be to survey quadrats (boxes) that were randomly placed within the region, count all the animals in each box.
 
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with quadrats (blue dashed lines) overlaid, observed points are in red."}
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with quadrats (blue dashed lines) overlaid, observed points are in red.", echo=FALSE, message=FALSE}
 set.seed(131) # same results every time
 library(mgcv) # for inSide
 
@@ -70,7 +70,7 @@ This estimator gives us an estimated abundance ($\hat{N}$) of `r round(Nhat,2)`,
 To simplify data collection from a logistical point of view, it seems simpler to have observers traverse lines and observe strips rather than have them walk between randomly placed squares. Using a regular grid of strips (offset randomly) allows observers to move from one strip to the next most efficiently.
 
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with strip transects (blue dashed lines) and strip centrelines (that observers walk/fly/drive/sail down; blue solid lines) overlaid, observed animals are in red."}
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with strip transects (blue dashed lines) and strip centrelines (that observers walk/fly/drive/sail down; blue solid lines) overlaid, observed animals are in red.", echo=FALSE}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
 
 # zero the count from last time
@@ -122,7 +122,7 @@ curve(exp(-x^2/(2*0.01^2)), from=0, to=0.0125, xlab="Distance", ylab="Probabilit
 ```
 The larger the $\sigma$ the more likely we are to see animals at large distances. We'll look at this relationship in more detail in the next chapter, [Models for detectability](distance-simpledf.html).
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with line transects (blue dashed lines) and observed animals (red points)."}
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with line transects (blue dashed lines) and observed animals (red points).", echo=FALSE}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
 
 # generate some lines
@@ -189,7 +189,7 @@ So far we have only talked about line transects. Rather than walking along lines
 
 Going back to our simulated example, we will pick out 6 points to sample. At each point we again assume that detectability decreases with distance.
 
-```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with point transects (blue points) and observed animals (red points)."}
+```{r fig.width=5, fig.height=5, fig.cap="Simulated population (grey points) with point transects (blue points) and observed animals (red points).", echo=FALSE}
 plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
 
 # set sigma
