@@ -68,6 +68,9 @@ Notes:
 
  * `gam.check` to find $k$, _but_ don't make $k$ too big as this can lead to large predictions (large set of functions!)
 
+### Bases
+
+ * cyclic splines as a way of getting around the "humpbacks don't know when mothers' day is" problem
 
 
 ## Model discrimination

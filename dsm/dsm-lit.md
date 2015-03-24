@@ -127,6 +127,8 @@ author: David L. Miller
   * [ ] Spiegelhalter, D, M Pearson, and I Short. “Visualizing Uncertainty About the Future.” Science 333, no. 6048 (September 8, 2011): 1393–1400. doi:10.1126/science.1191181.
   * [X] Eddins, S. Rainbow Color Map Critiques: an Overview and Annotated Bibliography, MathWorks, 2014.
     - don't use rainbow colour maps, for the usual obvious reasons. This was released as MATLAB stopped using rainbow as default colour map, short bulletpoint overview.
+  * Hawkins, E. Graphics: Scrap rainbow colour scales. Nature 519, 291
+  * http://earthobservatory.nasa.gov/blogs/elegantfigures/2013/08/06/subtleties-of-color-part-2-of-6/
   * [ ] Borland, D., & Taylor, R. M., II. (2007). Rainbow color map (still) considered harmful. IEEE Computer Graphics and Applications.
   * [ ] Zeileis, A and Hornik, K and Murrell, P (2007) Escaping RGBland: Selecting Colors for Statistical Graphics. Research Report Series / Department of Statistics and Mathematics, 61. Department of Statistics and Mathematics, WU Vienna University of Economics and Business, Vienna.
 
