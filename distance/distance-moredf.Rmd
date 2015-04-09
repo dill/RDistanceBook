@@ -94,16 +94,12 @@ plot(dolphins.hn, main="")
 plot(dolphins.hn_cos, main="")
 plot(dolphins.hn_hermite, main="")
 ```
-These examples illustrate two important lessons in fitting detection function model selection.
 
-Let's start with the half-normal with Hermite polynomial detection function, there the adjustment didn't appear to have any effect on the shape of the detection function. We can investigate the estimated parameters of the model and see that parameter that controls the influence of the Hermite adjustment is very very small:
+For the half-normal with Hermite polynomial detection function, the adjustment didn't appear to have any effect on the shape of the detection function. We can investigate the estimated parameters of the model and see that parameter that controls the influence of the Hermite adjustment is very very small:
 ```{r hn-adj-hermpar}
 dolphins.hn_hermite$par
 ```
-It terefore seems reasonable to rule out this model.
-
-Second, the half-normal with cosine model begins by decreasing but then ends up increasing again before finally decreasing. We refer to this behaviour as *non-monotonic* and would prefer our detection functions to be *monotonically decreasing*; that is, as the distance from the transect increases we should see fewer animals.We'll cover this in more detail in the [Monotonicity] section, below.
-
+It therefore seems reasonable to rule out this model as we are estimating an extra parameter for no gain. The half-normal with cosine model (second panel) seems like a much better candidate.
 
 
 #### Hazard-rate K+A models
@@ -125,7 +121,7 @@ g.hr <- function(x,sigma=0.25, j=0, adjp=1,b=1){
   return((key*(1+adj))/(key[1]*(1+adj[1])))
 }
 # plot half-normal with cosine series superimposed
-plot(x, g.hr(x, 0.4, j=3, adjp=c(0.3,0.2)), main="",
+plot(x, g.hr(x, 0.4, j=3, adjp=c(0.18,0.1)), main="",
      xlab="Distance", ylab="Detection probability",
      type="l", xlim=c(0,1), ylim=c(0,1), asp=1)
 lines(x, g.hr(x, 0.4, j=0), col="grey")
@@ -168,7 +164,6 @@ plot(dolphins.hr, main="")
 plot(dolphins.hr_cos, main="")
 plot(dolphins.hr_poly, main="")
 ```
-Again, we see non-monotonic fits for these data.
 
 
 #### Fourier models
@@ -180,7 +175,7 @@ $$
 Note that here the key "function" is $1/w$ and the summation of the cosines starts at $j=1$ (rather than $j=2$ above).
 
 We can again look at the function graphically:
-```{r fourier-plot, fig.cap="Fourier detection function; uniform key with cosine adjustments of order 1 and 2. Solid line black shows the detection function, solid grey line is the constant uniform key and the dashed grey show the two adjustments (scaled and shifted to be on the same axes).", echo=FALSE}
+```{r fourier-plot, fig.cap="Fourier detection function; uniform key with cosine adjustments of order 1 and 2. Solid line black shows the detection function, solid grey line is the constant uniform key and the dashed grey show the two adjustments (scaled and shifted to be on the same axes).", echo=FALSE, fig.width=5}
 g.hn <- function(x,sigma=0.25, j=0, adjp=1){
   key <- 1
   adj <- rep(0, length(x))
@@ -192,7 +187,7 @@ g.hn <- function(x,sigma=0.25, j=0, adjp=1){
 x <- seq(0,1,len=200)
 
 # plot fourier with cosines superimposed
-plot(x, g.hn(x, 0.6, j=2, adjp=c(0.4,0.2)), main="",
+plot(x, g.hn(x, 0.6, j=2, adjp=c(0.7, -0.2)), main="",
      xlab="Distance", ylab="Detection probability",
      type="l", xlim=c(0,1), ylim=c(0,1), asp=1)
 lines(x, rep(1,length(x)), col="grey")
@@ -206,7 +201,7 @@ dolphins.fourier1 <- ds(mexdolphins,truncation=8000, df(model=~unif+cos(1)))
 # uniform with cosine adjustments of order 1&2
 dolphins.fourier12 <- ds(mexdolphins,truncation=8000, df(model=~unif+cos(1,2)))
 ```
-We can again plot the fitted models and observe the non-monotonic detection function when cosine adjustments of order 1 and 2 are used:
+We can again plot the fitted models:
 ```{r unif-adj-dolphins-plot, fig.width=7, echo=FALSE, fig.cap="Detection function models fitted to the Mexico dolphin data. Left: uniform with cosine adjustment of order 1. Right: uniform with cosine adjustments of order 1 and 2."}
 par(mfrow=c(1,2))
 plot(dolphins.fourier1, main="")
@@ -230,28 +225,44 @@ hazard-rate    $1-\exp\left[-\left(\frac{y}{\sigma}\right)^{-b}\right]$   cosine
 
 #### Monotonicity
 
-** This makes sense as we are much more likely to see animals directly in front of us than those which are further away. If fitted detection functions exhibit this kind of monotonicity then it's possible that there were problem with the survey setup (for example that transects were placed running parallel to features such as roads or hedgerows) or may simple be down to random variation in the data; either way we'd rather not include these features in our detection function. **
+Plots of the models above show a common property amongst the fitted detection functions: they always decrease with increasing distance (*monotonically decreasing*). This is no coincidence, in fact it takes some computational effort to ensure that this happens. In this section we'll first examine why monotonicity is a reasonable rquest to make of your detection functions, then go on to show what can go wrong when detection functions are non-monotonic.
 
+Monotonicity makes sense as we are much more likely to see animals near us than further away. We may see "bumps" in the histogram of distances further out, but we assume this is just noise in the data, actually out model is that we see fewer objects as their distance from the transect increases. If there is some very large bump in the histograms we suspect that there has been some problem during the survey (some features that have caused animals to appear to "clump together" at a certain distance) or that the detection function is overfitting to random variation in the data (by chance there are more observations at one distance further away than others). One cause of this is that the transect was surveyed parallel to some geographical feature that the animals were interested in, for example if a transect is a road running through fields, then birds may sit on fences and are not so observable in the fields inbetween.
 
-As noted when looking at the plots of the fitted models above, sometimes the detection function will not be monotonic over the whole of the range $(0,w)$. In this case we suspect that there has been some problem during the survey (some features that have caused animals to appear to "clump together" at a certain distance) or that the detection function is overfitting to random variation in the data (by chance there are more observations at one distance further away than others).
+By default `Distance2` will try to constrain those functions which can become non-monotonic during the fitting. But we can see what could go wrong by setting the `monotonicity` `control` option, we can force the fitting routine to not constrain the function to be monotonic:
+```{r nonmonoex}
+dolphins.hn_cos_nomono <- ds(mexdolphins,truncation=8000, df(model=~hn+cos(2)), control=list(monotonicity=FALSE))
 
-In either case we can find out whether and where the detection functions are non-monotonic using the `df_check_mono()` function in `Distance2`. We run the function on a fitted detection function object, if the function is monotonic then it will return `TRUE`. If the function is non-monotonic, then `df_check_mono` will return `FALSE` and will give warnings explaining how the non-monotonicity has manifested itself.
+summary(dolphins.hn_cos_nomono)
+```
 
-Using the last example of the Fourier type analysis to illustrate the checking function:
+Comparing this summary to the previous one above (when montonicity is enforced), we can see that there is a difference in the coefficient estimated for the cosine part of the model. We can also look a plot of the model, to make the problem more obvious.
+
+```{r nonmonoex-plot, result="hide", fig.cap="Half-normal with order 2 cosine adustments fitted to the dolphin data, but when the fitting doesn't constrain the detection function to be monotonically decreasing", fig.width=5}
+plot(dolphins.hn_cos_nomono)
+```
+
+We can also find out whether and where the detection functions are non-monotonic using the `df_check_mono()` function in `Distance2`. We run the function on a fitted detection function object, if the function is monotonic then it will return `TRUE`. If the function is non-monotonic, then `df_check_mono` will return `FALSE` and will give warnings explaining how the non-monotonicity has manifested itself.
+
+Using the above analysis to illustrate the checking function:
 ```{r check-fourier}
-df_check_mono(dolphins.fourier1)
-df_check_mono(dolphins.fourier12)
+df_check_mono(dolphins.hn_cos)
+df_check_mono(dolphins.hn_cos_nomono)
 ```
-Note that in the latter case we can include the `plot=TRUE` argument to show where the non-monotonicity occurs:
-```{r check-fourier-plot, fig.cap="Montonicity check plot for the Fourier detection function when cosine adjustments of order 1 and 2 are used. The non-monotonic part of the detection function is highlighted in red.", result="hide"}
-df_check_mono(dolphins.fourier12, plot=TRUE)
+We can include the `plot=TRUE` argument to show where the non-monotonicity occurs:
+```{r check-fourier-plot, fig.cap="Montonicity check plot for the half-normal with cosine adjustment of order 2, fitted to the dolphin data. The non-monotonic part of the detection function is highlighted in red.", result="hide", echo=FALSE, fig.width=10, message=FALSE}
+par(mfrow=c(1,2))
+a<-df_check_mono(dolphins.hn_cos, plot=TRUE)
+a<-df_check_mono(dolphins.hn_cos_nomono, plot=TRUE)
+rm(a)
 ```
+So in the former case, we don't have to be too concerned about the monotonicity in the function, however the second case shows a much more concerning non-monotonic function, we should be much more concerned about this and discard this model.
+
+As mentioned above, fitting the detection function so that its shape is constrainted is a computationally complicated task. In `Distance2` we simple take a set of distances between the left and right truncation and evaluate them. The optimiser then ensures that as the distance increases the detection function value at that distance decreases compared to the last. When the values are larger, then the parameters that lead to that shape are discarded. This method is not foolproof, as the number of distances we evaluate the detection function at has an effect on whether the algorithm "knows" that the detection function is non-monotonic. Increasing the number of points leads to a longer time taken to fit the model, since we are doing more calculations and comparisons.
 
 Returning to the considerations above regarding the addition of adjustments to models which contain covariates, it's worth noting that detecting monotonicity gets much harder when covariates are included. `df_check_mono` simply evaluates $g(x)$ over a grid and checks that the points always decrease when going left to right, but for a covariate model there are effectively as many functions to check as there are different observed values of the covariates (or rather their unique combinations). This is relatively straightforward when there is a single factor with a few levels, but quickly becomes a computational nightmare.
 
-**Fitting monotonic detection functions goes here.**
-
-**Maybe mention here how this is a difficult optimisation problem**
+Forunately, as we'll see next, there is another way to construct detection functions that ensures that they are monotonic by construction.
 
 ### Mixture models
 
@@ -363,6 +374,11 @@ The models described above expand the set of possibilities considerably on those
   * *Gamma* and *2-part normal* detection functions are useful when we can assume that detectability is certain at some point but that point is not at zero distance. This can happen during aerial surveys when observers struggle to see what is directly below them but can spot animals at a given distance with certainty. Gamma detection functions are covered in @Becker:2009vm.
   * *Exponential power series* is a more flexible alternative to the hazard-rate [@Otto:1990kk].
   * *Negative exponential*: can be useful when very spiked data are collected but usually is only recommended to salvage a survey gone badly wrong (as the negative exponential has no "shoulder"). A mixture model approach is usually more reliable when data are very spiked [see e.g. @Buckland:1992wy; @Buckland:2001vm; @Eidous:2011ua].
+
+The original literature on these models is spread accross a number of papers.
+
+  * Key function plus adjustment-type models were first proposed by [@Buckland:1992wy] and further elaborated on in [@Buckland:2001vm].
+  * Mixture model detection funcions were proposed by [@miller_mixture_2015].
 
 
 ## References
