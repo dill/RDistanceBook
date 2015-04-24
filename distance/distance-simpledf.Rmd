@@ -65,7 +65,7 @@ As with most R objects, we can use the `summary` method to find out further info
 ```{r dolphins-hn-summary}
 summary(hn.df)
 ```
-The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, parameter estimates and finally the "`Average p`" and "`N in covered region`" (along with uncertainty).
+The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, parameter estimates and finally the "`Average p`", along with their associated uncertainties.
 
 It is worth noting that the parameter estimate (marked `(Intercept)`) is on the log scale, so $\sigma=\exp$ `r round(hn.df$par,2)` (why the parameters are reported in this way will become apparent in the next chapter, [What else affects detectability?](distance-covardf.html)).
 
@@ -103,7 +103,7 @@ summary(hr.df)
 ```
 Note that there are now two rows of parameters, one for scale and then one for shape.
 
-The hazard-rate model has a rather different average detection probability from the half-normal model (`r round(predict(hr.df)[1],4)` rather than `r round(predict(hn.df)[1],4)` for the half-normal) and hence rather different abundance estimates. How do we decide between these two models?
+The hazard-rate model has a rather different average detection probability from the half-normal model (`r round(predict(hr.df)[1],4)` rather than `r round(predict(hn.df)[1],4)` for the half-normal) and hence we'll end up with rather different abundance estimates. How do we decide between these two models?
 
 ## What makes a "good" detection function?
 
@@ -215,10 +215,6 @@ In [Improving the fit of detection functions](distance-moredf.html) we'll look a
 
 At this point it's worth noting that we're never interested in the absolute values of the AIC, but rather the different between the best candidate model's AIC and the others. Articles will often include tables with a column labelled $\Delta$AIC containing these differences. Burnham and Anderson [-@Burnham:2002tk] is a thorough treatment of AIC in an ecological modelling context, as well as a more philosophical guide on statistical modelling.
 
-# Model outputs
-
-Having selected the half-normal model, we can return to the `summary` results above. The last two rows of the summary report statistics about `Average p` and `Nhat in covered region`; we now investigate these quantities.
-
 ## Average detectability
 
 With a fitted detection function we can evaluate the probability of observing an animal given its distance from the transect (the definition of the detection function, $g$) but, what we'd rather know is the probability of detecting an animal on average (since our aim is to make inference about the population of animals, rather than a single observation in particular). To do this we want to integrate distance out of the detection function -- removing the conditioning on the distance.
@@ -231,30 +227,12 @@ $$
 $$
 where $w$ denotes the truncation distance (which we set to 8000m). For the pantropical dolphins we obtain $\hat{P_a}=$ `r round(predict(hn.df)[1],4)` (see also the output of the `summary`, under `Average p`/`Estimate`).
 
-
-## Abundance in covered area
-
-Although the average probability of detection is an interesting quantity in its own right, we are primarily interested in estimating abundance. The row `Nhat in covered area` gives an estimate of the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection. That is, if we saw 1 dolphin in this study, we should actually inflate this count by $1/\hat{P_a}$ to estimate abundance.
-
-The Horvitz-Thompson estimator is defined as:
-$$
-\hat{N} = \sum_{i=1}^n \frac{s_i}{\hat{P_a}},
-$$
-where $s_i$ is the size of the group of the $i^\text{th}$ observation. So for each group (or individual) we saw, inflate them by $P_a$, then sum up over the groups[^groupsize].
-
-In the dolphin data group size ranges from `r min(mexdolphins$size)` to `r max(mexdolphins$size)`. We can look at a histogram of the observed group sizes:
-
-```{r dolphins-size-hist, fig.width=5, fig.height=5, fig.cap="Histogram of observed group sizes of dolphins in the Gulf of Mexico. Most groups are in the size range 15-200, but there are a few much larger groups, these have a much larger effect on the Hovitz-Thompson estimator."}
-hist(mexdolphins$size, main="", xlab="Observed group size", breaks=seq(0, 700, by=25))
-```
-
-The Horvitz-Thompson-like estimator above is used in the `summary` of the model so calculate the abundance in the covered area. We may also want to extrapolate and estimate abundance in a larger area outside where we covered (though still within reasonable geographic/environmental limits of the area covered by the surveys). We'll cover this in detail in [Adundance estimation](distance-abundance.html).
-
+These average probabilities of detection are used to calculate abundance estimates as we'll see in [Abundance estimation](distance-abundance.html).
 
 
 # Point transects
 
-So far we've looked at the dolphin data from the Gulf of Mexico, a line transect survey. Now let's look at point transect data and show that fitting a detection function to that data and estimating abundance is not significantly different.
+So far we've looked at the dolphin data from the Gulf of Mexico, a line transect survey. Now let's look at point transect data and show that fitting a detection function to that data is not significantly different.
 
 We'll be looking at data consisting of 1485 observations of [amakihi](https://en.wikipedia.org/wiki/Hawai%CA%BBi_%CA%BBamakihi) (*Hemignathus virens*), a bird species native to Hawaii[^amakihi]. Data were collected as part of a larger survey (of many species) on the island of Hawaii. The surveys were performed over 7 periods between July 1992 and April 1995. There were 41 point transects, although they were not all surveyed every time.
 
@@ -316,7 +294,7 @@ Having fitted the models, we can again compare summaries and goodness of fit, al
 summary(hn.df.trunc.150)
 summary(hn.df.trunc.82.5)
 ```
-Although there is not a large change in parameter estimate between the two models, this (along with the change in truncation) does lead to a large difference in the average detectability and therefore abundance estimate. Note that we can't compare the AICs of models with different truncations, as the models use different data.
+Although there is not a large change in parameter estimate between the two models, this (along with the change in truncation) does lead to a large difference in the average detectability (and therefore any abundance estimates). Note that we can't compare the AICs of models with different truncations, as the models use different data.
 
 ```{r amakihi-trunc-plots, results="hide", echo=FALSE, fig.width=9, fig.height=9, fig.cap="Plots of a half-normal detection function fitted to the amakihi point transect data at two different truncation distances: 150m on the left and 82.5m on the right. Top row shows the fitted detection function with histogram of distances. Bottom row shows quantile-quantile plots."}
 par(mfrow=c(2,2))
@@ -347,6 +325,7 @@ gof_tests(hr.df.trunc.82.5)
 This chapter shown how detection functions are fitted in `Distance2` and how to select a detection function. We covered both line and point transects as well as how to select the truncation distance.
 
 In the next chapter we'll look at different models for the detection function and how we can use additional data to model detectability when it relies on other variables as well as distance.
+
 
 
 

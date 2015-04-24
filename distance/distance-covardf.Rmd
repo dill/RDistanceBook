@@ -11,7 +11,7 @@ source("../figure-captions.R")
 
 In the last chapter we looked at how we could model the probability of an animal being detected using the distances to the animals from the transect. A little thought leads us to believe that in addition to distance, other factors will influence the detection probability. For example: a pod of 50 whales will be much easier to spot than a single whale; it's harder to see birds early in the morning when it's dark and misty; and it's much more difficult to see (or do) anything when the sea is extremely choppy. We'd like to take these factors into account when we're building our detection function, to ensure that we can model the detection process as accurately as possible.
 
-Distance sampling methods have a property known as *pooling robustness* which means that if we assume that the heterogeneity in detectability is relatively small (i.e. there's not much variation between animals in how detectable they are), then estimates of abundance will not be biased (though they might have high variance; @burnham:2004vd, Section 11.12). This means that usually we do not need to worry about bias but if we can model the heterogeneity in detectability then we can improve the precision of our abundance estimates.
+Distance sampling methods have a property known as *pooling robustness* which means that if we assume that the heterogeneity in detectability is relatively small (i.e. there's not much variation between animals in how detectable they are), then estimates of abundance will not be biased (though they might have high variance; @burnham:2004vd, Section 11.12). This means that usually we do not need to worry about bias but if we can model the heterogeneity in detectability then we can improve the precision of our abundance estimates @[Marques:2007ey].
 
 Let's return to the pantropical spotted dolphin example from the previous chapter. During the survey data was collected on Beaufort sea state -- a measure of the roughness of the sea (1 is "light air" with small waves,  5 ""fresh breeze" with moderate waves[^beaufort]). Observers also recorded the size of each group of dolphins that were detected. We can plot these against the observed distances...
 ```{r dolphins-seastate-size-distance, fig.width=9, echo=FALSE, result="hide", fig.cap="Exploratory data analysis for the effects on recorded distance of Beaufort sea state (left) and observed group size (right). Dashed lines indicate the fit of a linear model through the data (giving a slightly decreasing distance with increasing sea state and increasing distance with increasing group size. Solid lines show a LOESS smooth through the data. Note that the data shown have had the observations with the two largest observed group sizes removed.", message=FALSE}
@@ -83,22 +83,12 @@ where probabilities are in order of the observations. It's easier to look at the
 ```{r hn-dolpins-size-pred-quant}
 quantile(predict(hn.dolphins.size))
 ```
-in both preceding results we see there is a wide range of probabilities of detection. These differences become important when using the Horvitz-Thompson-like estimator we saw in the previous chapter.
+in both preceding results we see there is a wide range of probabilities of detection. These differences will become important later in [Abdundance estimation](distance-abundance.html).
 
 We can look again at the question asked at the start of this chapter and ask how does group size affect probability of detection?
 ```{r hn-dolphins-detection-groupsize, fig.cap="Probability of detection plotted against observed group size, we can see that with increasing group size, we have increasing probability of detection."}
 plot(mexdolphins$size, predict(hn.dolphins.size), xlab="Group size", ylab="Probability of detection")
 ```
-
-## Estimating abundance
-
-To estimate abundance when covariates are included in the detection function we use the Horvitz-Thompson-like estimator, simply indexing the probabilities of detection:
-$$
-\hat{N} = \sum_{i=1}^n \frac{s_i}{\hat{p_i}},
-$$
-this formula is used to calculate the `Nhat in covered area` given in the `summary` output above. As in the previous chapter we are taking each group we observed and inflating its size based on the probability of detecting that group.
-
-Using this Horvitz-Thompson-like estimator we can calculate an average detectability over the observations. This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above (calculated as $\hat{P_a} = n/\hat{N}$).
 
 ## Adding and selecting covariates
 
@@ -142,7 +132,7 @@ Using the table, we can see that the best model by AIC is the one with only size
 
 # Conclusion
 
-In this chapter we've seen how adding covariates to the detection function can account for heterogeneity in the detection probability and improve precision of estimates of abundance. Covariate models make intuitive sense too, since we do not expect all individuals (or groups) in the population to have the same detectability at a given distance. This intuitive interpretation allows for direct interpretation of covariates, which may be biologically interesting. The ability to include covariates in an analysis will be particularly useful in [Adundance estimation](distance-abundance.html), where we will investigate stratification of abundance estimates by covariate.
+In this chapter we've seen how adding covariates to the detection function can account for heterogeneity in the detection probability. Covariate models make intuitive sense too, since we do not expect all individuals (or groups) in the population to have the same detectability at a given distance. This intuitive interpretation allows for direct interpretation of covariates, which may be biologically interesting. The ability to include covariates in an analysis will be particularly useful in [Adundance estimation](distance-abundance.html), where we will investigate stratification of abundance estimates by covariate.
 
 
 ## References
@@ -150,7 +140,7 @@ In this chapter we've seen how adding covariates to the detection function can a
 
 
 [^beaufort]: The scale actually goes up to 12 ("hurricane") and beyond, see [https://en.wikipedia.org/wiki/Beaufort_scale](https://en.wikipedia.org/wiki/Beaufort_scale) and [http://www.metoffice.gov.uk/media/pdf/4/4/Fact_Sheet_No._6_-_Beaufort_Scale.pdf](http://www.metoffice.gov.uk/media/pdf/4/4/Fact_Sheet_No._6_-_Beaufort_Scale.pdf) for more information. One may often find that Beaufort sea state is recorded as decimals (state of 4.5 for example), it's tricky to work out what to do with these and is worth consulting those who collected the data.
-[^sizecovar]: Note that a covariate called `size` has a special meaning in `Distance2` as it is used in the estimation of abundance via the Horvitz-Thompson estimator (see [Models for detectability](distance-simpledf.html)).
+[^sizecovar]: Note that a covariate called `size` has a special meaning in `Distance2` as it is used in the estimation of abundance via the Horvitz-Thompson estimator (see [Adundance estimation](distance-abundance.html)).
 [^paverages]: Note that when we refer to $P_a$ as the "average detection probability". The average is calculated over the *observations*. We used the same term for $P_a$ in the previous chapter when talking about non-covariate models to be consistent with what is reported in `Distance2`.
 [^resultstable]: More details on how this was done in [Improving the fit of detection functions](distance-moredf.html).
 [^pcovfun]: Strictly speaking we can write the probability of detection as a function of the covariates: $\hat{p_i}(z_i)$, though the shorter $p_i$ form is used to save space. Hopefully the subscript will be a sufficient reminder.
