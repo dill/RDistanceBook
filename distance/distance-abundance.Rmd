@@ -4,26 +4,77 @@ bibliography: full.bib
 csl: biometrics.csl
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 ## abstract this into a header
 source("../figure-captions.R")
+library(Distance2)
 ```
 
+So far we've looked at how to model the probability of detection via a detection function. Though this is interesting in itself, we usually only use the detection function as a stepping stone to get to an abundance estimate for the population that we're interested in. This chapter explores how to estimate abundance once a detection function has been fitted, revisiting some of the examples we've seen so far.
+
+Our basic technique in this chapter is to estimate the abundance for the area we did survey, then scale this up to the larger area that we want to estimate abundance for. This scaling up involves assuming the area we scale up to is the same as the area that we surveyed and that the whole area is homogeneous. Sometimes that's not reasonable, so we'll go on to talk about estimating abundance in smaller areas (*strata*), for which we believe our assumption of homogeneity is reasonable.
 
 
-# Abundance in the study area
+## Abundance in covered area
 
-So far we have only investigated the abundance in the covered area -- the area that we physically walked (or flew or steamed etc) through. Generally we're interested in extrapolating beyond that, to the rest of a forest or area of the sea etc. In some systems it may be reasonable to assume that the whole study area is homogeneous (e.g. if it's at the same altitude/depth or has the same flora growing there or similar geographical features).
+One of the outputs of the `summary`s that we saw in the previous sections is the average detectability. In [What else affects detectability?](distance-covardf.html) we saw that many different average detectabilities were generated when covariates were included in the model.
 
-Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a stratified analysis.
+Although the average probability of detection is an interesting quantity in its own right, we are primarily interested in estimating abundance.
+
+We'll begin by estimating the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection (more precisely we re-weight by the inverse of the average probability of detection). The Horvitz-Thompson estimator is defined as:
+$$
+\hat{N}_\text{covered} = \sum_{i=1}^n \frac{s_i}{\hat{P_a}},
+$$
+where $s_i$ is the size of the group of the $i^\text{th}$ observation. So for each group (or individual) we saw, inflate them by $P_a$, then sum up over the groups.
+
+Returning to the pantropical dolphins, we can do this very simply in R (recalling that the `predict` function will give us the average probabilities of detection for the observations):
+
+```{r dolphins-covered}
+data(mexdolphins)
+mex.hn <- ds(mexdolphins, truncation=8000, model=df(scale=~size))
+sum(mexdolphins$size[!is.na(mexdolphins$size)]/predict(mex.hn))
+```
+
+In this case we fitted a simple half-normal model without covariates but the same code would work for a model where a covariate is included, as `predict` will give the correct average probabilities of detection. In this case we change out notation slightly mathematically, denoting the average probability of detection per observation as $p_i$:
+
+$$
+\hat{N}_\text{covered} = \sum_{i=1}^n \frac{s_i}{\hat{p_i}},
+$$
+
+Note that above we estimated the number of *individuals* in the covered area. It may be interesting to calculate the number of *groups* that we saw, for example if animals occur in family/social units. In which case we can replace `mexdolphins$size` with `1` and obtain a *group abundance*:
+
+```{r dolphins-covered-group}
+sum(1/predict(mex.hn))
+```
+
+Now, neither of these numbers are particularly useful on their own. The number of animals (or groups) in the area we covered is not tremendously interesting. We now move on to scaling-up this estimate to larger areas.
+
+### Overall average detectability (`Average p`)
+
+Using this Horvitz-Thompson-like estimator we can calculate an average detectability over the observations. This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above (calculated as $\hat{P_a} = n/\hat{N}_\text{covered}$).
 
 
 ## Scaling up abundance estimates
 
+The beauty of the Horvitz-Thompson estimator for the covered area is we require only probabilities in order to estimate abundance. To extrapolate beyond the covered area, we now need to include more information in our estimator: the area covered by transects (denoted $A_\text{covered}$) and the area of the region we want to scale up to (which we'll denote $A_\mathcal{R}$). More precisely, we use the following estimator:
+
+$$
+\hat{N} = \frac{A_\mathcal{R}}{A_\text{covered}}\sum_{i=1}^n \frac{s_i}{\hat{p_i}}.
+$$
+
+Now we could modify our R code, above and calculate the covered area and total area and simply premultiply by the ratio of these quantities but this will become unweildly when it comes to calculations for multiple strata (see below) and more importantly, when it comes to estimating our uncertainty in our estimates of abundance (see [How certain are we in our estimates?](distance-uncertainty.html)). We can instead use the function `abundance_estimate` to calculate the abundance for us, provided we have our data in a particular format ("`flatfile`", see [Getting your data into shape](appendix-dataformat.html)).
 
 
+###
 
-## Southern Ocean minke whales
+
+## Stratification with two levels
+
+So far we have only investigated the abundance in the covered area -- the area that we physically walked (or flew or steamed etc) through. Generally we're interested in extrapolating beyond that, to the rest of a forest or area of the sea etc. In some systems it may be reasonable to assume that the whole study area is homogeneous (e.g. if it's at the same altitude/depth or has the same flora growing there or similar geographical features).
+
+Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a *stratified* analysis.
+
+### Southern Ocean Minke whales
 
 To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research programme 1992-1993 austral summer surveys [@Branch:2001ua].
 
@@ -34,6 +85,11 @@ To illustrate the use of strata we now look at some simulated data based on a su
 **Write code for this**
 
 **Should I plot the spatial distribution or transect lines here?**
+
+
+## Further reading
+
+  * @Thompson:2002wi is a thorough and accessible text on sampling theory, covering the theoretical basis of the Horvitz-Thompson estimator.
 
 
 ## References
