@@ -65,7 +65,7 @@ As with most R objects, we can use the `summary` method to find out further info
 ```{r dolphins-hn-summary}
 summary(hn.df)
 ```
-The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, parameter estimates and finally the "`Average p`", along with their associated uncertainties.
+The summary tells us how many observations were used to fit the data, the truncation distance, what detection function we used, the AIC, goofness of fit test $p$-values, parameter estimates and "`Average p`", along with their associated uncertainties.
 
 It is worth noting that the parameter estimate (marked `(Intercept)`) is on the log scale, so $\sigma=\exp$ `r round(hn.df$par,2)` (why the parameters are reported in this way will become apparent in the next chapter, [What else affects detectability?](distance-covardf.html)).
 
