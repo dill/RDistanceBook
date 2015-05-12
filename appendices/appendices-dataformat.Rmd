@@ -1,0 +1,21 @@
+---
+title: Getting your data into shape
+bibliography: full.bib
+csl: biometrics.csl
+---
+
+```{r echo=FALSE, message=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+library(Distance2)
+```
+
+## The `flatfile` data format
+
+## Further reading
+
+
+
+## References
+
+
