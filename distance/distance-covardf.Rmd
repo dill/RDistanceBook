@@ -87,7 +87,7 @@ in both preceding results we see there is a wide range of probabilities of detec
 
 We can look again at the question asked at the start of this chapter and ask how does group size affect probability of detection?
 ```{r hn-dolphins-detection-groupsize, fig.cap="Probability of detection plotted against observed group size, we can see that with increasing group size, we have increasing probability of detection."}
-plot(mexdolphins$size, predict(hn.dolphins.size), xlab="Group size", ylab="Probability of detection")
+plot(mexdolphins$size[!is.na(mexdolphins$size)], predict(hn.dolphins.size), xlab="Group size", ylab="Probability of detection")
 ```
 
 ## Adding and selecting covariates

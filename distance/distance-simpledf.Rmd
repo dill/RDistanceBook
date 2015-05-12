@@ -161,16 +161,20 @@ gof_tests(hr.df)
 # from gof_tests internals
 gof_tests_statplot <- function(model){
   int_f <- model$df_obj$integrate_df
+  mm <- model$df_obj$xt$model.matrix
+  data <- model$data[!is.na(model$data),]
+
   # calculate the CDF values
-  cdf_values <- rep(NA, nrow(model$data))
-  for(i in 1:nrow(model$data)){
-    this_data <- model$data[i,, drop=FALSE]
-    cdf_values[i] <- int_f(0, model$data$distance[i], model$df_obj, model$par,
-                           data=this_data)
+  cdf_values <- rep(NA, nrow(mm))
+  for(i in 1:nrow(mm)){
+    mod <- model
+    mod$df_obj$xt$model.matrix <- mm[i, , drop=FALSE]
+    cdf_values[i] <- int_f(0, data$distance[i], mod$df_obj, mod$par,
+                           multiplier=mod$df_obj$pi_y)
   }
   # integrate over full range and divide by that to get CDF
   pdf_normalisation <- int_f(0, model$df_obj$truncation$right, model$df_obj,
-                             model$par, data=model$data)
+                             model$par,  multiplier=model$df_obj$pi_y)
   # divide through and sort
   cdf_values <- sort(cdf_values/pdf_normalisation)
 
