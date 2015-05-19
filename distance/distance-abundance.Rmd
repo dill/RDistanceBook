@@ -142,10 +142,21 @@ abundance_estimate(minke_hn_region, ~Region.Label)
 
 
 
+## Point transects
+
+Calculations for the abundance are the same for point transects as for lines, aside from the calculation of the covered area which of course is given by the area of the circular samplers not lines.
+
 
 ## Overall average detectability (`Average p`)
 
 An additional interesting statistic we might want to calculate is the overall average probability of detection (with the average being taken over all the observations). This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above (calculated as $\hat{P_a} = n/\hat{N}_\text{covered}$). For detection functions without covariates this will just equal the average detectability.
+
+
+## Recap
+
+This chapter has looked at how we calculate abundance once we've estimated our detection function. We've looked into how to calculate three useful summary statistics: the abundance in the study area or strata ($\hat{N}$), the average detectability over the samples ($\hat{P_a}$) and the abundance in the area covered in the survey ($\hat{N}_\text{covered}$).
+
+Although these summary statistics seem like the end point of the analysis, of equal (if not greater) importance is the uncertainty around the estimates. Understanding the variability in the abundance we've calculated will enable us to feel confident (or not) in our results. This will be covered in the next chapter.
 
 
 ## Further reading
@@ -157,7 +168,7 @@ An additional interesting statistic we might want to calculate is the overall av
 
 ## References
 
-[^averagep]: Here, as elsewhere, "average detectability" and "average probability of detection are used as synonyms. Though the latter is more precise, the fomer is much less unwieldy.
+[^averagep]: Here, as elsewhere, "average detectability" and "average probability of detection are used as synonyms. Though the latter is more precise, the former is much less unwieldy.
 [^minkesim]: The figure was adapted from @Hedley:2004et. The data and figure do not necessarily match up, but to give a rough representation of the simulated survey effort and observations.
 [^earstrata]: Eric's analysis, showing how to perform a stratified analysis can be found on the Distance website at [http://distancesampling.org/R/vignettes/minke.html](http://distancesampling.org/R/vignettes/minke.html).
 
