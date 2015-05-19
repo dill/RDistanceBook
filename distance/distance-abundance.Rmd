@@ -1,5 +1,5 @@
 ---
-title: Adundance estimation
+title: Estimating abundance
 bibliography: full.bib
 csl: biometrics.csl
 ---
@@ -10,32 +10,32 @@ source("../figure-captions.R")
 library(Distance2)
 ```
 
-So far we've looked at how to model the probability of detection via a detection function. Though this is interesting in itself, we usually only use the detection function as a stepping stone to get to an abundance estimate for the population that we're interested in. This chapter explores how to estimate abundance once a detection function has been fitted, revisiting some of the examples we've seen so far.
+So far we've looked at how to model the probability of detection by modelling the detection function. Though this is interesting in itself, we usually only use the detection function as a stepping stone to get to an abundance estimate for the population that we're interested in. This chapter explores how to estimate abundance once a detection function has been fitted, revisiting some of the examples we've seen so far and introducing some new ones.
 
-Our basic technique in this chapter is to estimate the abundance for the area we did survey, then scale this up to the larger area that we want to estimate abundance for. This scaling up involves assuming the area we scale up to is the same as the area that we surveyed and that the whole area is homogeneous. Sometimes that's not reasonable, so we'll go on to talk about estimating abundance in smaller areas (*strata*), for which we believe our assumption of homogeneity is reasonable.
+Our basic technique in this chapter is to estimate the abundance for the area we covered in the survey, then scale this up to the larger study area. This scaling up involves assuming the area we scale up to is the same as the area that we surveyed and that the whole area is homogeneous. Sometimes that's not reasonable, so we'll go on to talk about estimating abundance in smaller areas (*strata*), for which we believe our assumption of homogeneity is reasonable.
 
 
 ## Abundance in covered area
 
-One of the outputs of the `summary`s that we saw in the previous sections is the average detectability. In [What else affects detectability?](distance-covardf.html) we saw that many different average detectabilities were generated when covariates were included in the model.
+One of the outputs of the `summary`s that we saw in the previous sections is the average detectability[^averagep]. In [What else affects detectability?](distance-covardf.html) we saw that different average detectabilities were calculated for each unique covariate combination (in models where covariates were included). We can use the average detectability to estimate abundance.
 
-Although the average probability of detection is an interesting quantity in its own right, we are primarily interested in estimating abundance.
-
-We'll begin by estimating the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection (more precisely we re-weight by the inverse of the average probability of detection). The Horvitz-Thompson estimator is defined as:
+We'll begin by estimating the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}_\text{covered}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection (more precisely we re-weight by the inverse of the average probability of detection). The Horvitz-Thompson estimator for the abundance in the covered area is defined as:
 $$
 \hat{N}_\text{covered} = \sum_{i=1}^n \frac{s_i}{\hat{P_a}},
 $$
-where $s_i$ is the size of the group of the $i^\text{th}$ observation. So for each group (or individual) we saw, inflate them by $P_a$, then sum up over the groups.
+where $s_i$ is the size of the group of the $i^\text{th}$ observation. So for each group (or individual, if $s_i=1$ for every observation) we saw, inflate them by $P_a$, then sum up over the groups.
 
 Returning to the pantropical dolphins, we can do this very simply in R (recalling that the `predict` function will give us the average probabilities of detection for the observations):
 
 ```{r dolphins-covered}
 data(mexdolphins)
 mex.hn <- ds(mexdolphins, truncation=8000, model=df(scale=~size))
+# we use is.na() here to remove the sampling locations where no observations
+# occurred. See "Getting your data into shape".
 sum(mexdolphins$size[!is.na(mexdolphins$size)]/predict(mex.hn))
 ```
 
-In this case we fitted a simple half-normal model without covariates but the same code would work for a model where a covariate is included, as `predict` will give the correct average probabilities of detection. In this case we change out notation slightly mathematically, denoting the average probability of detection per observation as $p_i$:
+In this case we fitted a simple half-normal model without covariates but the same code would work for a model where a covariate is included, as `predict` will give the correct average probabilities of detection. In this case we change our notation slightly mathematically, denoting the average probability of detection per observation as $p_i$:
 
 $$
 \hat{N}_\text{covered} = \sum_{i=1}^n \frac{s_i}{\hat{p_i}},
@@ -47,51 +47,117 @@ Note that above we estimated the number of *individuals* in the covered area. It
 sum(1/predict(mex.hn))
 ```
 
-Now, neither of these numbers are particularly useful on their own. The number of animals (or groups) in the area we covered is not tremendously interesting. We now move on to scaling-up this estimate to larger areas.
-
-### Overall average detectability (`Average p`)
-
-Using this Horvitz-Thompson-like estimator we can calculate an average detectability over the observations. This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above (calculated as $\hat{P_a} = n/\hat{N}_\text{covered}$).
+Now, neither of these numbers are particularly useful on their own, we'd rather know about the wider study area.
 
 
 ## Scaling up abundance estimates
 
-The beauty of the Horvitz-Thompson estimator for the covered area is we require only probabilities in order to estimate abundance. To extrapolate beyond the covered area, we now need to include more information in our estimator: the area covered by transects (denoted $A_\text{covered}$) and the area of the region we want to scale up to (which we'll denote $A_\mathcal{R}$). More precisely, we use the following estimator:
+The beauty of the Horvitz-Thompson estimator for the covered area is we require only probabilities in order to estimate abundance (we'll denote the abundance generally as $\hat{N}$). To extrapolate beyond the covered area, we now need to include the area covered by transects (denoted $A_\text{covered}$) and the area of the region we want to scale up to (which we'll denote $A_\mathcal{R}$). More precisely, we use the following estimator:
 
 $$
 \hat{N} = \frac{A_\mathcal{R}}{A_\text{covered}}\sum_{i=1}^n \frac{s_i}{\hat{p_i}}.
 $$
 
-Now we could modify our R code, above and calculate the covered area and total area and simply premultiply by the ratio of these quantities but this will become unweildly when it comes to calculations for multiple strata (see below) and more importantly, when it comes to estimating our uncertainty in our estimates of abundance (see [How certain are we in our estimates?](distance-uncertainty.html)). We can instead use the function `abundance_estimate` to calculate the abundance for us, provided we have our data in a particular format ("`flatfile`", see [Getting your data into shape](appendix-dataformat.html)).
+Now we could modify our R code, above and calculate the covered area and total area and simply pre-multiply by the ratio of these quantities but this will become unwieldy when it comes to calculations for multiple strata (see below) and more importantly, when it comes to estimating our uncertainty in our estimates of abundance (see [How certain are we in our estimates?](distance-uncertainty.html)). We can instead use the function `abundance_estimate` to calculate the abundance for us, provided we have our data in a particular format ("`flatfile`", see [Getting your data into shape](appendix-dataformat.html)).
 
+Let's try this out using the `mexdolphins` data:
 
-###
+```{r}
+mex.abund <- abundance_estimate(mex.hn, ~1)
+```
 
+We've supplied two arguments to the function: a fitted detection function (which will contain the relevant data) and a formula that defines the stratification (see below for more on this). Here we specify the formula as simply `~1` indicating that there is no stratification and `abundance_estimate` will use the `Area` column in `mexdolphins` to calculate $A_\mathcal{R}$.
 
-## Stratification with two levels
+We can see abundance estimates and other summary statistics by just printing the object that `abundance_estimate` returns (or by not supplying an object to store the result, the same information will be printed).
 
-So far we have only investigated the abundance in the covered area -- the area that we physically walked (or flew or steamed etc) through. Generally we're interested in extrapolating beyond that, to the rest of a forest or area of the sea etc. In some systems it may be reasonable to assume that the whole study area is homogeneous (e.g. if it's at the same altitude/depth or has the same flora growing there or similar geographical features).
+```{r}
+mex.abund
+```
 
-Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth or salinity changes in a way that affects the study species. The second section of this book concerns how to explicitly deal with this problem when data is spatially explicit using a more complex modelling strategy. However, one alternative to that strategy is using a *stratified* analysis.
+The first table lists summary statistics, in order:
+
+  * `Area`: total study area, $A_\mathcal{R}$,
+  * `Effort`: total survey effort (line length or number of points),
+  * `CoveredArea`: area covered by the survey, $A_\text{covered}$,
+  * `n_observations`: number of observations,
+  * `n_samples`: number of transects visited,
+  * `ER`: encounter rate, number of observations, divided by total line length (more on this in the next chapter, [How certain are we in our estimates?](distance-uncertainty.html)).
+
+Note that the numbers for `Area`, `Effort` and `CoveredArea` above are very large as they are in measured metres (squared for `Area` and `CoveredArea`).
+
+The second table lists the abundance estimate (`Estimate`) then various metrics relating to our uncertainty in that estimate. The latter will be covered in detail in the next chapter, [How certain are we in our estimates?](distance-uncertainty.html).
+
+## Stratification
+
+The above abundance estimate assumes that the whole study area is homogeneous and that the pantropical spotted dolphins are uniformly distributed within it. Unfortunately this usually is not true. We often survey terrestrial areas where part of the study area is a bog, part is open fields part is forested; or a marine environment where depth, chlorophyll or salinity changes in a way that affects the study species. In later chapters we'll find that in the case of the Gulf of Mexico, dolphins are influenced by the water depth (see also @Miller:2013fq, Appendix A).
+
 
 ### Southern Ocean Minke whales
 
-To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research programme 1992-1993 austral summer surveys [@Branch:2001ua].
+To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research (IWC IDCR-SOWER) programme 1992-1993 austral summer surveys [@Branch:2001ua]. An example of the simulated data[^minkesim] is shown below.
+
+```{r hack-to-load-minke, fig.cap="Transects (lines) and observations (points) generated from and analysis the IWC's IDCR-SOWER 1992-1993 austral summer surveys. The studt area has been separated into two strata, North and South (above and below the stepped line).", fig.height=372/120, fig.width=582/120, echo=FALSE}
+library(png)
+im <- readPNG("minke-strata.png")
+grid::grid.raster(im)
+```
+
+Note that there is not only more effort (more transects) near the shore (furthest south wiggly line) but also more observations. It is thought that minke whales are associated to the sea ice, where they feed on krill [@Williams:2014bf].
+
+The analysis here is based on examples originally written by Eric Rexstad[^earstrata].
+
+We begin, as usual by fitting a detection function to the data, truncating at 1.5km:
+
+```{r minke-df}
+# load the minke data
+data(minke)
+minke$Region.Label.Area <- minke$Area
+minke_hn <- ds(minke, truncation=1.5)
+summary(minke_hn)
+```
+
+As before, we supply the fitted detection function object and a formula. This time the formula is `~Region.Label`, which separates the Northern and Southern regions of the study area.
+
+```{r minke-df-abund}
+abundance_estimate(minke_hn, ~Region.Label)
+```
+
+As a comparison we can set the total area and look at what the abundance would be estimated as if we considered a non-stratified analysis:
+
+```{r minke-df-abund-unstrat}
+minke_unstratified <- minke
+minke_unstratified$Area <- sum(unique(minke_unstratified$Region.Label.Area))
+minke_hn_unstrat <- ds(minke_unstratified, truncation=1.5)
+abundance_estimate(minke_hn_unstrat, ~1)
+```
+
+As we can see, ignoring the stratification leads to a much larger estimate of abundance, since we are extrapolating the average abundance of the two areas over the two strata, which have rather different numbers of observations (perhaps due to the ice association mentioned above).
+
+We can also include the region as a covariate in our detection function and again estimate the abundance:
+
+```{r minke-df-stratcov}
+minke_hn_region <- ds(minke, truncation=1.5, model=df(scale=~Region.Label))
+abundance_estimate(minke_hn_region, ~Region.Label)
+```
 
 
 
 
+## Overall average detectability (`Average p`)
 
-**Write code for this**
-
-**Should I plot the spatial distribution or transect lines here?**
+An additional interesting statistic we might want to calculate is the overall average probability of detection (with the average being taken over all the observations). This can be done by noting that if the sum were simply over the numerator of the fraction, we'd have the number of individuals observed. We can then think of the estimate of $\hat{N}$ as this number divided by some "average" detection probability, we'll refer to this as $\hat{P_a}$ and this is the quantity given in the `Average p` given in the `summary` output above (calculated as $\hat{P_a} = n/\hat{N}_\text{covered}$). For detection functions without covariates this will just equal the average detectability.
 
 
 ## Further reading
 
   * @Thompson:2002wi is a thorough and accessible text on sampling theory, covering the theoretical basis of the Horvitz-Thompson estimator.
+  * @Miller:2013fq Appendix A analyses the Gulf of Mexico dolphin data using a spatially explicit model. This will be revisited in later chapters, but is referenced here for completeness.
+  * @Borchers:2002vc covers in more detail how to estimate abundance from many different survey types.
 
 
 ## References
 
+[^averagep]: Here, as elsewhere, "average detectability" and "average probability of detection are used as synonyms. Though the latter is more precise, the fomer is much less unwieldy.
+[^minkesim]: The figure was adapted from @Hedley:2004et. The data and figure do not necessarily match up, but to give a rough representation of the simulated survey effort and observations.
+[^earstrata]: Eric's analysis, showing how to perform a stratified analysis can be found on the Distance website at [http://distancesampling.org/R/vignettes/minke.html](http://distancesampling.org/R/vignettes/minke.html).
 
