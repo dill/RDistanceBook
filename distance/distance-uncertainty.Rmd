@@ -29,16 +29,14 @@ $$
 
 Thinking about which components of the estimator we are uncertain about we can see that we have at least:
 
-  * *Model parameter uncertainty*: since we estimate the parameters of the detection function, we have some certainty about the values of those parameters. For example, as we have seen so far in the `summary` results, the scale parameter(s) of the half-normal detection function are accompanied by standard errors. We need to incorporate that uncertainty into our estimates of probability of detection and then abundance (*uncertainty propagation*).
-  * *Number of observations*:
+  * *Number of observations*: If we repeated our survey, we would expect that the number of animals we observed ($n$) to change each time since we don't expect them to be stationary in the intervening period. It's convenient (in terms of estimating the uncertainty) for us to think about the *encounter rate* rather than just $n$. For line transects teh encouter rate is defined as $n/L$ (where $L$ is the total length of the lines surveyed). For point transects the encounter rate is defined as $n/K$ (where $K$ is the total number of points visited).
+  * *Model parameters*: since we estimate the parameters of the detection function, we have some certainty about the values of those parameters. For example, as we have seen so far in the `summary` results, the scale parameter(s) of the half-normal detection function are accompanied by standard errors. We need to incorporate that uncertainty into our estimates of probability/probabilities of detection ($p_i$) and hence abundance (*propagating* the uncertainty).
 
 Plus, perhaps:
 
-  * *Group size uncertainty*: 
-  * *Line length uncertainty* (for line transect models):
+  * *Group size*: Though we can observe that animals are grouped, it is often difficult to count how many animals are in the group (particularly in a marine situation where cetaceans or birds may be diving and surfacing). We may therefore attach uncertainty to our measurements of group size.
+  * *Line length* (for line transect models): If the study design was randomly placed (either completely or as a zig-zag or grid offset[^surveydesign]), the line lengths may be random, as various physical features may get in the way of our line placement.
 
-
-### Detection function uncertainty
 
 
 
@@ -47,6 +45,25 @@ Plus, perhaps:
 
 
 
+
+### Detection function uncertainty
+
+The uncertainty from the estimation of the detection function parameters comes from usual maximum likelihood theory. In general in order to find parameters, we maximise a likelihood (a product of the probability densities for our observerations); the parameter values with the highest likelihood will be those selected.
+
+As a simple analogy, if we thought of a hazard-rate model, we could think of it's two parameters as the axes of a coordinate system and the likelihood of the parameters as the height of a given point in that system. We're interested in finding the location of the highest point (the maximum likelihood estimate; MLE) -- this is what the optimizer will do.
+
+Thinking about being at that highest point, as we look around we migth be at the top of a very sharp spike, on the other hand we may actually just be on a ridge with a point that happens to be just a bit higher than either side, we might just be on a small, flattish hill. We can characterise how "pointy" the MLE is mathematically by looking at it's second derivatives (called the *Hessian matrix*). If we're on a ridge we are uncertain about our estimate, since there are other values that are nearby that give very similar likelihoods for different parameter values[^hessianinverse].
+
+We can calculate the uncertainty of the model parameters by taking the Hessian matrix (which is a byproduct of the optimisation anyway) and inverting it, this will give us the variance of the parameters.
+
+To convert our uncertainty in parameters to uncertainty in the probability of detection, we use the *sandwich estimator* this takes our parameter variance and pre- and post-multiplies it by the derivaties of the Horvitz-Thompson estimator with respect to the parameters -- moving the estimate of variance into detectability-space rather than parameter-space:
+
+$$
+\text{Var}(\hat{p}_i) = \left[ \frac{\partial \hat{p}_i}{\partial \boldsymbol{\theta}} {\Bigg|}_{\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}}\right]^T
+(-H)^{-1} \left[ \frac{\partial \hat{p}_i}{\partial \boldsymbol{\theta}} {\Bigg|}_{\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}}\right]
+$$
+
+where $\frac{\partial \hat{p}_i}{\partial \boldsymbol{\theta}}$ is the derivative of the probability of detection with respect to the model parameters (the bread of the sandwich) and $H^{-1}$ is the inverse of the Hessian matrix (the filling of the sandwich). The vertical lines with $\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}$ at the bottom indicate that we evaluate the derivatives at their maximum likelihood values.
 
 ## Bootstraps
 
@@ -60,6 +77,12 @@ Plus, perhaps:
   * @Barry:2001tu initially prompted the writing of the next paper, questioning the then "standard" distance sampling variance estimator.
   * @Fewster:2009ku gives a more technical overview of the various variance estimators for distance sampling and a large simulation study evaluating them.
   * @Innes:2002ka provides an interesting account of how one addresses abundance estimation for a complex survey situation.
+  * zig-zag paper
+  * Steve's new book Chapter 2
+  * Ali and Tiago's paper on surveying plants?
 
 
 ## References
+
+[^surveydesign]: Survey design is out of the scope for us, though there are many good references on the topic. See [Further reading](#further-reading).
+[^hessianinverse]: We actually use the *inverse* of the Hessian, since the derivative of a very pointy peak would be large and this is actually when we are very certain about the paramers, therefore we invert.
