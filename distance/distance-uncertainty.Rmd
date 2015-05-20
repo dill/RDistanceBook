@@ -1,0 +1,65 @@
+---
+title: Variance estimation
+bibliography: full.bib
+csl: biometrics.csl
+
+---
+
+
+```{r echo=FALSE, message=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+library(Distance2)
+```
+
+In the last chapter we saw how to estimate abundance, but more important than these abundance estimates alone (referred to as *point estimates*), are their variances. It's important to remember that the $\hat{N}$s we estimated are realisations of a stochastic process, that's why we are leveraging statistical machinery against the problem.
+
+Understanding where uncertainty comes from allows one to begin to understand how one can improve a survey design and check that models are reasonable. Presenting uncertainty in an understandable way to those who want to use your results also allows them to understand the potential shortcomings of the results.
+
+In this chapter we will talk about how to estimate uncertainty in estimates of abundance, and in particular *how* these expressions are derived, so you can get an idea of what the uncertainty represents. Although this chapter is a little more statistically heavy, hopefully in understanding the material presented here you will be able to better understand what the causes of large uncertainties might be in your model. That is to say, "stick with it, it's worth it".
+
+
+## Where does uncertainty come from?
+
+We can identify the sources of uncertainty in our abundance estimates by thinking about the Horvitz-Thompson-like estimator for the abundance we saw in [Estimating abundance](distance-abundance.html):
+
+$$
+\hat{N} = \frac{A_\mathcal{R}}{A_\text{covered}}\sum_{i=1}^n \frac{s_i}{\hat{p_i}}.
+$$
+
+Thinking about which components of the estimator we are uncertain about we can see that we have at least:
+
+  * *Model parameter uncertainty*: since we estimate the parameters of the detection function, we have some certainty about the values of those parameters. For example, as we have seen so far in the `summary` results, the scale parameter(s) of the half-normal detection function are accompanied by standard errors. We need to incorporate that uncertainty into our estimates of probability of detection and then abundance (*uncertainty propagation*).
+  * *Number of observations*:
+
+Plus, perhaps:
+
+  * *Group size uncertainty*: 
+  * *Line length uncertainty* (for line transect models):
+
+
+### Detection function uncertainty
+
+
+
+
+### Encounter rate uncertainty
+
+
+
+
+## Bootstraps
+
+
+
+
+
+
+## Futher reading
+
+  * @Barry:2001tu initially prompted the writing of the next paper, questioning the then "standard" distance sampling variance estimator.
+  * @Fewster:2009ku gives a more technical overview of the various variance estimators for distance sampling and a large simulation study evaluating them.
+  * @Innes:2002ka provides an interesting account of how one addresses abundance estimation for a complex survey situation.
+
+
+## References
