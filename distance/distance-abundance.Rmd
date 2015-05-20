@@ -94,7 +94,7 @@ The above abundance estimate assumes that the whole study area is homogeneous an
 
 ### Southern Ocean Minke whales
 
-To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research (IWC IDCR-SOWER) programme 1992-1993 austral summer surveys [@Branch:2001ua]. An example of the simulated data[^minkesim] is shown below.
+To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research (IWC IDCR-SOWER) programme 1992-1993 austral summer surveys [@Branch:2001ua]. An example of the simulated data[^minkesim] is shown below. The analysis here is based on examples originally written by Eric Rexstad[^earstrata].
 
 ```{r hack-to-load-minke, fig.cap="Transects (lines) and observations (points) generated from and analysis the IWC's IDCR-SOWER 1992-1993 austral summer surveys. The studt area has been separated into two strata, North and South (above and below the stepped line).", fig.height=372/120, fig.width=582/120, echo=FALSE}
 library(png)
@@ -104,7 +104,7 @@ grid::grid.raster(im)
 
 Note that there is not only more effort (more transects) near the shore (furthest south wiggly line) but also more observations. It is thought that minke whales are associated to the sea ice, where they feed on krill [@Williams:2014bf].
 
-The analysis here is based on examples originally written by Eric Rexstad[^earstrata].
+
 
 We begin, as usual by fitting a detection function to the data, truncating at 1.5km:
 
@@ -116,13 +116,29 @@ minke_hn <- ds(minke, truncation=1.5)
 summary(minke_hn)
 ```
 
-As before, we supply the fitted detection function object and a formula. This time the formula is `~Region.Label`, which separates the Northern and Southern regions of the study area.
+The area above the stepped line in the above map is the North region and below is the South. We can estimate the abundance for each of these areas individually using the Horvitz-Thompson like estimator for each area. For example, for the North area:
+
+$$
+\hat{N}_\text{North} = \frac{A_\text{North}}{A_\text{North, covered}}\sum_{i \in \text{North}} \frac{s_i}{\hat{p_i}}.
+$$
+
+where $A_\text{North}$ is the total area of the North study area, $A_\text{North, covered}$ is the covered area within the North study area, and $i \in \text{North}$ denotes the observations in the North area.
+
+The column `Region.Label` separates the Northern and Southern regions of the study area, we can find their areas with the following code:
+
+```{r minke-areas}
+unique(minke[,c("Region.Label", "Region.Label.Area")])
+```
+
+As before, we supply the fitted detection function object and a formula. This time the formula is `~Region.Label`:
 
 ```{r minke-df-abund}
 abundance_estimate(minke_hn, ~Region.Label)
 ```
 
-As a comparison we can set the total area and look at what the abundance would be estimated as if we considered a non-stratified analysis:
+The output is similar to that of the pantropical spotted dolphins, though now we have an extra two lines, giving the statistics for each strata (note the the areas are as we expected).
+
+As a comparison of the resulting abundance estimates, we can set the total area and look at what the abundance would be estimated as if we considered a non-stratified analysis:
 
 ```{r minke-df-abund-unstrat}
 minke_unstratified <- minke
