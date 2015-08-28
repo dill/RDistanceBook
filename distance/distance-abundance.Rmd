@@ -19,7 +19,7 @@ Our basic technique in this chapter is to estimate the abundance for the area we
 
 One of the outputs of the `summary`s that we saw in the previous sections is the average detectability[^averagep]. In [What else affects detectability?](distance-covardf.html) we saw that different average detectabilities were calculated for each unique covariate combination (in models where covariates were included). We can use the average detectability to estimate abundance.
 
-We'll begin by estimating the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}_\text{covered}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection (more precisely we re-weight by the inverse of the average probability of detection). The Horvitz-Thompson estimator for the abundance in the covered area is defined as:
+We'll begin by estimating the number of animals in the covered area (that is, the area we actually surveyed -- the area we covered by transects out to the truncation distance). To compute this abundance estimate (which we'll denote $\hat{N}_\text{covered}$) we use a *Horvitz-Thompson-like estimator* [@Thompson:2002wi], which one can think of as "correcting" the size of the observations based on the probability of detection (more precisely we re-weight by the inverse of the average probability of detection). The Horvitz-Thompson estimator for the abundance in the covered area is defined as[^noverp]
 $$
 \hat{N}_\text{covered} = \sum_{i=1}^n \frac{s_i}{\hat{P_a}},
 $$
@@ -185,6 +185,7 @@ Although these summary statistics seem like the end point of the analysis, of eq
 ## References
 
 [^averagep]: Here, as elsewhere, "average detectability" and "average probability of detection are used as synonyms. Though the latter is more precise, the former is much less unwieldy.
+[^noverp]: Note we could write this as $n/\hat{P_a}$, but we leave the estimator in this form for comparison with the covariate case.
 [^minkesim]: The figure was adapted from @Hedley:2004et. The data and figure do not necessarily match up, but to give a rough representation of the simulated survey effort and observations.
 [^earstrata]: Eric's analysis, showing how to perform a stratified analysis can be found on the Distance website at [http://distancesampling.org/R/vignettes/minke.html](http://distancesampling.org/R/vignettes/minke.html).
 
