@@ -12,11 +12,11 @@ source("../figure-captions.R")
 library(Distance2)
 ```
 
-In the last chapter we saw how to estimate abundance, but more important than these abundance estimates alone (referred to as *point estimates*), are their variances. It's important to remember that the $\hat{N}$s we estimated are realisations of a stochastic process, that's why we are leveraging statistical machinery against the problem.
+In the last chapter we saw how to estimate abundance, but more important than these abundance estimates alone (referred to as *point estimates*), are their variances. The $\hat{N}$s we estimated are realisations of a stochastic process, that's why we are leveraging statistical machinery against the problem.
 
-Understanding where uncertainty comes from allows one to begin to understand how one can improve a survey design and check that models are reasonable. Presenting uncertainty in an understandable way to those who want to use your results also allows them to understand the potential shortcomings of the results.
+Understanding where uncertainty comes from allows one to improve a survey design and check that models are reasonable. Presenting uncertainty in an understandable way to those who want to use your results also allows them to understand the potential shortcomings of the results.
 
-In this chapter we will talk about how to estimate uncertainty in estimates of abundance, and in particular *how* these expressions are derived, so you can get an idea of what the uncertainty represents. Although this chapter is a little more statistically heavy, hopefully in understanding the material presented here you will be able to better understand what the causes of large uncertainties might be in your model. That is to say, "stick with it, it's worth it".
+In this chapter we will talk about how to estimate uncertainty in estimates of abundance, and in particular *how* these expressions are derived, so you can get an idea of what the uncertainty represents. Although this chapter is a little more statistically heavy, hopefully in understanding the material presented here you will be able to better understand what the causes of large uncertainties might be in your model -- that is to say: "stick with it, it's worth it".
 
 
 ## Where does uncertainty come from?
@@ -27,62 +27,97 @@ $$
 \hat{N} = \frac{A_\mathcal{R}}{A_\text{covered}}\sum_{i=1}^n \frac{s_i}{\hat{p_i}}.
 $$
 
-Thinking about which components of the estimator we are uncertain about we can see that we have at least:
+Thinking about which components of the estimator we are uncertain about, we can see that we have at least:
 
-  * *Number of observations*: If we repeated our survey, we would expect that the number of animals we observed ($n$) to change each time since we don't expect them to be stationary in the intervening period. It's convenient (in terms of estimating the uncertainty) for us to think about the *encounter rate* rather than just $n$. For line transects teh encouter rate is defined as $n/L$ (where $L$ is the total length of the lines surveyed). For point transects the encounter rate is defined as $n/K$ (where $K$ is the total number of points visited).
+  * *Number of observations*: If we repeated our survey, we would expect that the number of animals we observed ($n$) to change each time. This is because the detection process is random and also because we don't expect the animals to be stationary in the intervening period between surveys. It's convenient (when estimating the uncertainty) for us to think about the *encounter rate* rather than just $n$. For line transects the encounter rate is defined as $n/L$ (where $L$ is the total length of the lines surveyed). For point transects the encounter rate is defined as $n/K$ (where $K$ is the total number of points visited).
   * *Model parameters*: since we estimate the parameters of the detection function, we have some certainty about the values of those parameters. For example, as we have seen so far in the `summary` results, the scale parameter(s) of the half-normal detection function are accompanied by standard errors. We need to incorporate that uncertainty into our estimates of probability/probabilities of detection ($p_i$) and hence abundance (*propagating* the uncertainty).
 
 Plus, perhaps:
 
-  * *Group size*: Though we can observe that animals are grouped, it is often difficult to count how many animals are in the group (particularly in a marine situation where cetaceans or birds may be diving and surfacing). We may therefore attach uncertainty to our measurements of group size.
+  * *Group size*: We account for animals in groups via $s_i$ above, however, it is often difficult to count how many animals are in the group (particularly in a marine situation where cetaceans or birds may be diving and surfacing). We may therefore attach uncertainty to our measurements of group size ($s_i$).
   * *Line length* (for line transect models): If the study design was randomly placed (either completely or as a zig-zag or grid offset[^surveydesign]), the line lengths may be random, as various physical features may get in the way of our line placement.
-
-
 
 
 
 ### Encounter rate uncertainty
 
+As mentioned above, it's easier for us to think about the uncertainty in $n/L$, rather than $n$ alone. The estimators themselves look much like the estimators of variances you'll have seen in a regular statistics class. When we have a line transect analysis, we need to take into account the line length, so we weight by this.
 
+For line transects we can estimate the variance of the encounter rate as[^fewsterline]
+$$
+\widehat{\text{Var}}\left(\frac{n}{L}\right) = \frac{K}{L^2 (K-1)} \sum_{k=1}^{K} l_k^2 \left( \frac{n_k}{l_k} - \frac{n}{L}\right)^2
+$$
+where $l_k$ is the length of line $k$ (which there are $K$ of) and $L$ is the total line length (i.e. $\sum_k l_k = L$). The number of observations per line is denoted $n_k$, so $n = \sum_k n_k$.
+
+Whereas for point transects we have:
+$$
+\widehat{\text{Var}}\left(\frac{n}{Kt}\right) = \frac{1}{t^2K(K-1)} \sum_{k=1}^{K} \left( n_k - \frac{n}{K}\right)^2
+$$
+if there were $K$ points, each of which was visited $t$ times[^fewsterpt], so the total number of survey points is $Kt$. These estimators have quite similar forms, though for the point case, we don't have a "length" to deal with, we instead think about numbers of visits and points.
+
+Note that there are several variations on the estimator of the variance of encounter rate. The variations can be useful when particular survey setups are used. These are covered and compared comprehensively (though perhaps rather mathematically) in @Fewster:2009ku. We'll stick to using these estimators in this chapter, as they generally performs well in a wide variety of situations.
 
 
 ### Detection function uncertainty
 
 The uncertainty from the estimation of the detection function parameters comes from usual maximum likelihood theory. In general in order to find parameters, we maximise a likelihood (a product of the probability densities for our observerations); the parameter values with the highest likelihood will be those selected.
 
-As a simple analogy, if we thought of a hazard-rate model, we could think of it's two parameters as the axes of a coordinate system and the likelihood of the parameters as the height of a given point in that system. We're interested in finding the location of the highest point (the maximum likelihood estimate; MLE) -- this is what the optimizer will do.
+As a simple analogy, if we thought of a hazard-rate model, we could think of it's two parameters (shape and scale parameters) as the axes of a coordinate system and the likelihood of the parameters as the height of a given point in that system. We're interested in finding the location of the highest point (the maximum likelihood estimate; MLE) -- this is what the optimizer will try to do[^optimisationishard].
 
-Thinking about being at that highest point, as we look around we migth be at the top of a very sharp spike, on the other hand we may actually just be on a ridge with a point that happens to be just a bit higher than either side, we might just be on a small, flattish hill. We can characterise how "pointy" the MLE is mathematically by looking at it's second derivatives (called the *Hessian matrix*). If we're on a ridge we are uncertain about our estimate, since there are other values that are nearby that give very similar likelihoods for different parameter values[^hessianinverse].
+Thinking about being at that highest point, as we look around ideally we'd like to be at the top of a very sharp spike. On the other hand, we may actually just be on a ridge (with a thin path of approximately equal height stretching out in front of us) or we might just be on a small, flattish hill. We can characterise how "pointy" the MLE is mathematically by looking at it's second derivatives (called the *Hessian matrix*). If we're on a ridge or a flat hill we are uncertain about our estimate, since there are other values that are nearby that give very similar likelihoods for different parameter values[^hessianinverse].
 
 We can calculate the uncertainty of the model parameters by taking the Hessian matrix (which is a byproduct of the optimisation anyway) and inverting it, this will give us the variance of the parameters.
 
-To convert our uncertainty in parameters to uncertainty in the probability of detection, we use the *sandwich estimator* this takes our parameter variance and pre- and post-multiplies it by the derivaties of the Horvitz-Thompson estimator with respect to the parameters -- moving the estimate of variance into detectability-space rather than parameter-space:
-
+To convert our uncertainty in parameters to uncertainty in the probability of detection, we use the *sandwich estimator*. This takes our parameter variance and pre- and post-multiplies it by the derivatives of the Horvitz-Thompson estimator with respect to the parameters -- moving the estimate of variance into detectability-space rather than parameter-space:
 $$
-\text{Var}(\hat{p}_i) = \left[ \frac{\partial \hat{p}_i}{\partial \boldsymbol{\theta}} {\Bigg|}_{\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}}\right]^T
-(-H)^{-1} \left[ \frac{\partial \hat{p}_i}{\partial \boldsymbol{\theta}} {\Bigg|}_{\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}}\right]
+\text{Var}(\hat{P}_a) = \left[ \frac{\partial \hat{P}_a}{\partial \boldsymbol{\theta}} {\Bigg|}_{\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}}\right]^T
+(-H)^{-1} \left[ \frac{\partial \hat{P}_a}{\partial \boldsymbol{\theta}} {\Bigg|}_{\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}}\right]
 $$
+where $\frac{\partial \hat{P}_a}{\partial \boldsymbol{\theta}}$ is the derivative of the probability of detection with respect to the model parameters (the "bread" of the sandwich) and $H^{-1}$ is the inverse of the Hessian matrix (the "filling" of the sandwich). The vertical lines with $\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}$ at the bottom indicate that we evaluate the derivatives at their maximum likelihood values.
 
-where $\frac{\partial \hat{p}_i}{\partial \boldsymbol{\theta}}$ is the derivative of the probability of detection with respect to the model parameters (the bread of the sandwich) and $H^{-1}$ is the inverse of the Hessian matrix (the filling of the sandwich). The vertical lines with $\boldsymbol{\theta}=\hat{\boldsymbol{\theta}}$ at the bottom indicate that we evaluate the derivatives at their maximum likelihood values.
-
-## Bootstraps
-
+Note that in the above we use $P_a$ even in the covariate case. When covariates are included in the detection function we can find $P_a$ by working out what the value of $P_a$ would be needed to get the estimated $\hat{N}$ by calculating $P_a=n/\hat{N}$.
 
 
 
+### Putting it together
 
+We have now found the uncertainty in both the parameter estimates and the encounter rate. We now assume that these are independent and use the fact that squared coefficients of variation sum[^cvsumapprox]
+$$
+\text{CV}(\hat{N})^2 = \text{CV}\left(\frac{n}{L}\right)^2 + \text{CV}\left(\frac{1}{\hat{P_a}}\right)^2
+$$
+for line transects or
+$$
+\text{CV}(\hat{N})^2 = \text{CV}\left(\frac{n}{K}\right)^2 + \text{CV}\left(\frac{1}{\hat{P_a}}\right)^2
+$$
+for point transects.
+
+It is usually the case that the uncertainty stemming from the parameters of the detection function is dwarfed by the uncertainty from the encounter rate. This can be a useful check that calculations are correct.
+
+These calculations are made by `Distance2` when `abundance_estimate` is called to calculate abundance. As one might expect, `ER_Variance` gives the variance of $\frac{n}{K}$ and `Model_Variance` gives the variance of $\hat{P_a}$.
+
+
+## Post-stratification
+
+As mentioned in the previous chapter, stratification will reduce variance. This is because we are breaking up the CV terms in the above equations into sums of groups of observations that are more similar (e.g. they are from the same habititat type). This kind of post-stratification can be very useful.
+
+## Recap
+
+In this chapter we've looked at the potential sources of uncertainty in our estimates of abundance. We've looked at one possible way to estimate uncerttainty coming from the encounter rate (though there are many options depending on the survey setup) and we've seen how uncertainty in detection function parameters impacts our overall uncertainty via the detectability.
 
 ## Futher reading
 
   * @Barry:2001tu initially prompted the writing of the next paper, questioning the then "standard" distance sampling variance estimator.
   * @Fewster:2009ku gives a more technical overview of the various variance estimators for distance sampling and a large simulation study evaluating them.
   * @Innes:2002ka provides an interesting account of how one addresses abundance estimation for a complex survey situation.
-  * zig-zag paper
-  * Steve's new book Chapter 2
-  * Ali and Tiago's paper on surveying plants?
+  * @Strindberg:2004de gives information on zig-zag designs for line transect surveys.
+  * @Buckland:2007kl gives information on line transect surveying for plants and special considerations necessary.
 
 
 ## References
 
 [^surveydesign]: Survey design is out of the scope for us, though there are many good references on the topic. See [Further reading](#further-reading).
+[^fewsterline]: This is the estimator "R2" from @Fewster:2009ku.
+[^fewsterpt]: This is estimator "P1" from @Fewster:2009ku. Note that there are ifferent estimators for different survey setups (e.g. when each point is surveyed a different number of times), see Web Appendix B of @Fewster:2009ku. The authors note that results vary based on the statification scheme used.
+[^optimisationishard]: It's easy to think theoretically and think we can always find the maximum likelihood estimate (and therefore the "best" parameter estimates) but optimisation is hard so the best we can hope for is a "locally" optimum result (the best result for where we looked).
 [^hessianinverse]: We actually use the *inverse* of the Hessian, since the derivative of a very pointy peak would be large and this is actually when we are very certain about the paramers, therefore we invert.
+[^cvsumapprox]: Note that squared coefficients of variation sum *approximately*, see @Goodman:1960dd.
