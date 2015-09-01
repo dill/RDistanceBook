@@ -73,33 +73,7 @@ There are a number of reasons to model the distributions of biological populatio
   * Modelling abundance as a function of not only spatial location, but also other environmental covariates allows us to make ecological inference about the population -- what attracts a population to an area, what repels it?
   * Non-quantitatively-minded people find looking at maps much more compelling than simply a number (or worse, a table of numbers[^notables]). Displaying maps to a non-statistical audience can be an effective way to get their attention and have them engage with the modelling process (especially in terms of model checking and criticism, which can often seen like voodoo to non-statisticians).
 
-Thinking back to the Minke whale example that we saw in [Estimating abundance](distance-abundance.html), we used a stratified estimator of abundance to separate the study area into North and South strata. We can think of spatial modelling as taking the stratification area to it's limit and modelling small "boxes" in the study area.
 
-
-```{r unif-nonunif}
-set.seed(131) # same results every time
-library(mgcv) # for inSide
-
-N <- 500
-# generate uniform locations
-x <- runif(N)
-y <- runif(N)
-
-# plot it
-plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
-
-# now non-uniform
-
-```
-
-
-go back to 1st chapter -- what about non-uniform distribution?
-
-what can we do?
-
-what about visualising our results? spatially explicit is good
-
-time?
 
 
 
@@ -114,6 +88,6 @@ time?
 
 ## References
 
-[^notables]: For more discussion on graphs vs. tables see Gelman.... (get into Papers!)
+[^notables]: For more discussion on graphs vs. tables see @Gelman:2011hb.
 
 
