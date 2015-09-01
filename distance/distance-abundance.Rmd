@@ -96,7 +96,7 @@ The above abundance estimate assumes that the whole study area is homogeneous an
 
 To illustrate the use of strata we now look at some simulated data based on a survey of Antarctic minke whales (*Balaenoptera bonaerensis*). The data is simulated from models fitted to data from the International Whaling Commission's International Decade of Cetacean Research Southern Ocean Whale and Ecosystem Research (IWC IDCR-SOWER) programme 1992-1993 austral summer surveys [@Branch:2001ua]. An example of the simulated data[^minkesim] is shown below. The analysis here is based on examples originally written by Eric Rexstad[^earstrata].
 
-```{r hack-to-load-minke, fig.cap="Transects (lines) and observations (points) generated from and analysis the IWC's IDCR-SOWER 1992-1993 austral summer surveys. The studt area has been separated into two strata, North and South (above and below the stepped line).", fig.height=372/120, fig.width=582/120, echo=FALSE}
+```{r hack-to-load-minke, fig.cap="Transects (lines) and observations (points) generated from and analysis the IWC's IDCR-SOWER 1992-1993 austral summer surveys. The study area has been separated into two strata, North and South (above and below the stepped line).", fig.height=372/120, fig.width=582/120, echo=FALSE}
 library(png)
 im <- readPNG("minke-strata.png")
 grid::grid.raster(im)
