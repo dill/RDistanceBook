@@ -62,7 +62,7 @@ Notes:
 
    - http://www.unc.edu/courses/2008fall/ecol/563/001/docs/lectures/lecture14.htm
    - http://www.johndcook.com/blog/2009/11/03/negative-binomial-poisson-gamma/
-
+   * ver Hoef and Boveng (2007?)
 
 ## Smoothing
 
@@ -118,6 +118,8 @@ TODO
     - integrating out certain parameters?
 
 delta method http://www.ats.ucla.edu/stat/r/faq/deltamethod.htm
+
+Ferrier S, Watson G, Pearce J, Drielsma M. 2002. Extended statistical approaches to modelling spatial pattern in biodiversity: the north-east New South Wales experience. I. Species-level modelling. Biodivers. Conserv. 11:2275–307
 
 ## Obtaining additional covariates
 
