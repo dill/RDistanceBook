@@ -1,8 +1,11 @@
 HTML_FILES := $(patsubst %.Rmd, %.html ,$(wildcard *.Rmd)) \
 							$(patsubst %.md, %.html ,$(wildcard *.md))   \
 							$(patsubst %.Rmd, %.html ,$(wildcard distance/*.Rmd)) \
-							$(patsubst %.md, %.html ,$(wildcard distance/*.md))
-graphics_dirs := $(wildcard distance/*_files)
+							$(patsubst %.md, %.html ,$(wildcard distance/*.md)) \
+							$(patsubst %.Rmd, %.html ,$(wildcard dsm/*.Rmd)) \
+							$(patsubst %.md, %.html ,$(wildcard dsm/*.md))
+graphics_dirs := $(wildcard distance/*_files) \
+								 $(wildcard dsm/*_files)
 
 all: html graphics
 
