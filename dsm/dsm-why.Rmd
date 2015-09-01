@@ -1,0 +1,119 @@
+---
+title: Why build spatial models?
+bibliography: ../full.bib
+csl: ../biometrics.csl
+animation: true
+---
+
+```{r echo=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+```
+
+Looking back at the first chapter [Introduction to distance sampling](distance-intro.html), we saw some simulations of animal populations. In these examples animals were distributed pretty uniformly accross the survey area. There is no reason to think that real animals will follow such a uniform distribution in space (in fact they rarely do) -- prey availability, altitude/depth, ease of movement and many other factors play a role in dictating the spatial distribution of animals.
+
+Taking another look at the pantropical spotted dolphins in the Gulf of Mexico, the data were collected with spatial information. We can plot this in two ways, first simply looking at histograms of counts with respect to covariate values:
+
+```{r pantropical-geo-eda-hist, fig.width=10, fig.height=3, fig.cap="Histograms showing the number of dolphins observed at different Eastings, Northings and depths in the Gulf of Mexico. We can see that there are distinct peaks at particular values and avoidance of other values.", echo=FALSE}
+# load dsm for the data
+library(dsm)
+library(ggplot2)
+library(gridExtra)
+
+data(mexdolphins)
+
+# awkward aggregate step
+count_data <- aggregate(obsdata$size,
+                              list(obsdata$Sample.Label), sum)
+names(count_data) <- c("Sample.Label", "count")
+dat <- merge(segdata, count_data, by="Sample.Label", all.x=TRUE)
+dat$count[is.na(dat$count)] <- 0
+
+# just grab the non-zero count samples
+dat_nonzero <- dat[dat$count>0,]
+
+# use ggplot2 so we can weight by the counts
+p <- list()
+p[[1]] <- ggplot(dat_nonzero)
+p[[1]] <- p[[1]] + geom_histogram(aes(x=x, weight=count), binwidth=100000)
+p[[1]] <- p[[1]] + theme_minimal()
+p[[1]] <- p[[1]] + xlab("Easting (m)") + ylab("Count")
+
+p[[2]] <- ggplot(dat_nonzero)
+p[[2]] <- p[[2]] + geom_histogram(aes(x=y, weight=count), binwidth=100000)
+p[[2]] <- p[[2]] + theme_minimal()
+p[[2]] <- p[[2]] + xlab("Northing (m)") + ylab("Count")
+
+p[[3]] <- ggplot(dat_nonzero)
+p[[3]] <- p[[3]] + geom_histogram(aes(x=depth, weight=count), binwidth=250)
+p[[3]] <- p[[3]] + theme_minimal()
+p[[3]] <- p[[3]] + xlab("Depth (m)") + ylab("Count")
+
+# plot all that (why we needed to load gridExtra)
+grid.arrange(grobs=p, ncol=3)
+```
+
+and additionally by plotting the observations over the top of the spatial covariate values:
+```{r pantropical-geo-eda-plot, fig.width=10, echo=FALSE, fig.cap="Bathymetry of the Gulf of Mexico study area with observations of pantropical spotted dolphins (green points) and transect lines (red lines) overlaid."}
+pred.polys <-plyr::ldply(pred.polys@polygons, fortify)
+pred.polys$depth <- preddata$depth[rep(1:nrow(preddata), rep(5, nrow(preddata)))]
+p <- ggplot(pred.polys, aes(x=long, y=lat, group=id, fill=depth)) + geom_polygon()
+p <- p + geom_point(aes(x=x, y=y, size=count, group=NULL),
+                    colour="#b2df8a", data=dat_nonzero)
+p <- p + geom_line(aes(x, y, group=Transect.Label), colour="#d95f02", data=segdata)
+p <- p + xlab("Easting") + ylab("Northing") + theme_minimal()
+print(p)
+```
+
+
+
+There are a number of reasons to model the distributions of biological populations explicitly in space:
+
+  * First and foremost, as alluded to above, we note that animals do not generally have uniform distributions in space and their locations are largely dictated by biotic and abiotic environmental variables (as well as behavioural responses and other factors). In order to create realistic models we should take into account as many factors as possible that influence the distribution and abundance of the population in question. Since we then model the abundances on a smaller spatial scale (than when using the Horvtiz-Thompson estimator we saw in [Estimating abundance](distance-abundance.html)), we can also expect to make gains in terms of more precise estimates of abundance.
+  * Modelling abundance as a function of not only spatial location, but also other environmental covariates allows us to make ecological inference about the population -- what attracts a population to an area, what repels it?
+  * Non-quantitatively-minded people find looking at maps much more compelling than simply a number (or worse, a table of numbers[^notables]). Displaying maps to a non-statistical audience can be an effective way to get their attention and have them engage with the modelling process (especially in terms of model checking and criticism, which can often seen like voodoo to non-statisticians).
+
+Thinking back to the Minke whale example that we saw in [Estimating abundance](distance-abundance.html), we used a stratified estimator of abundance to separate the study area into North and South strata. We can think of spatial modelling as taking the stratification area to it's limit and modelling small "boxes" in the study area.
+
+
+```{r unif-nonunif}
+set.seed(131) # same results every time
+library(mgcv) # for inSide
+
+N <- 500
+# generate uniform locations
+x <- runif(N)
+y <- runif(N)
+
+# plot it
+plot(x,y, pch=19,asp=1,cex=0.4,main="",col="grey")
+
+# now non-uniform
+
+```
+
+
+go back to 1st chapter -- what about non-uniform distribution?
+
+what can we do?
+
+what about visualising our results? spatially explicit is good
+
+time?
+
+
+
+
+
+## Recap
+
+## Further reading
+
+  * @Elith:2009gj provide a review of species distribution modelling, including history and broad conceptual overview.
+
+
+## References
+
+[^notables]: For more discussion on graphs vs. tables see Gelman.... (get into Papers!)
+
+

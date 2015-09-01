@@ -1,0 +1,14 @@
+html_document:
+  self_contained: false
+  theme: journal
+  highlight: textmate
+  mathjax: null
+  toc_depth: 2
+  lib_dir: libs
+  fig_width: 5
+  fig_height: 5
+  includes:
+    in_header: ../include/in_header.html
+    before_body: ../include/before_body.html
+    after_body: ../include/after_body.html
+
