@@ -10,11 +10,14 @@ animation: true
 source("../figure-captions.R")
 ```
 
-Looking back at the first chapter [Introduction to distance sampling](distance-intro.html), we saw some simulations of animal populations. In these examples animals were distributed pretty uniformly accross the survey area. There is no reason to think that real animals will follow such a uniform distribution in space (in fact they rarely do) -- prey availability, altitude/depth, ease of movement and many other factors play a role in dictating the spatial distribution of animals.
+Looking back at the first chapter [Introduction to distance sampling](distance-intro.html), we saw some simulations of animal populations. In these examples animals were distributed pretty uniformly across the survey area. There is no reason to think that real animals will follow such a uniform distribution in space (in fact they rarely do) -- prey availability, altitude/depth, ease of movement and many other factors play a role in dictating the spatial distribution of animals.
 
 Taking another look at the pantropical spotted dolphins in the Gulf of Mexico, the data were collected with spatial information. We can plot this in two ways, first simply looking at histograms of counts with respect to covariate values:
 
-```{r pantropical-geo-eda-hist, fig.width=10, fig.height=3, fig.cap="Histograms showing the number of dolphins observed at different Eastings, Northings and depths in the Gulf of Mexico. We can see that there are distinct peaks at particular values and avoidance of other values.", echo=FALSE}
+
+
+
+```{r pantropical-geo-eda-hist, fig.width=10, fig.height=3, fig.cap="Histograms showing the number of dolphins observed at different Eastings, Northings and depths in the Gulf of Mexico.", echo=FALSE, message=FALSE}
 # load dsm for the data
 library(dsm)
 library(ggplot2)
@@ -53,8 +56,10 @@ p[[3]] <- p[[3]] + xlab("Depth (m)") + ylab("Count")
 grid.arrange(grobs=p, ncol=3)
 ```
 
-and additionally by plotting the observations over the top of the spatial covariate values:
-```{r pantropical-geo-eda-plot, fig.width=10, echo=FALSE, fig.cap="Bathymetry of the Gulf of Mexico study area with observations of pantropical spotted dolphins (green points) and transect lines (red lines) overlaid."}
+We can see from the histograms that there are distinct peaks at particular values and avoidance of other values. For example, form this crude exploratory analysis we see that the dolphins tend to be observed near the centre of the survey area and appear to avoid shallow waters.
+
+The one-dimensional slices offered by the histograms are useful, but don't tell the full story about what's happening in these data. So, we plot the observations over the top of the spatial covariate values:
+```{r pantropical-geo-eda-plot, fig.width=10, echo=FALSE, fig.cap="Bathymetry of the Gulf of Mexico study area with observations of pantropical spotted dolphins (green points) and transect lines (red lines) overlaid.", message=FALSE}
 pred.polys <-plyr::ldply(pred.polys@polygons, fortify)
 pred.polys$depth <- preddata$depth[rep(1:nrow(preddata), rep(5, nrow(preddata)))]
 p <- ggplot(pred.polys, aes(x=long, y=lat, group=id, fill=depth)) + geom_polygon()
@@ -65,7 +70,22 @@ p <- p + xlab("Easting") + ylab("Northing") + theme_minimal()
 print(p)
 ```
 
+Also plotted (in red) are the transect lines that the Oregon II sailed. This shows that the survey had relatively good coverage of the survey area in space, but less good coverage in terms of the depth covariate.
 
+To give an idea of the location of the study area within the Gulf of Mexico, we can also plot the study area with context:
+
+```{r map-in-gulf, fig.width=6, fig.height=3, fig.cap="Location of the study area within the Gulf of Mexico.", message=FALSE, echo=FALSE}
+library(magrittr)
+library(leaflet)
+leaflet(data = survey.area) %>%
+  addTiles() %>%
+  addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
+```
+
+From the above plots we can see that there is definitely some correlation between the pantropical spotted dolphins and the covariates we've collected on location and depth. The aim of this section is to talk about how to model this relationship. Before we go into the details of the models we'll use, let's first think about why one might want to do such an analysis.
+
+
+## Why go through all the fuss?
 
 There are a number of reasons to model the distributions of biological populations explicitly in space:
 
