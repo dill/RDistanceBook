@@ -13,7 +13,7 @@ author: David L. Miller
   * [X] Sillero, N. “What Does Ecological Modelling Model? a Proposed Classification of Ecological Niche Models Based on Their Underlying Methods.” Ecological Modelling 222, no. 8 (2011): 1343–46. doi:10.1016/j.ecolmodel.2011.01.018.
     - "Soberón (2010) made a distinction between species distribution models (for predicting strictly the species’ distribution) and ecological niche models (for forecasting an approximation to the species’ niche)." Can correlative models really find niches? More terminology (yay): realised vs fundemental niche (do correlative models give fundemental niches? Predict in suitable areas that are uninhabited due to tectonic movements etc -- this dude (and lots of others) think(s) "no" (and that they are only modelling the realised niche) because of the spatial part of the spatial model, but I think maybe yes?) Also presence & presence/absence models are problematic in this respect. "when calculating ensemble models (Araújo and New, 2007), we are mixing different species niches." "the distribution of suit- able habitats that is being predicted by the model, rather than the species’ distribution per se (Pearson, 2007)."
   * [ ] Warren, DL, M Cardillo, DF Rosauer, and DI Bolnick. “Mistaking Geography for Biology: Inferring Processes From Species distributions.” Trends in Ecology & Evolution, (2014), 1–9. doi:10.1016/j.tree.2014.08.003.
-  * [ ] Elith, J, and JR Leathwick. “Species Distribution Models: Ecological Explanation and Prediction Across Space and Time.” Annual Review of Ecology, Evolution, and Systematics 40, no. 1 (2009): 677–97. doi:10.1146/annurev.ecolsys.110308.120159.
+  * [X] Elith, J, and JR Leathwick. “Species Distribution Models: Ecological Explanation and Prediction Across Space and Time.” Annual Review of Ecology, Evolution, and Systematics 40, no. 1 (2009): 677–97. doi:10.1146/annurev.ecolsys.110308.120159.
   * [ ] Evans, Matthew R, Volker Grimm, Karin Johst, Tarja Knuuttila, Rogier de Langhe, Catherine M Lessells, Martina Merz, et al. “Do Simple Models Lead to Generality in Ecology?.” Trends in Ecology & Evolution, July 1, 2013, 1–6. doi:10.1016/j.tree.2013.05.022.
   * [ ] Soley-Guardia, Mariano, Aleksandar Radosavljevic, Jhanine L Rivera, and Robert P Anderson. “The Effect of Spatially Marginal Localities in Modelling Species Niches and Distributions.” Edited by Miguel Araújo. Journal of Biogeography 41, no. 7 (March 31, 2014): 1390–1401. doi:10.1111/jbi.12297.
   * [ ] Howard, Christine, Philip A Stephens, James W Pearce-Higgins, Richard D Gregory, and Stephen G Willis. “Improving Species Distribution Models: the Value of Data on Abundance.” Edited by Jana McPherson. Methods in Ecology and Evolution 5, no. 6 (May 10, 2014): 506–13. doi:10.1111/2041-210X.12184.
@@ -33,7 +33,7 @@ author: David L. Miller
 
 # GAM:
 
-  * [ ] Wood, Simon N. Generalized Additive Models: an Introduction with R, Chapman & Hall/CRC, 2006.
+  * [X] Wood, Simon N. Generalized Additive Models: an Introduction with R, Chapman & Hall/CRC, 2006.
   * [ ] Augustin, Nicole H, Verena M Trenkel, Simon N Wood, and Pascal Lorance. “Space-Time Modelling of Blue Ling for Fisheries Stock Management.” Environmetrics 24, no. 2 (2013): 109–19. doi:10.1002/env.2196.
   * [ ] Augustin, NH, M Musio, K von Wilpert, E Kublin, Simon N Wood, and M Schumacher. “Modeling Spatiotemporal Forest Health Monitoring Data.” Journal of the American Statistical Association 104, no. 487 (2009): 899–911.
   * [ ] Wood, Simon N. “Fast Stable Restricted Maximum Likelihood and Marginal Likelihood Estimation of Semiparametric Generalized Linear Models.” Journal of the Royal Statistical Society. Series B, Statistical Methodology 73, no. 1 (2011): 3–36.
@@ -43,9 +43,9 @@ author: David L. Miller
 
 # DSM:
 
-  * [ ] Hedley, Sharon L, S T Buckland, and D L Borchers. “Spatial Modelling From Line Transect Data.” Journal of Cetacean Research and Management 1, no. 3 (1999): 255–64.
-  * [ ] Hedley, Sharon L, and S T Buckland. “Spatial Models for Line Transect Sampling.” Journal of Agricultural, Biological, and Environmental Statistics 9, no. 2 (2004): 181–99. doi:10.1198/1085711043578.
-  * [ ] Miller, David Lawrence, M Louise Burt, E A Rexstad, and L Thomas. “Spatial Models for Distance Sampling Data: Recent Developments and Future Directions.” Methods in Ecology and Evolution 4, no. 11 (August 27, 2013): 1001–10. doi:10.1111/2041-210X.12105.
+  * [X] Hedley, Sharon L, S T Buckland, and D L Borchers. “Spatial Modelling From Line Transect Data.” Journal of Cetacean Research and Management 1, no. 3 (1999): 255–64.
+  * [X] Hedley, Sharon L, and S T Buckland. “Spatial Models for Line Transect Sampling.” Journal of Agricultural, Biological, and Environmental Statistics 9, no. 2 (2004): 181–99. doi:10.1198/1085711043578.
+  * [X] Miller, David Lawrence, M Louise Burt, E A Rexstad, and L Thomas. “Spatial Models for Distance Sampling Data: Recent Developments and Future Directions.” Methods in Ecology and Evolution 4, no. 11 (August 27, 2013): 1001–10. doi:10.1111/2041-210X.12105.
 
 
 # Response distributions:

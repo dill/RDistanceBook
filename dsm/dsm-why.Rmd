@@ -70,7 +70,9 @@ p <- p + xlab("Easting") + ylab("Northing") + theme_minimal()
 print(p)
 ```
 
-Also plotted (in red) are the transect lines that the Oregon II sailed. This shows that the survey had relatively good coverage of the survey area in space, but less good coverage in terms of the depth covariate.
+Also plotted (in red) are the transect lines that the Oregon II travelled. This shows that the survey had relatively good coverage of the survey area in space, but less good coverage in terms of the depth covariate.
+
+From the above plots we can see that there is definitely some correlation between the pantropical spotted dolphins and the covariates we've collected on location and depth. 
 
 To give an idea of the location of the study area within the Gulf of Mexico, we can also plot the study area with context:
 
@@ -82,32 +84,32 @@ leaflet(data = survey.area) %>%
   addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
 ```
 
-From the above plots we can see that there is definitely some correlation between the pantropical spotted dolphins and the covariates we've collected on location and depth. The aim of this section is to talk about how to model this relationship. Before we go into the details of the models we'll use, let's first think about why one might want to do such an analysis.
-
+The aim of this section is to talk about how to model this relationship. Before we go into the details of the models we'll use, let's first think about why one might want to do such an analysis.
 
 ## Why go through all the fuss?
 
 There are a number of reasons to model the distributions of biological populations explicitly in space:
 
-  * First and foremost, as alluded to above, we note that animals do not generally have uniform distributions in space and their locations are largely dictated by biotic and abiotic environmental variables (as well as behavioural responses and other factors). In order to create realistic models we should take into account as many factors as possible that influence the distribution and abundance of the population in question. Since we then model the abundances on a smaller spatial scale (than when using the Horvtiz-Thompson estimator we saw in [Estimating abundance](distance-abundance.html)), we can also expect to make gains in terms of more precise estimates of abundance.
+  * First and foremost, as alluded to above, we note that animals do not generally have uniform distributions in space and their locations are largely dictated by biotic and abiotic environmental variables (as well as behavioural responses and other factors). This becomes more problematic as the study area becomes bigger. In order to create realistic models we should take into account as many factors as possible that influence the distribution and abundance of the population in question.
+  * Since we then model the abundances on a smaller spatial scale (than when using the Horvtiz-Thompson estimator we saw in [Estimating abundance](distance-abundance.html)), we can also expect to make gains in terms of more precise estimates of abundance.
   * Modelling abundance as a function of not only spatial location, but also other environmental covariates allows us to make ecological inference about the population -- what attracts a population to an area, what repels it?
   * Non-quantitatively-minded people find looking at maps much more compelling than simply a number (or worse, a table of numbers[^notables]). Displaying maps to a non-statistical audience can be an effective way to get their attention and have them engage with the modelling process (especially in terms of model checking and criticism, which can often seen like voodoo to non-statisticians).
 
-
-
-
-
-
+Often the first and last reasons above dominate most peoples' motivation for building spatially explicit models: they need to know where animals are and they want to display this information to others.
 
 ## Recap
+
+This chapter looked breifly at the Gulf of Mexico data again, showing that there are spatial elements to the data. If abundance is non-uniform with respect to spatial or environmental covariates we should model this variation to ensure the most precise estimates of abundance. The next few chapters will explain how this is possible using the R package `dsm`.
+
 
 ## Further reading
 
   * @Elith:2009gj provide a review of species distribution modelling, including history and broad conceptual overview.
+  * @Warren:2012bv, @McInerny:2013db and @Sillero:2011da discuss the nomenclature of the spatial modelling of animal distributions (sometimes called "niche modelling" or "species distribution modelling").
 
 
 ## References
 
-[^notables]: For more discussion on graphs vs. tables see @Gelman:2011hb.
+[^notables]: For more (light-hearted) discussion on graphs vs. tables see @Gelman:2011hb.
 
 
