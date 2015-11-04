@@ -11,7 +11,7 @@ source("../figure-captions.R")
 
 In the last chapter we looked at how we could model the probability of an animal being detected using the distances to the animals from the transect. A little thought leads us to believe that in addition to distance, other factors will influence the detection probability. For example: a pod of 50 whales will be much easier to spot than a single whale; it's harder to see birds early in the morning when it's dark and misty; and it's much more difficult to see (or do) anything when the sea is extremely choppy. We'd like to take these factors into account when we're building our detection function, to ensure that we can model the detection process as accurately as possible.
 
-Distance sampling methods have a property known as *pooling robustness* which means that if we assume that the heterogeneity in detectability is relatively small (i.e. there's not much variation between animals in how detectable they are), then estimates of abundance will not be biased (though they might have high variance; @burnham:2004vd, Section 11.12). This means that usually we do not need to worry about bias but if we can model the heterogeneity in detectability then we can improve the precision of our abundance estimates @[Marques:2007ey].
+Distance sampling methods have a property known as *pooling robustness* which means that if we assume that the heterogeneity in detectability is relatively small (i.e. there's not much variation between animals in how detectable they are), then estimates of abundance will not be biased (though they might have high variance; @burnham:2004vd, Section 11.12). This means that usually we do not need to worry about bias but if we can model the heterogeneity in detectability then we can improve the precision of our abundance estimates [@Marques:2007ey].
 
 Let's return to the pantropical spotted dolphin example from the previous chapter. During the survey data was collected on Beaufort sea state -- a measure of the roughness of the sea (1 is "light air" with small waves,  5 ""fresh breeze" with moderate waves[^beaufort]). Observers also recorded the size of each group of dolphins that were detected. We can plot these against the observed distances...
 ```{r dolphins-seastate-size-distance, fig.width=9, echo=FALSE, result="hide", fig.cap="Exploratory data analysis for the effects on recorded distance of Beaufort sea state (left) and observed group size (right). Dashed lines indicate the fit of a linear model through the data (giving a slightly decreasing distance with increasing sea state and increasing distance with increasing group size. Solid lines show a LOESS smooth through the data. Note that the data shown have had the observations with the two largest observed group sizes removed.", message=FALSE}
@@ -69,7 +69,7 @@ plot(hn.dolphins.size)
 ```
 The right panel of the plot shows that larger groups are easier to detect than smaller ones.
 
-Methods for including covariates in distance sampling detection functions have a long history (@Beavers:1998wk is an early contribution to this area). The beginning of a rigorous approach to such models is @Marques:2003vb, though @Marques:2007vm is somewhat more accessible.
+Methods for including covariates in distance sampling detection functions have a long history (@Beavers:1998wk is an early contribution to this area). The beginning of a rigorous approach to such models is @Marques:2003vb, though @Marques:2007ey is somewhat more accessible.
 
 For the half-normal model we obtained an average detectability of `r round(predict(hn.df)[1],4)`, where as now the average probability of detection is `r round(summary(hn.dolphins.size)$pN[1,1],4)`. Though this is the *average* (across observed covariates)[^paverages] detectability, for a given group size we have a different value of the detectability, mathematically we can now view the probability of detection and the detection function as functions of the covariates[^pcovfun]. So now, for each observed value of a covariate we have a probability of detection. Mathematically:
 $$
@@ -92,13 +92,14 @@ plot(mexdolphins$size[!is.na(mexdolphins$size)], predict(hn.dolphins.size), xlab
 
 ## Adding and selecting covariates
 
-We can add the Beaufort sea state covariate into the model, alongside group size by simply adding it into the formula:
+We can add the Beaufort sea state covariate into the model, alongside group size by simply adding it into the formula. Before doing so we ensure that sea state is a factor covariate:
 ```{r hn-dolphins-size-beaufort}
+mexdolphins$beaufort <- as.factor(mexdolphins$beaufort)
 hn.dolphins.size.beaufort <- ds(mexdolphins, truncation=8000, model=df(scale=~size+beaufort))
 summary(hn.dolphins.size.beaufort)
 ```
 As Beaufort sea state is included as a factor covariate, which gives us a number of extra parameters in the model. We can see the effect of adding the covariate in a plot:
-```{r dolphins-covar-beaufort-plot, fig.height=4, fig.width=9, fig.cap="Fitted detection function for the pantropical spotted dolphin data where the size and Beaufort sea state were included as covariates. Left plot shows the detection function when size and Beaufort sea state are fixed at their median value; the middle plot shows the detection function with size held at its median value and Beaufort sea state varying where as the right plot shows the effect varying group size over its quantile values and fixing Beaufort sea state at its median."}
+```{r dolphins-covar-beaufort-plot, fig.height=4, fig.width=9, fig.cap="Fitted detection function for the pantropical spotted dolphin data where the size and Beaufort sea state were included as covariates. Left plot shows the detection function when size and Beaufort sea state are fixed at their median values. The middle plot shows the detection function with size held at its median value and Beaufort sea state varying, where as the right plot shows the effect varying group size over its quantile values and fixing Beaufort sea state at its median."}
 plot(hn.dolphins.size.beaufort)
 ```
 The middle plot above shows that there is little difference in the lower sea states, but a considerable difference once we get to sea state 5, when we see a much faster decrease in probability of detection.
@@ -126,7 +127,7 @@ names(mod_table)[4:5] <- c("$P_a$", "$\\text{CV}(P_a)$")
 kable(mod_table, format="pandoc")
 ```
 
-Using the table, we can see that the best model by AIC is the one with only size included as a covariate. Also note that the AIC-best model also has the lowest coefficient of variation ($\text{CV}(P_a)$; in general we expect covariate models to be more precise @Marques:2007vm).
+Using the table, we can see that the best model by AIC is the one with only size included as a covariate. Also note that the AIC-best model also has the lowest coefficient of variation ($\text{CV}(P_a)$; in general we expect covariate models to be more precise @Marques:2007ey).
 
 
 
