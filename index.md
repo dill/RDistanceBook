@@ -6,7 +6,7 @@ Welcome to the *Practical distance sampling in R* "book" webpage. You can use th
 
 ## A book about distance sampling...
 
-During 2014-2015, I ([Dave Miller](http://converged.yt)) am writing a book about how to use R to estimate animal abundance, in particular using distance sampling methods. An outline...
+During 2014-2017, I ([Dave Miller](http://converged.yt)) am writing a book about how to use R to estimate animal abundance, in particular using distance sampling methods. An outline...
 
 **Aim**: the book will explain how to build models of distance sampling data using packages available for the programming language R. It will be assumed that readers have already conducted field work and have data to analyse.
 
@@ -25,7 +25,7 @@ Initially the book will consist of two parts, though this may well get expanded 
     * *How certain are we in our estimates?*: uncertainty estimation, explanation of variance components.
   2. Spatial models for distance sampling data
     * *Why build spatial models?*: Why use a DSM rather than just Horvitz-Thompson? What are the benefits/costs?
-    * *Survey set up*: what does a DSM survey look like? Data setup.
+    * *Survey data setup*: what does a DSM survey look like? Data setup.
     * *Model formulation*: what do we require from the model, 2-stage modelling, why GAMs? What does the response mean?
     * *Crash course in GAMs*: What are GAMs? Wigglyness, penalties, "this is just a GLM"
     * *Adding covariates*: static vs. dynamic variables, how does this dichotomy change the response. Term selection, how do we know a term is "useful"? How do we interpret smooth terms? When should we use random effects?
@@ -52,10 +52,10 @@ I'm writing the book "in the open" in the hope that those interested will contri
 A `git` repository containing the text of the book [can be found on github](http://github.com/dill/RDistanceBook). You can use github's [Issues](https://github.com/dill/RDistanceBook/issues) to submit suggestions, or (if you're more `git` savvy) you can [submit pull requests](https://help.github.com/articles/using-pull-requests/) to alter the content.
 
 
-## A book without a publisher...
+## A book with a publisher!
 
-If you're a publisher and you'd like to print a dead tree version of these pages, I'd be very interested in talking to you.
+As of 2017, I am happy to announce the book will published by [Pelagic](https://pelagicpublishing.com/) sometime in 2018 as part of their "Data in the Wild" series.
 
-If you are interested in obtaining a dead tree copy of these pages, then please let me know by [filling in this Google Form](https://docs.google.com/forms/d/1z5bFFd_GpUXeVzbr5wuwoUKT5wvhNizrGpEOiCZik58/viewform); having evidence of demand will make it more likely that paper copy will exist. If you fill in the form, I'll e-mail you if a paper copy becomes (or is likely to become) available but won't use your address for any other reason.
+If you are interested in obtaining a dead tree copy of these pages, then please let me know by [filling in this Google Form](https://docs.google.com/forms/d/1z5bFFd_GpUXeVzbr5wuwoUKT5wvhNizrGpEOiCZik58/viewform). I'll e-mail you with updates as a paper copy becomes available but won't use your address for any other reason.
 
 
