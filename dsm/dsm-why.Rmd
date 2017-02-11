@@ -10,12 +10,9 @@ animation: true
 source("../figure-captions.R")
 ```
 
-Looking back at the first chapter [Introduction to distance sampling](distance-intro.html), we saw some simulations of animal populations. In these examples animals were distributed pretty uniformly across the survey area. There is no reason to think that real animals will follow such a uniform distribution in space (in fact they rarely do) -- prey availability, altitude/depth, ease of movement and many other factors play a role in dictating the spatial distribution of animals.
+Looking back at the first chapter, [Introduction to distance sampling](distance-intro.html), we saw some simulations of animal populations. In these examples animals were distributed pretty uniformly across the survey area. In reality, the locatio  of animals in space is driven by a variety of factors: climate, prey availability, ease of movement and more play a role.
 
-Taking another look at the pantropical spotted dolphins in the Gulf of Mexico, the data were collected with spatial information. We can plot this in two ways, first simply looking at histograms of counts with respect to covariate values:
-
-
-
+Taking another look at the pantropical spotted dolphins in the Gulf of Mexico, the data were collected with spatial information (location of observations and bathymetry at those points). We can investigate the relationship between these covariates and the observered counts by plotting the data in two ways, first simply looking at histograms of counts with respect to covariate values:
 
 ```{r pantropical-geo-eda-hist, fig.width=10, fig.height=3, fig.cap="Histograms showing the number of dolphins observed at different Eastings, Northings and depths in the Gulf of Mexico.", echo=FALSE, message=FALSE}
 # load dsm for the data
@@ -56,17 +53,35 @@ p[[3]] <- p[[3]] + xlab("Depth (m)") + ylab("Count")
 grid.arrange(grobs=p, ncol=3)
 ```
 
-We can see from the histograms that there are distinct peaks at particular values and avoidance of other values. For example, form this crude exploratory analysis we see that the dolphins tend to be observed near the centre of the survey area and appear to avoid shallow waters.
+We can see from the histograms that there are distinct peaks at particular values and avoidance of other values. For example, from this crude exploratory analysis we see that the dolphins tend to be observed near the centre of the survey area and appear to avoid shallow waters.
 
-The one-dimensional slices offered by the histograms are useful, but don't tell the full story about what's happening in these data. So, we plot the observations over the top of the spatial covariate values:
+The one-dimensional slices offered by the histograms are useful, but don't tell the full story about what's happening in these data. So, we plot the observations over a map of the depth values:
+
 ```{r pantropical-geo-eda-plot, fig.width=10, echo=FALSE, fig.cap="Bathymetry of the Gulf of Mexico study area with observations of pantropical spotted dolphins (green points) and transect lines (red lines) overlaid.", message=FALSE}
+# get the prediction polygons in order
 pred.polys <-plyr::ldply(pred.polys@polygons, fortify)
 pred.polys$depth <- preddata$depth[rep(1:nrow(preddata), rep(5, nrow(preddata)))]
-p <- ggplot(pred.polys, aes(x=long, y=lat, group=id, fill=depth)) + geom_polygon()
-p <- p + geom_point(aes(x=x, y=y, size=count, group=NULL),
-                    colour="#b2df8a", data=dat_nonzero)
-p <- p + geom_line(aes(x, y, group=Transect.Label), colour="#d95f02", data=segdata)
-p <- p + xlab("Easting") + ylab("Northing") + theme_minimal()
+
+# get the map of GoM
+library(mapdata)
+map_dat <- map_data("worldHires",c("usa","mexico"))
+lcc_proj4 <- CRS("+proj=lcc +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs ")
+map_sp <- SpatialPoints(map_dat[,c("long","lat")])
+proj4string(map_sp) <-CRS("+proj=longlat +datum=WGS84")
+# re-project
+map_sp.t <- spTransform(map_sp, CRSobj=lcc_proj4)
+map_dat$x <- map_sp.t$long
+map_dat$y <- map_sp.t$lat
+
+# build the plot
+p <- ggplot(pred.polys, aes(x=long, y=lat, group=id, fill=depth)) +
+  geom_polygon() +
+  geom_point(aes(x=x, y=y, size=count, group=NULL),
+             colour="#b2df8a", data=dat_nonzero)+
+  geom_line(aes(x, y, group=Transect.Label), colour="#d95f02", data=segdata) +
+  labs(x="Easting", y="Northing") + theme_minimal() +
+  coord_equal(ylim = range(segdata$y), xlim = range(segdata$x)) +
+  geom_polygon(aes(x=x, y=y, group = group), fill = "#1A9850", data=map_dat)
 print(p)
 ```
 
@@ -74,28 +89,18 @@ Also plotted (in red) are the transect lines that the Oregon II travelled. This 
 
 From the above plots we can see that there is definitely some correlation between the pantropical spotted dolphins and the covariates we've collected on location and depth. 
 
-To give an idea of the location of the study area within the Gulf of Mexico, we can also plot the study area with context:
-
-```{r map-in-gulf, fig.width=6, fig.height=3, fig.cap="Location of the study area within the Gulf of Mexico.", message=FALSE, echo=FALSE}
-library(magrittr)
-library(leaflet)
-leaflet(data = survey.area) %>%
-  addTiles() %>%
-  addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
-```
-
 The aim of this section is to talk about how to model this relationship. Before we go into the details of the models we'll use, let's first think about why one might want to do such an analysis.
 
 ## Why go through all the fuss?
 
 There are a number of reasons to model the distributions of biological populations explicitly in space:
 
-  * First and foremost, as alluded to above, we note that animals do not generally have uniform distributions in space and their locations are largely dictated by biotic and abiotic environmental variables (as well as behavioural responses and other factors). This becomes more problematic as the study area becomes bigger. In order to create realistic models we should take into account as many factors as possible that influence the distribution and abundance of the population in question.
-  * Since we then model the abundances on a smaller spatial scale (than when using the Horvtiz-Thompson estimator we saw in [Estimating abundance](distance-abundance.html)), we can also expect to make gains in terms of more precise estimates of abundance.
+  * First and foremost, stated above, we note that animals do not generally have uniform distributions in space and their locations are largely dictated by biotic and abiotic environmental variables. This becomes problematic for abundance estimation as the study area becomes bigger or the relationship between distribution and environmental factors becomes more complex. In order to create realistic models we should take into account as many factors as possible that influence the distribution and abundance of the population in question.
+  * Since we then model the abundances on a smaller spatial scale (than when using the Horvtiz-Thompson estimator we saw in [Estimating abundance](distance-abundance.html)), we can also expect more precise estimates of abundance.
   * Modelling abundance as a function of not only spatial location, but also other environmental covariates allows us to make ecological inference about the population -- what attracts a population to an area, what repels it?
-  * Non-quantitatively-minded people find looking at maps much more compelling than simply a number (or worse, a table of numbers[^notables]). Displaying maps to a non-statistical audience can be an effective way to get their attention and have them engage with the modelling process (especially in terms of model checking and criticism, which can often seen like voodoo to non-statisticians).
+  * Non-quantitatively-minded people find looking at maps much more compelling than simply a number (or worse, a table of numbers[^notables]). Displaying maps to a non-statistical audience can be an effective way to get their attention and have them engage with the modelling process (especially in terms of model checking and criticism, which can often seen like magic to non-statisticians).
 
-Often the first and last reasons above dominate most peoples' motivation for building spatially explicit models: they need to know where animals are and they want to display this information to others.
+Often the first and last reasons above dominate most peoples' motivation for building spatially explicit models: they need to know where animals are and they want this information to be accessible to others.
 
 ## Recap
 
