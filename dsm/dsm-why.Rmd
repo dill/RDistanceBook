@@ -102,6 +102,16 @@ There are a number of reasons to model the distributions of biological populatio
 
 Often the first and last reasons above dominate most peoples' motivation for building spatially explicit models: they need to know where animals are and they want this information to be accessible to others.
 
+## Model-based analysis
+
+
+The major contrast between the approach detailed in this chapter and that of the previous chapters is that we now consider *model*-based inference about the biological populations in question rather than *design*-based inference. This has some advantages and some disadvantages. A spatially-explicit model can explain the between-transect variation (which is often a large component of the variance in design-based estimates) and so using a model-based approach can lead to smaller variance in estimates of abundance than design-based estimates.
+
+
+- more here coverage prob., incidental surveys etc
+
+
+
 ## Recap
 
 This chapter looked breifly at the Gulf of Mexico data again, showing that there are spatial elements to the data. If abundance is non-uniform with respect to spatial or environmental covariates we should model this variation to ensure the most precise estimates of abundance. The next few chapters will explain how this is possible using the R package `dsm`.

@@ -1,0 +1,138 @@
+---
+title: Formulating spatial models
+bibliography: ../full.bib
+csl: ../biometrics.csl
+animation: true
+---
+
+```{r echo=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+```
+
+Now we know that we want to use spatial models for our data, we need to think about how to formulate the models, so we can construct and fit them. As is common in statistics *there's more than one way to do it* (TMTOWTDI; Wall ????): we have multiple modelling options and it can be daunting to work out just how to model a particular data set. There are a huge number of possible spatial modelling approaches in ecology alone. Different methods make different assumptions and lead to different interpretations of the results. Some are less flexible than others. Many methods will only model presence (or probability of presence) of animals, we're really interested in estimating abudance and this moves us away from many popular methods (such as MaxEnt; @Elith:2010ce). With distance sampling data, we really have useful information about where animals *aren't* and how easy they are to detect -- we want to use that information in our spatial models.
+
+In this chapter, I'll set out why generalized additive models are a good idea for many of the potential modelling situations we're likely to come across. Sometimes GAMs won't be enough, or they'll be too complex -- they aren't a solution for *every* problem, but they can solve a lot of them. Most usefully, there is a large literature on how to check the assumptions that go into a GAM, this is essential to ensuring that our abundance estimates make sense.
+
+We start by thinking about the properties we'd like to have from our spatial model and then show that the approach I'll expand on over the rest of the book has these properties[^determinism].
+
+
+## What do we want from a spatial model?
+
+We need to account for quite a few things when building models of animal distribution. We can think about them and their possible effects on the model by simply thinking about the observation and biological processes that are in action during the survey and the eventual goals of the modelling work.
+
+
+- More intro here?
+
+### Distribution
+
+Let's start with the underlying process that says where the animals are. Even if we could see every animal with no problems and could perform a census, we'd still want to model their distribution. Distribution can be driven by many factors: climate, competition, prey availability, social learning, seasonal migration and more. Our hope might be to model the most relevant of these (or at least proxies for them) and try to explain distribution. We can describe the distribution using only location too -- there are philosophical and practical reasons to do so (see XXXX). In general we seek to build a model of one or more covariates that describes the counts that we saw.
+
+How might we like these effects to be formulated? In a linear regression model we would assume that the effects of the covariates are linear, that is we can describe them in the form "if I increase variable X by one unit, we see an increase/decrease in response Y by so many units". These models are simple but don't describe a lot of ecological data very well. Much like the three bears, many animals have a "just right" point for certain covariates. For example, sperm whales may want to hang out near canyons to find squid to eat, but their dives are limited by their biology as well as where squid are abundant; we expect that sperm whales will have some depth were they (roughly) optimise these criteria. So if linear functions of the covariates are out for describing our effects, what else can we do?
+
+We can add quadratic and higher polynomial terms to the linear effects and make them more flexible[^quadreg]. Although this can get us some of the way to the kind of effects we want to model 1) this doesn't scale very well 2) it's not very elegant. We would prefer a "framework" for including wiggly terms in our models, and that's exactly what generalized additive models do. GAMs use splines, a more rigorous version of "adding a quadratic" that ensures that very flexible shapes can be estimated. Details are covered in XXXX but for now let's just think about wiggles...
+
+We'll refer to the spline terms in our models as "smooths", this leads us to investigate an assumption of these terms: what do we mean by smooths? We think that distribution, as a function of the smoothed covariate varies in a smooth way, that is that small changes in the covariate lead to small changes in the distribution. For example, going from an altitude of 200m to 201m doesn't see a big step change in the abundance of, say, black bears on a hillside. For some covariates we might not think this is realistic, but then we can use other kinds of terms.
+
+The "additive" part of GAM refers to how the terms are included in the model: they add together. This doesn't mean that there can't be interactions or multivariate terms, it just means that once those terms are included, they are added. Both the linear effects that we already know well and other terms like random effects can also be included in the GAM framework and there's more about them in Chapter XXXX.
+
+An important part of formulating spatial models is understanding what the model really *means*. One consideration in that vein is understanding the scale (both temporal and spatial) of the covariates and samples used in the model. We will think about this further in XXXX.
+
+### Effort and sample units
+
+We need to account for the sampling effort put into the survey. If we sample one area and cover 10km of linear transects and see 1 animal, the model should view this differently than surveying 10m and seeing 10 animals. Ensuring that effort is correctly recorded is essential to ensuring that the results of any modelling exercise is correct.
+
+When line transects are used to collect data, we have a slight issue when it comes to what our sampling unit should be. Line transects are generally long and can cover a wide variety of the values of the covariates that we seek to use to explain distribution. Using the transect as the sample unit in our model will then lead to us needing to average our environmental covariates to the transect level -- averaging out over potentially very different values. This can be especially problematic for shipboard surveys where each transect may be 1000's of kilometres long and cover oceanographic features like shelfbreaks, where vastly different processes can be at work.
+
+In order to get around this issue, we chop our transects up into *segments* (sometimes called *snippets*) each of which encompass roughly the same amount of time or distance on effort. Since we collected location information on our observations, we know which segment each of our observations lie in.
+
+- what about a nice diagram here showing the segmenting and where observations are?
+
+```{r segmenting}
+## here is a diagram of segmenting
+```
+
+### Detectability
+
+As we have seen so far, detectability is very important when it comes to estimating abundance. We estimate detectability for density surface models using exactly the framework laid out previously. All of the assumptions of fitting detection functions seen in XXXX apply here too, we must ensure that these assumptions are met -- doing fancy spatial modelling does not give us a get-out when it comes to modelling detectability.
+
+As in the Horvitz-Thompson estimators we saw in XXXX, we use the average probability of detection to account for detectability in the spatial models.
+
+As well as detectability, we'd also like to include any effects of how long animals are availabile to be detected or other "corrections" to the counts we saw, as these can have a major effect on final abundance estimates (if an animal is only at the surface of the water for 30% of the time, our estimates could be very wrong).
+
+
+## Putting it all together
+
+We have two main model forms for our DSMs, depending on the response we want to use. The first of these models is conceptually simple but cannot be used in all situations. The second is more applicable, but more tricky to understand and use.
+
+
+### The count model
+
+The count model is exactly that, the response is the count in each segment (the sum of all the individuals in the given segment) and we try to explain that using the functions of the covariates, while accounting for effort and detectability. Mathematically, we write:
+$$
+\mathbb{E}\left(n_j\right) = A_j\hat{p}_j \exp\left[\beta_0 + \sum_k s_k(z_{kj}) \right],
+$$
+where we index the segments by $j$ and:
+
+  - $\mathbb{E}\left(n_j\right)$ is what we're modelling: the expected value of the counts in the $j^\text{th}$ segment,
+  - $A_j$ is the area of the segment,
+  - $\hat{p}_j$ is the estimated probability of detection in the segment,
+  - $\exp$ is the inverse link function for the response distribution we use to model the response (usually the link is $\log$ and the inverse is therefore $\exp$),
+  - $\beta_0$ is the intercept for the model,
+  - $s_k(z_{kj})$ are smooths (indexed by $k$) of the covariates, for each segment that we'll use to model the counts.
+
+An important limitation of this model is that detectability can only vary at the scale of the segments. So detection covariates can include, e.g., foliage density or Beaufort sea state but not things like observer identity or group size.
+
+### Estimated abundance model
+
+An alternative formulation for the model is to use a Horvitz-Thompson estimate of abundance in each segment then model along the same lines as above. Now our response is:
+$$
+\hat{n}_j = \sum_{i \text{ in segment } j} \frac{s_i}{p_i}.
+$$
+We use this summary per segment so we don't have to deal with covariates that vary at a scale finer than that of the segment. The model can how be written as:
+$$
+\mathbb{E}\left(\hat{n}_j\right) = A_j \exp\left[\beta_0 + \sum_k s_k(z_{kj}) \right].
+$$
+Note that the quantities are the same as in the previous equation, but detectability is accounted for in the response now, rather than in the model.
+
+An important special case to consider that these models don't explicitly deal with is if group size varies with space -- the segment-level summaries of the response made here mean that the spatial model thinks in terms of counts, so if for example animals form large groups when there are large prey aggregations, we will miss this. As we'll see in XXXX, there are other possible, more complex, modelling options, but we'll stick with these two for now.
+
+
+## Modelling process overview
+
+The models above come together as part of a process, they are fitted in multiple stages and combined as we go. Figure XXX shows the process of putting together our models, from getting the data in order to inference. This forms the outline for the rest of the book.
+
+```{r flow-dia}
+### here is a flow diagram for the modelling process
+```
+
+Unlike some other methods where we must formulate our model from start to finish on day one, we can adapt our model as we go and not pay the price of it taking a long time to refit. We fit our detection functions, choose the best few, and then combine them with some possible spatial models, again comparing as we go. We can also use the multi-stage nature of the model to give different team members different modelling tasks: if one person in your group knows a lot about detection function modelling, they can do that part, somewhat separate to the rest of the spatial modelling. We also can check each component of the model as we go and be sure that each part works on its own; this can be a powerful technique for ensuring that the model is as good as possible and makes it much easier to see errors (without getting lost in the details of a huge, complex model).
+
+Generally very little information is lost by taking a two-stage modelling approach. This is because transects are typically very narrow compared with the width of the study area so, provided no significant density variation takes place "across" the width of the lines or within the point, there is no information in the distances about the spatial distribution of animals (this is an assumption of two-stage approaches).
+
+Two-stage approaches are effectively "divide and conquer" techniques: concentrating on the detection function first, and then, given the detection function, fitting the spatial model. One-stage models are more difficult to both estimate and check as both steps occur at once; models are potentially simpler from the perspective of the user and perhaps more mathematically elegant.
+
+Two-stage models have the disadvantage that to accurately quantify model uncertainty one must appropriately combine uncertainty from the detection function and spatial models. This can be challenging; however, the alternative of ignoring uncertainty from the detection process \cite[e.g.][]{Niemi:2010kx} can produce confidence or credible intervals for abundance estimates that have coverage below the nominal level.
+
+
+
+
+
+## Recap
+
+Here we've looked at one approach amongst the many available to model the spatial distribution of animals. Generalized additive models offer a wide variety of different possible modelling options for covariates, response and have a well-founded set of checking procedures. Using them as a base, we can include detectability in one of two ways (either via the offset, giving an effective area surveyed or via the response, correcting observed counts). This multi-stage approach lends itself well to ensuring that each part of the model is correct.
+
+In the next section we'll look at how to get your data in order, before starting to fit some models.
+
+## Further reading
+
+ - Numerous other approaches to spatial modelling with distance sampling data have been proposed, these include: @Johnson:2009gf, @Niemi:2010kx, @Chelgren:2011us, @Schmidt:2011ec, @Conn:2012bx and XXXYUAN.
+
+
+
+
+## References
+
+
+[^determinism]: this is a *fait accompli*, there are many modelling options. This doesn't mean the others don't do this or that this approach does them better, necessarily.
+[^quadreg]: maybe you've done this before by fitting something like `lm(y~x+x^2)` in R?

@@ -1,0 +1,101 @@
+---
+title: Survey data setup
+bibliography: ../full.bib
+csl: ../biometrics.csl
+animation: true
+---
+
+```{r echo=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+```
+
+In this section we'll investigate how to setup our data in R so we can go on to build spatial models. This is somewhat more involved than when we fitted detection functions as we need to link the detection data to spatial locations. We'll also look at some sime visualisations and exploratory plots one can make to reveal potentially interesting relationships in the data and check that the data has been imported correctly.
+
+## From field work to R
+
+This book doesn't cover the intricacies of survey design or field data collection procedure, but it will stress (here!) the necessity of ensuring that the collected data is accurate and meets the assumptions of the models we're going to fit.
+
+An important consideration that can often get swept under the carpet when complex models are being fitted is that no matter how fancy your model is it **cannot** make up for poorly collected data. Ensuring that the distance sampling assumptions mentioned in XXXX are met is just as important when a spatial model is being applied as when a Horvitz-Thompson estimator is being used. Sometimes we can let go of some of the assumptions of our models (CITE) but this is at a price: we then require further data to estimate a model for that missing assumption. We are trading assumptions for data.
+
+Using a spatial model, we no longer *require* that the coverage probability in the study area is even (or estimable) but an approximately even design is essential to ensuring reliable inference. There's little that can be learnt about a whole system from a survey that covers only one side of a habitat. This seems obvious, yet it's surprisingly common to see these principles violated.
+
+That said, kept to field procedure (CITE) and ensuring good coverage in the design, there is then the issue of getting the data into R and processing it correctly for model fitting. Ensuring that when data are collected, they are in a unified format, that things like time and dates are recorded consistently and that data review happens during the survey (e.g., in the evening) to ensure that all observers are keeping to data collection procedure.
+
+Typically tracklines or points can be saved from a GPS unit as they are realised, along with time when the survey was on-effort. This information, rather than the design of the survey, is essential to ensuring the data reflects what happened in the field accurately. Simply using the design in the model will give false zeros and lead to incorrect inference. Different surveys will require different technology to record this data, smartphone and tablet-based solutions can be useful, as can using a dictaphone or pen and paper. Careful review and consistency in collection are more important than which gadget is used.
+
+- collecting covariates in the field
+  - what
+  - how
+
+## Segmenting
+
+
+**revise**
+
+Both line and point transects survey data can be used in a DSM analysis. If lines are used then they are are split into segments (indexed by $j$), which are of length $l_j$. Segments should be small enough such that neither density of objects nor covariate values vary appreciably within a segment. Usually, making segments approximately square ($2w\times 2w$, where $w$ is the truncation distance) is sufficient as usually sighting distances are usually on a much smaller scale than the scale on whcih covariates vary (TKTKTK this is discussed futher in SECTIONXXX). The area of each segment enters the model as (or as part of) an offset: the area of segment $j$ is $A_j = 2wl_j$ and for point $j$ is $A_j=\pi w^2$. We simply refer to "segments" to refer to both split lines and points and disambiguate when necessary.
+
+Count or estimated abundance per  segment is modelled as a sum of smooth functions of covariates ($z_{jk}$ with $k$ indexing the covariates, e.g., location, sea surface temperature, weather conditions; measured at the segment/point level) using a generalized additive model. Smooth functions are modelled as splines, providing flexible unidimensional (and higher-dimensional) curves (and surfaces, etc) that describe the relationship between the covariates and response. \cite{Wood:2006wz} and \cite{ruppert2003semiparametric} provide more in-depth introductions to smoothing and generalized additive models.
+
+TKTKTK diagram of the bears in boxes here?
+
+We begin by describing a formulation where only covariates measured per-segment (e.g. habitat, Beaufort sea state) are included in the detection function. We later expand this simple formulation to include observation level covariates (e.g., cluster size, species) in the detection function.
+
+
+
+
+- how big?
+- time or space?
+- how?
+
+
+## Data formatting for `dsm`
+
+In order to build our models, we need to get our data into the right set of tables to feed to the `dsm` package.
+
+
+Two data.frames must be provided to dsm. They are referred to as observation.data and segment.data. The segment.data table has the sample identifiers which define the segments, the corresponding e↵ort (line length) expended and the environmental covariates that will be used to model abundance/density. obser- vation.data provides a link table between the observations used in the detection function and the samples (segments), so that we can aggregate the observations to the segments (i.e. observation.data is a ”look-up table” between the observations and the segments).
+
+- Plot them to show how they join up
+
+
+
+### Distance data and detection function
+
+The format for the recorded distances and covariates to fit the detection function is the same format as we've seen previously. A single `data.frame` should be provided to `Distance` with at least the following columns:
+
+* `distance` observed perpendicular distance to observation from the line
+* `object` unique identifier for the observation
+
+Each row corresponds to one observation. If there are additional detection covariates they are entered as additional columns. The `dsm` package only sees these data as part of the fitted detection function that it uses to correct for detectability.
+
+
+segment.data
+The segment data.frame must have (at least) the following columns:
+Effort the e↵ort (in terms of length of the segment) Sample.Label identifier for the segment (unique!)
+??? environmental covariates, for example: location (projected latitude and longitude), and other relevant covariates (sea surface temperature, bathymetry etc).
+
+
+### Observation data -- linking detections and segments
+
+The `observation.data` `data.frame` links the observations of individuals and groups must have the following columns:
+
+- `object` unique object identifier, matching one in the distance data
+- `Sample.Label` the identifier for the segment that the observation occurred in, matching one in the segment data
+- `size` the size of each observed group (e.g 1 if all animals occurred individually) distance distance to observation
+
+
+
+
+
+## Recap
+
+
+## Further reading
+
+- @Thomas:2007wz and @Williams:2007tc show how to design and analyse a survey in a geographically complex region (coastal British Columbia, including islands and fjords).
+
+## References
+
+
+

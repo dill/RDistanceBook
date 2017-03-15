@@ -13,3 +13,5 @@ This doesn't necessarily live in the book, but is used for consistency.
   * $y$ always refers to general distances
   * $x$ always refers to perpendiculat distances
   * $r$ always refers to radial distances
+  * *generalized* is spelt with a "z"
+
