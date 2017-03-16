@@ -71,9 +71,12 @@ Each row corresponds to one observation. If there are additional detection covar
 
 
 segment.data
+
 The segment data.frame must have (at least) the following columns:
-Effort the e↵ort (in terms of length of the segment) Sample.Label identifier for the segment (unique!)
-??? environmental covariates, for example: location (projected latitude and longitude), and other relevant covariates (sea surface temperature, bathymetry etc).
+
+- `Effort` the effort (in terms of length of the segment)
+- `Sample.Label` identifier for the segment (unique!)
+- `???` environmental covariates, for example: location (projected latitude and longitude), and other relevant covariates (sea surface temperature, bathymetry etc).
 
 
 ### Observation data -- linking detections and segments
