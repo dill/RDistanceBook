@@ -127,7 +127,7 @@ The Tweedie distribution (CITE XXXX) is not a single distribution at all, but ra
 
 Tweedie distributions are often referred to in the statistical literature as "gamma mixtures of Poisson random variables", while this may seem a little opaque it is a useful way of thinking about them... Intuitively we can think of our survey (ship or person or plane) travelling to a given segment, at this segment, we either see something or we don't (gamma distributed) and if we do see something, we see a given count (Poisson distributed).
 
-The power parameter, $q$, dictates which distribution we get and also tells us what the mean-variance relationship will be. The mean-variance relationship is given by: $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})^q$. Setting $q=1 \Rightarrow$ Poisson, $q=2 \Rightarrow$ Gamma and $q=3 \Rightarrow$ Normal. Once $q$ gets below $1.2$, we see some odd behaviour from the distribution (we get a multimodal distribution, which seems unrealistic. We are only interested in distributions between $1.2 < q < 2$ and really there is not much difference in the distributions if we vary $q$ at below the first decimal place (so we really only need to think about $q = 1.2, 1.3, \ldots, 1.9$, as shown in figure XXXX).
+The power parameter, $q$, dictates which distribution we get and also tells us what the mean-variance relationship will be. The mean-variance relationship is given by: $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})^q$, where $\phi$ is a scale parameter (XXXX ref to quasi above). Setting $q=1 \Rightarrow$ Poisson, $q=2 \Rightarrow$ Gamma and $q=3 \Rightarrow$ Normal. Once $q$ gets below $1.2$, we see some odd behaviour from the distribution (we get a multimodal distribution, which seems unrealistic. We are only interested in distributions between $1.2 < q < 2$ and really there is not much difference in the distributions if we vary $q$ at below the first decimal place (so we really only need to think about $q = 1.2, 1.3, \ldots, 1.9$, as shown in figure XXXX).
 
 #### Negative binomial
 
@@ -185,7 +185,6 @@ b.spinf <- gam(y~s(x2),data=dat, sp=1e10)
 
 curve(f2,0,1, col="blue", ylim=ylim)
 points(dat$x2, dat$y-mean(dat$y))
-
 ```
 
 - Want a line that is "close" to all the data
