@@ -1,0 +1,485 @@
+---
+title: A crash course in generalized additive models
+bibliography: full.bib
+csl: biometrics.csl
+animation: true
+---
+
+```{r echo=FALSE, include=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+library(animation)
+opts_chunk$set(cache=TRUE, echo=FALSE)
+```
+
+In this chapter we'll take a tour through the world of generalized additive models (GAMs) and see how these flexible models work in practice. Note that although this chapter gives a broad overview of GAMs, it is no substitute for a comprehensive understanding of the framework. I highly recommend CITE WOOD 2017 both as a starting point and a useful reference for more complex modelling techniques. That book alone is a few hundred pages, what I can condense into a chapter here is the bare bones in comparison.
+
+With that in mind, here we'll look into some of the mathematics behind generalized additive models while keeping an eye on the practical implications that these technical details have on modelling biological populations.
+
+
+- What is a GAM?
+- What is smoothing?
+- How do GAMs work?
+- Fitting GAMs using `dsm`
+
+
+## What is a GAM?
+
+Before trying to start to use GAMs we need to understand what they are really *doing*. We saw in the previous chapter an "equation for our model" but what does that really *mean*? Fundementally understanding what the model is doing is key to successful modelling -- this sounds obvious, but it's surprisingly common for folks to not understand what their model does, asking yourself questions like this can be very helpful during the modelling process.
+
+We'll start thinking about GAMs[^altgam] by dissecting the term "generalized additive model":
+
+- Generalized: is in the same sense as "generalized linear model", it means that we can use many response distributions to model the data (we are not just restricted to normal distributions).
+- Additive: the terms in our model add together.
+- Models: of course, we have a model.
+
+
+### Response distributions
+
+Generalized refers to the response distribution. Let's think about that response to begin with. As we talked about in the previous chapter, the response for a DSM is a count or estimated abundance in a given segment. I'll use the term "count" here very generally for the rest of this section, but I mean both. These counts should be modelled using a count distribution (the classic count distribution is Poisson, but we'll come across other, more flexible families later).
+
+Now what do we mean by "should be modelled using a count distribution"? What we're really talking about is modelling the mean (or expected value) of that count distribution. We want to say that given particular covariate values, we will expect a particular value of the distribution on average. We model the relationship between the counts and the covariates using the smooths (or other additive terms), which we'll get to in the next section.
+
+
+
+There are some complications of modelling counts, we need to think about the requirements we need for a useful response distribution. Figure XXXX shows a histogram of the counts per segment for the Gulf of Mexico dolphin data. We can observe some important (and common) features of the data:
+
+- *Counts are mostly zero*. Though this can differ based on the species, observaers and land/seascape, one should expect that the majority of the segments to have zero counts.
+- *Overdispersion*: For our cannonical count distribution, the Poisson, we assume that the mean and variance are equal. This is clearly not the case if we have many zero counts and then a series of non-zero (perhaps large) counts. To model this kind of data, we require flexible mean-variance relationships -- the three dsitributions we look at below, have this property.
+
+```{r countshist, fig.width=5, echo=FALSE, message=FALSE, fig.cap=""}
+library(dsm)
+data(mexdolphins)
+# just grab the non-zero count samples
+# awkward aggregate step
+count_data <- aggregate(obsdata$size, list(obsdata$Sample.Label), sum)
+names(count_data) <- c("Sample.Label", "count")
+dat <- merge(segdata, count_data, by="Sample.Label", all.x=TRUE)
+dat$count[is.na(dat$count)] <- 0
+
+hist(dat$count, xlab="Count", main="", breaks=c(0,10,20,50,100,200,400,700),
+     freq=TRUE)
+```
+
+Generally speaking, the response is a count but is not not always integer. This can be because we used the estimated abundance as the response (which doesn't guarantee that the reponse will be whole numbers of animals) but can also be because we averaged group sizes from multiple observations (many multi-observer cruises average group sizes as estimated by different members of the observer team to get a more robust estimate). Our response should take this into account (this means that the Poisson distribution cannot be used, as it will only accept integer values).
+
+We're going to focus on using three response distributions here, they are the: quasi-Poisson, Tweedie and the negative binomial distribution.
+
+
+
+```{r tweedie-nb, fig.width=10, echo=FALSE, message=FALSE, fig.cap="quasi-Poisson, Tweedie and negative binomial distributions"}
+library(tweedie)
+library(RColorBrewer)
+
+par(mfrow=c(1,2))
+
+# tweedie
+y<-seq(0.01,5,by=0.01)
+pows <- seq(1.2, 1.9, by=0.1)
+
+fymat <- matrix(NA, length(y), length(pows))
+
+i <- 1
+for(pow in pows){
+  fymat[,i] <- dtweedie( y=y, power=pow, mu=2, phi=1)
+  i <- i+1
+}
+
+plot(range(y), range(fymat), type="n", ylab="Density", xlab="x", cex.lab=1.5,
+     main="Tweedie")
+
+rr <- brewer.pal(8,"Dark2")
+
+for(i in 1:ncol(fymat)){
+  lines(y, fymat[,i], type="l", col=rr[i], lwd=2)
+}
+
+# Negative binomial
+y<-seq(1,12,by=1)
+disps <- seq(0.001, 1, len=10)
+
+fymat <- matrix(NA, length(y), length(disps))
+
+i <- 1
+for(disp in disps){
+  fymat[,i] <- dnbinom(y, size=disp, mu=5)
+  i <- i+1
+}
+
+plot(range(y), range(fymat), type="n", ylab="Density", xlab="x", cex.lab=1.5,
+     main="Negative binomial")
+
+rr <- brewer.pal(8,"Dark2")
+
+for(i in 1:ncol(fymat)){
+  lines(y, fymat[,i], type="l", col=rr[i], lwd=2)
+}
+```
+
+#### Quasi-Poisson
+
+
+
+
+#### Tweedie
+
+The Tweedie distribution (CITE XXXX) is not a single distribution at all, but rather a series of different distributions that one can obtain by setting a specific parameter (that we'll refer to here as the "power parameter"). Tweedie incorporates Poisson, Gamma and Normal distributions and things inbetween.
+
+Tweedie distributions are often referred to in the statistical literature as "gamma mixtures of Poisson random variables", while this may seem a little opaque it is a useful way of thinking about them... Intuitively we can think of our survey (ship or person or plane) travelling to a given segment, at this segment, we either see something or we don't (gamma distributed) and if we do see something, we see a given count (Poisson distributed).
+
+The power parameter, $q$, dictates which distribution we get and also tells us what the mean-variance relationship will be. The mean-variance relationship is given by: $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})^q$. Setting $q=1 \Rightarrow$ Poisson, $q=2 \Rightarrow$ Gamma and $q=3 \Rightarrow$ Normal. Once $q$ gets below $1.2$, we see some odd behaviour from the distribution (we get a multimodal distribution, which seems unrealistic. We are only interested in distributions between $1.2 < q < 2$ and really there is not much difference in the distributions if we vary $q$ at below the first decimal place (so we really only need to think about $q = 1.2, 1.3, \ldots, 1.9$, as shown in figure XXXX).
+
+#### Negative binomial
+
+- $\text{Var}\left(\text{count}\right) =$ $\mathbb{E}(\text{count}) + \kappa \mathbb{E}(\text{count})^2$
+- Estimate $\kappa$
+- Is quadratic relationship a "strong" assumption?
+- Similar to Poisson: $\text{Var}\left(\text{count}\right) =\mathbb{E}(\text{count})$ 
+
+
+### Additive terms
+
+Smooth terms
+
+$$
+n_j = A_j\hat{p}_j \exp\left[ \beta_0 + \color{red}{s(\text{y}_j) + s(\text{Depth}_j}) \right] + \epsilon_j
+$$
+<br/>
+where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim$ count distribution
+
+
+Okay, but what about these "s" things?
+
+```{r n-covar}
+#spdat <- dsm.nb.xy$data
+#spdat <- melt(spdat, id.vars = c("Sample.Label","count"), measure.vars = c("x","y"))
+#p <- ggplot(spdat) +
+#      geom_point(aes(y=count,x=value)) +
+#      facet_wrap(~variable, ncol=1)
+#print(p)
+```
+
+- Think $s$=**smooth**
+- Want to model the covariates flexibly
+- Covariates and response not necessarily linearly related!
+- Want some wiggles
+
+
+
+Straight lines vs. interpolation
+
+
+```{r wiggles}
+library(mgcv)
+# hacked from the example in ?gam
+set.seed(2) ## simulate some data... 
+dat <- gamSim(1,n=50,dist="normal",scale=0.5, verbose=FALSE)
+dat$y <- dat$f2 + rnorm(length(dat$f2), sd = sqrt(0.5))
+f2 <- function(x) 0.2*x^11*(10*(1-x))^6+10*(10*x)^3*(1-x)^10-mean(dat$y)
+ylim <- c(-4,6)
+
+# fit some models
+b.justright <- gam(y~s(x2),data=dat)
+b.sp0 <- gam(y~s(x2, sp=0, k=50),data=dat)
+b.spinf <- gam(y~s(x2),data=dat, sp=1e10)
+
+curve(f2,0,1, col="blue", ylim=ylim)
+points(dat$x2, dat$y-mean(dat$y))
+
+```
+
+- Want a line that is "close" to all the data
+- Don't want interpolation -- we know there is "error"
+- Balance between interpolation and "fit"
+
+Splines
+========
+
+- Functions made of other, simpler functions
+- **Basis functions** $b_k$, estimate $\beta_k$ 
+- $s(x) = \sum_{k=1}^K \beta_k b_k(x)$
+- Makes the math(s) much easier
+
+```{r}
+#<img src="images/addbasis.png">
+```
+
+
+Measuring wigglyness
+======================
+
+- Visually:
+  - Lots of wiggles == NOT SMOOTH
+  - Straight line == VERY SMOOTH
+- How do we do this mathematically?
+  - Derivatives!
+  - (Calculus *was* a useful class afterall)
+
+
+
+Wigglyness by derivatives
+==========================
+
+```{r wigglyanim, results="hide"}
+library(numDeriv)
+f2 <- function(x) 0.2*x^11*(10*(1-x))^6+10*(10*x)^3*(1-x)^10 - mean(dat$y)
+
+xvals <- seq(0,1,len=100)
+
+plot_wiggly <- function(f2, xvals){
+
+  # pre-calculate
+  f2v <- f2(xvals)
+  f2vg <- grad(f2,xvals)
+  f2vg2 <- unlist(lapply(xvals, hessian, func=f2))
+  f2vg2min <- min(f2vg2) -2
+
+  # now plot
+  for(i in 1:length(xvals)){
+    par(mfrow=c(1,3))
+    plot(xvals, f2v, type="l", main="function", ylab="f")
+    points(xvals[i], f2v[i], pch=19, col="red")
+
+    plot(xvals, f2vg, type="l", main="derivative", ylab="df/dx")
+    points(xvals[i], f2vg[i], pch=19, col="red")
+
+    plot(xvals, f2vg2, type="l", main="2nd derivative", ylab="d2f/dx2")
+    points(xvals[i], f2vg2[i], pch=19, col="red")
+    polygon(x=c(0,xvals[1:i], xvals[i],f2vg2min),
+            y=c(f2vg2min,f2vg2[1:i],f2vg2min,f2vg2min), col = "grey")
+
+    ani.pause()
+  }
+}
+
+saveGIF(plot_wiggly(f2, xvals), "wiggly.gif", interval = 0.2, ani.width = 800, ani.height = 400)
+```
+
+![Animation of derivatives](wiggly.gif)
+
+Making wigglyness matter
+=========================
+
+- Integration of derivative (squared) gives wigglyness
+- Fit needs to be **penalised**
+- **Penalty matrix** gives the wigglyness 
+- Estimate the $\beta_k$ terms but penalise objective
+  - "closeness to data" + penalty
+
+Penalty matrix
+===============
+
+- For each $b_k$ calculate the penalty
+- Penalty is a function of $\beta$
+  - $\lambda \beta^\text{T}S\beta$
+- $S$ calculated once
+- smoothing parameter ($\lambda$) dictates influence
+
+Smoothing parameter
+=======================
+
+
+```{r wiggles-plot, fig.width=15}
+# make three plots, w. estimated smooth, truth and data on each
+par(mfrow=c(1,3), cex.main=3.5)
+
+plot(b.justright, se=FALSE, ylim=ylim, main=expression(lambda*plain("= just right")))
+points(dat$x2, dat$y-mean(dat$y))
+curve(f2,0,1, col="blue", add=TRUE)
+
+plot(b.sp0, se=FALSE, ylim=ylim, main=expression(lambda*plain("=")*0))
+points(dat$x2, dat$y-mean(dat$y))
+curve(f2,0,1, col="blue", add=TRUE)
+
+plot(b.spinf, se=FALSE, ylim=ylim, main=expression(lambda*plain("=")*infinity)) 
+points(dat$x2, dat$y-mean(dat$y))
+curve(f2,0,1, col="blue", add=TRUE)
+
+```
+
+How wiggly are things?
+========================
+
+- We can set **basis complexity** or "size" ($k$)
+  - Maximum wigglyness
+- Smooths have **effective degrees of freedom** (EDF)
+- EDF < $k$
+- Set $k$ "large enough"
+
+Okay, that was a lot of theory...
+==================================
+type:section
+
+Fitting GAMs using dsm
+=========================
+type:section
+
+Translating maths into R
+==========================
+
+$$
+n_j = A_j\hat{p}_j \exp\left[ \beta_0 + s(\text{y}_j) \right] + \epsilon_j
+$$
+
+where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim$ count distribution
+
+- inside the link: `formula=count ~ s(y)`
+- response distribution: `family=nb()` or `family=tw()`
+- detectability: `ddf.obj=df_hr`
+- offset, data: `segment.data=segs, observation.data=obs` 
+
+
+Your first DSM
+===============
+
+```{r firstdsm, echo=TRUE}
+#library(dsm)
+#dsm_x_tw <- dsm(count~s(x), ddf.obj=df_hr,
+#                segment.data=segs, observation.data=obs,
+#                family=tw(), method="REML")
+```
+
+(`method="REML"` uses REML to select the smoothing parameter)
+
+`dsm` is based on `mgcv` by Simon Wood
+
+What did that do?
+===================
+
+```{r echo=TRUE}
+#summary(dsm_x_tw)
+```
+
+Plotting
+================
+
+```{r plotsmooth}
+#plot(dsm_x_tw)
+```
+
+- `plot(dsm_x_tw)`
+- Dashed lines indicate +/- 2 standard errors
+- Rug plot
+- On the link scale
+- EDF on $y$ axis
+
+
+Adding a term
+===============
+
+- Just use `+`
+```{r xydsm, echo=TRUE}
+#dsm_xy_tw <- dsm(count ~ s(x) + s(y),
+#                 ddf.obj=df_hr,
+#                 segment.data=segs, observation.data=obs,
+#                 family=tw(), method="REML")
+```
+
+
+
+Bivariate terms
+================
+
+- Assumed an additive structure
+- No interaction
+- We can specify `s(x,y)` (and `s(x,y,z,...)`)
+
+Thin plate regression splines
+================================
+
+- Default basis
+- One basis function per data point
+- Reduce # basis functions (eigendecomposition)
+- Fitting on reduced problem
+- Multidimensional
+
+Thin plate splines (2-D)
+====================
+
+```{r}
+#<img src="images/tprs.png" alt="Thin plate regression spline basis functions. Taken from Wood 2006.">
+```
+
+Bivariate spatial term
+=======================
+
+```{r xy-biv-dsm, echo=TRUE}
+#dsm_xyb_tw <- dsm(count ~ s(x, y),
+#                 ddf.obj=df_hr,
+#                 segment.data=segs, observation.data=obs,
+#                 family=tw(), method="REML")
+```
+
+
+```{r visgam, echo=TRUE}
+#vis.gam(dsm_xyb_tw, view=c("x","y"), plot.type="contour", too.far=0.1, asp=1)
+```
+
+- Still on link scale
+- `too.far` excludes points far from data
+
+Comparing bivariate and additive models
+========================================
+
+```{r xy-x-y, fig.width=15}
+#dsm_xy_nb <- dsm(count~s(x,y),
+#                 ddf.obj=df_hr,
+#                 segment.data=segs, observation.data=obs,
+#                 family=nb(), method="REML")
+#dsm_x_y_nb <- dsm(count~s(x) +s(y),
+#                  ddf.obj=df_hr,
+#                  segment.data=segs, observation.data=obs,
+#                  family=nb(), method="REML")
+#par(mfrow=c(1,2))
+#vis.gam(dsm_xy_nb, plot.type = "contour", view=c("x","y"), zlim = c(-11,1), too.far=0.1, asp=1, main="Bivariate")
+#vis.gam(dsm_x_y_nb, plot.type = "contour", view=c("x","y"), zlim = c(-11,1), too.far=0.1, asp=1, main="Additive")
+```
+
+
+Basis size (k)
+===========
+
+- Set `k` per term
+- e.g. `s(x, k=10)` or `s(x, y, k=100)`
+- Penalty removes "extra" wigglyness
+  - *up to a point!*
+- (But computation is slower with bigger `k`)
+
+Checking basis size
+====================
+
+```{r gamcheck-text, fig.keep="none", echo=TRUE}
+#gam.check(dsm_x_tw)
+```
+
+
+Increasing basis size
+====================
+
+```{r gamcheck-kplus-text, fig.keep="none", echo=TRUE}
+#dsm_x_tw_k <- dsm(count~s(x, k=20), ddf.obj=df_hr,
+#                  segment.data=segs, observation.data=obs,
+#                  family=tw(), method="REML")
+#gam.check(dsm_x_tw_k)
+```
+
+Sometimes basis size isn't the issue...
+========================================
+
+- Generally, double `k` and see what happens
+- Didn't increase the EDF much here
+- Other things can cause low "`p-value`" and "`k-index`"
+- Increasing `k` can cause problems (nullspace)
+
+
+
+## Recap
+
+## Further reading
+
+- ver Hoef quasi vs nb paper
+
+## References
+
+[^altgam]: Natalie Kelly (Australian Antarctic Division pointed me to another definition of "gam", as seen in Moby Dick. 1. Collective noun used to refer to a group of whales, or rarely also of porpoises; a pod or, 2. (by extension) A social gathering of whalers (whaling ships).
+
