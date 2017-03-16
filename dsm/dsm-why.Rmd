@@ -59,7 +59,9 @@ The one-dimensional slices offered by the histograms are useful, but don't tell 
 
 ```{r pantropical-geo-eda-plot, fig.width=10, echo=FALSE, fig.cap="Bathymetry of the Gulf of Mexico study area with observations of pantropical spotted dolphins (green points) and transect lines (red lines) overlaid.", message=FALSE}
 # get the prediction polygons in order
-pred.polys <-plyr::ldply(pred.polys@polygons, fortify)
+#pred.polys <-plyr::ldply(pred.polys@polygons, fortify)
+pred.polys <- fortify(pred.polys)
+
 pred.polys$depth <- preddata$depth[rep(1:nrow(preddata), rep(5, nrow(preddata)))]
 
 # get the map of GoM
@@ -79,7 +81,7 @@ p <- ggplot(pred.polys, aes(x=long, y=lat, group=id, fill=depth)) +
   geom_point(aes(x=x, y=y, size=count, group=NULL),
              colour="#b2df8a", data=dat_nonzero)+
   geom_line(aes(x, y, group=Transect.Label), colour="#d95f02", data=segdata) +
-  labs(x="Easting", y="Northing") + theme_minimal() +
+  labs(x="Easting", y="Northing", fill="Depth (m)") + theme_minimal() +
   coord_equal(ylim = range(segdata$y), xlim = range(segdata$x)) +
   geom_polygon(aes(x=x, y=y, group = group), fill = "#1A9850", data=map_dat)
 print(p)

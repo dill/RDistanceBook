@@ -10,16 +10,16 @@ animation: true
 source("../figure-captions.R")
 ```
 
-Now we know that we want to use spatial models for our data, we need to think about how to formulate the models, so we can construct and fit them. As is common in statistics *there's more than one way to do it* (TMTOWTDI; Wall ????): we have multiple modelling options and it can be daunting to work out just how to model a particular data set. There are a huge number of possible spatial modelling approaches in ecology alone. Different methods make different assumptions and lead to different interpretations of the results. Some are less flexible than others. Many methods will only model presence (or probability of presence) of animals, we're really interested in estimating abudance and this moves us away from many popular methods (such as MaxEnt; @Elith:2010ce). With distance sampling data, we really have useful information about where animals *aren't* and how easy they are to detect -- we want to use that information in our spatial models.
+Now we know that we want to use spatial models for our data, we need to think about how to formulate the models, so we can construct and fit them. As is common in statistics, *there's more than one way to do it* (TMTOWTDI; Wall ????): we have multiple modelling options and it can be daunting to work out just how to model a particular data set. There are a huge number of possible spatial modelling approaches in ecology alone. Different methods make different assumptions and lead to different interpretations of the results. Some are less flexible than others. Many methods will only model presence (or probability of presence) of animals, we're really interested in estimating abudance and this moves us away from many popular methods [such as MaxEnt; @Elith:2010ce]. With distance sampling data, we really have useful information about where animals *aren't* and how easy they are to detect -- we want to use that information in our spatial models.
 
-In this chapter, I'll set out why generalized additive models are a good idea for many of the potential modelling situations we're likely to come across. Sometimes GAMs won't be enough, or they'll be too complex -- they aren't a solution for *every* problem, but they can solve a lot of them. Most usefully, there is a large literature on how to check the assumptions that go into a GAM, this is essential to ensuring that our abundance estimates make sense.
+In this chapter, I'll set out why generalized additive models (GAMs) are a good idea for many of the potential modelling situations we're likely to come across. Sometimes GAMs won't be enough, or they'll be too complex -- they aren't a solution for *every* problem, but they can solve a lot of them. Most usefully, there is a large literature on how to check the assumptions that go into a GAM, this is essential to ensuring that our abundance estimates make sense.
 
 We start by thinking about the properties we'd like to have from our spatial model and then show that the approach I'll expand on over the rest of the book has these properties[^determinism].
 
 
 ## What do we want from a spatial model?
 
-We need to account for quite a few things when building models of animal distribution. We can think about them and their possible effects on the model by simply thinking about the observation and biological processes that are in action during the survey and the eventual goals of the modelling work.
+We need to account for quite a few things when building models of animal distribution. We can explore their possible effects on the model by thinking about the observation and biological processes that are in action during the survey and the eventual goals of the modelling work.
 
 
 - More intro here?
@@ -28,9 +28,9 @@ We need to account for quite a few things when building models of animal distrib
 
 Let's start with the underlying process that says where the animals are. Even if we could see every animal with no problems and could perform a census, we'd still want to model their distribution. Distribution can be driven by many factors: climate, competition, prey availability, social learning, seasonal migration and more. Our hope might be to model the most relevant of these (or at least proxies for them) and try to explain distribution. We can describe the distribution using only location too -- there are philosophical and practical reasons to do so (see XXXX). In general we seek to build a model of one or more covariates that describes the counts that we saw.
 
-How might we like these effects to be formulated? In a linear regression model we would assume that the effects of the covariates are linear, that is we can describe them in the form "if I increase variable X by one unit, we see an increase/decrease in response Y by so many units". These models are simple but don't describe a lot of ecological data very well. Much like the three bears, many animals have a "just right" point for certain covariates. For example, sperm whales may want to hang out near canyons to find squid to eat, but their dives are limited by their biology as well as where squid are abundant; we expect that sperm whales will have some depth were they (roughly) optimise these criteria. So if linear functions of the covariates are out for describing our effects, what else can we do?
+How might we like these effects to be formulated? In a linear regression model we would assume that the effects of the covariates are linear, that is we can describe them in the form "if I increase variable X by one unit, we see an increase/decrease in response Y by so many units". These models are simple but don't describe a lot of ecological data very well. Much like porridge for the three bears, many animals have a "just right" point for certain covariates. For example, sperm whales may want to hang out near canyons to find squid to eat, but their dives are limited by their biology as well as where squid are abundant; we expect that sperm whales will have some depth were they (roughly) optimise these criteria. So if linear functions of the covariates are not appropriate for describing our effects, what else can we do?
 
-We can add quadratic and higher polynomial terms to the linear effects and make them more flexible[^quadreg]. Although this can get us some of the way to the kind of effects we want to model 1) this doesn't scale very well 2) it's not very elegant. We would prefer a "framework" for including wiggly terms in our models, and that's exactly what generalized additive models do. GAMs use splines, a more rigorous version of "adding a quadratic" that ensures that very flexible shapes can be estimated. Details are covered in XXXX but for now let's just think about wiggles...
+We can add quadratic and higher polynomial terms to the linear effects and make them more flexible[^quadreg]. Although this can get us some of the way to the kind of effects we want to model 1) this doesn't scale very well 2) it's not very elegant. We would prefer a "framework" for including wiggly terms in our models, and that's exactly what generalized additive models do. GAMs use splines, a more rigorous version of "adding a quadratic" that ensures that very flexible shapes can be estimated. Details are covered in XXXX but for now let's just think about "wiggles"...
 
 We'll refer to the spline terms in our models as "smooths", this leads us to investigate an assumption of these terms: what do we mean by smooths? We think that distribution, as a function of the smoothed covariate varies in a smooth way, that is that small changes in the covariate lead to small changes in the distribution. For example, going from an altitude of 200m to 201m doesn't see a big step change in the abundance of, say, black bears on a hillside. For some covariates we might not think this is realistic, but then we can use other kinds of terms.
 
@@ -40,16 +40,151 @@ An important part of formulating spatial models is understanding what the model 
 
 ### Effort and sample units
 
-We need to account for the sampling effort put into the survey. If we sample one area and cover 10km of linear transects and see 1 animal, the model should view this differently than surveying 10m and seeing 10 animals. Ensuring that effort is correctly recorded is essential to ensuring that the results of any modelling exercise is correct.
+We need to account for the sampling effort put into the survey. If we sample one area and cover 10km of linear transect and see 1 animal, the model should view this differently than surveying 10km and seeing 1000 animals; the former indicates the animals are scarce, the latter they are abundant. Ensuring that effort is correctly recorded is essential to ensuring that the results of any modelling exercise make sense.
 
-When line transects are used to collect data, we have a slight issue when it comes to what our sampling unit should be. Line transects are generally long and can cover a wide variety of the values of the covariates that we seek to use to explain distribution. Using the transect as the sample unit in our model will then lead to us needing to average our environmental covariates to the transect level -- averaging out over potentially very different values. This can be especially problematic for shipboard surveys where each transect may be 1000's of kilometres long and cover oceanographic features like shelfbreaks, where vastly different processes can be at work.
+```{r preplot-segfaff, echo=FALSE, message=FALSE}
+library(ggplot2)
+library(dsm)
+data(mexdolphins)
+# just pick one segment for the below example
+segdata_1tr <- segdata[segdata$Transect.Label == "19960520", ]
+```
 
-In order to get around this issue, we chop our transects up into *segments* (sometimes called *snippets*) each of which encompass roughly the same amount of time or distance on effort. Since we collected location information on our observations, we know which segment each of our observations lie in.
+When line transects are used to collect data, we have a slight issue when it comes to what our sampling unit should be. Line transects are generally long and can cover a wide variety of the values of the covariates that we seek to use to explain distribution. Using the transect as the sample unit in our model will mean we need to average our environmental covariates at the transect level -- averaging out over potentially very different values. This can be especially problematic for shipboard surveys where each transect may be 1000's of kilometres long and cover oceanographic features like a shelfbreak, where vastly different processes can be at work. Figure XXXX shows the potential effect of this kind of averaging for the Gulf of Mexico. Depth values range from `r round(min(segdata_1tr$depth),0)`m to `r round(max(segdata_1tr$depth),0)`m over the transect shown, averaging would give a value of `r round(mean(segdata_1tr$depth), 0)`m.
 
-- what about a nice diagram here showing the segmenting and where observations are?
+```{r covarsegment, fig.width=10, echo=FALSE, message=FALSE, fig.cap="The potential effects of averaging bathymetry values in our Gulf of Mexico study area. The red transect line cuts through a range of depth values, averaging them over the whole transect length (middle panel) leads to a huge loss of information. Building segments (right panel) reduces this issue."}
 
-```{r segmenting}
+#pred.polys_f <-plyr::ldply(pred.polys@polygons, fortify)
+pred.polys_f <- fortify(pred.polys)
+pred.polys_f$depth <- preddata$depth[rep(1:nrow(preddata), rep(5, nrow(preddata)))]
+pred.polys_f$data <- "Full data"
+
+# average over full length
+ids <- c(284, 285, 353, 354, 422, 423, 492, 493, 563, 564, 634, 635, 705, 706,
+         776, 777, 847, 848, 918, 919)
+avg_depth <- pred.polys_f[pred.polys_f$id %in% ids,]
+avg_depth$depth <- mean(avg_depth$depth)
+avg_depth$data <- "Full transect average"
+
+
+s_avg_depth <- pred.polys_f[pred.polys_f$id %in% ids, ]
+ids <- c(284, 353, 422, 492, 563, 634, 705, 776, 847, 918)
+for(id in ids){
+  ind <- s_avg_depth$id %in% c(id,id+1)
+  s_avg_depth$depth[ind] <- mean(s_avg_depth$depth[ind])
+}
+s_avg_depth$data <- "Segment average"
+
+pred.polys_f <- rbind(pred.polys_f, avg_depth, s_avg_depth)
+pred.polys_f$data <- factor(pred.polys_f$data, ordered=TRUE,
+                            levels=c("Full data", "Full transect average",
+                                     "Segment average"))
+
+# plot the transect w/ values
+p <- ggplot(pred.polys_f, aes(x=long, y=lat, group=id, fill=depth)) +
+  geom_polygon() +
+  geom_line(aes(x, y, group=Transect.Label), colour="#d95f02",
+            data=segdata_1tr) +
+  labs(x="Easting", y="Northing", fill="Depth (m)") + theme_minimal() +
+  coord_equal(ylim = range(segdata_1tr$y)+c(-10000,10000),
+              xlim = range(segdata_1tr$x)+c(-50000,50000)) +
+  theme(panel.spacing = unit(2, "lines")) +
+  facet_wrap(~data)
+print(p)
+
+```
+
+In order to get around this issue, we chop our transects up into *segments* (sometimes called *snippets*) each of which encompass roughly the same amount of time or distance on effort. Since we collected location information on our observations, we know which segment each of our observations lie in. Segmenting means we don't throw away a lot of information about how distribution changes along the segment.
+
+
+```{r segmenting, fig.width=10, echo=FALSE, message=FALSE, fig.cap="segmenting: this figure needs to be revised"}
 ## here is a diagram of segmenting
+
+### DO THIS ###
+## the precision of this data is fabricated as the summary that
+##  is included in dsm doesn't have distance along transect or side
+##  of transect
+
+
+library(gridExtra)
+
+
+segdata_2tr <- segdata[segdata$Transect.Label == "19960530", ]
+
+obsdata_2tr <- obsdata
+obsdata_2tr$Transect.Label <- sub("-\\d+", "", obsdata_2tr$Sample.Label)
+obsdata_2tr <- obsdata_2tr[obsdata_2tr$Transect.Label == "19960530", ]
+distdata_2tr <- distdata[distdata$object %in% obsdata_2tr$object,]
+
+# fabricate some precision
+plotdat <- merge(distdata_2tr, obsdata_2tr, by="object")
+
+
+p1 <- ggplot() +
+  geom_line(aes(x, y), data=segdata_2tr) +
+  geom_point(aes(x=x, y=y, size=size, group=NULL),
+             alpha=0.4, data=distdata_2tr) +
+  labs(x="Easting", y="Northing", fill="Depth (m)") + theme_minimal() +
+  coord_equal(ylim = range(segdata_2tr$y)+c(-10000, 10000),
+              xlim = range(segdata_2tr$x)+c(-10000, 10000)) +
+  theme(panel.spacing = unit(2, "lines"))
+
+
+# just grab the non-zero count samples
+# awkward aggregate step
+count_data <- aggregate(obsdata$size, list(obsdata$Sample.Label), sum)
+names(count_data) <- c("Sample.Label", "count")
+dat <- merge(segdata, count_data, by="Sample.Label", all.x=TRUE)
+dat$count[is.na(dat$count)] <- 0
+dat_nonzero <- dat[dat$count>0,]
+
+segdata_2tr_c <- dat[dat$Transect.Label == "19960530", ]
+
+
+p2 <- ggplot() +
+  geom_line(aes(x, y, colour=count), size=2, data=segdata_2tr_c) +
+  geom_point(aes(x=x, y=y, size=size, group=NULL),
+             alpha=0.4, data=distdata_2tr) +
+  labs(x="Easting", y="Northing", fill="Depth (m)") + theme_minimal() +
+  coord_equal(ylim = range(segdata_2tr$y)+c(-10000, 10000),
+              xlim = range(segdata_2tr$x)+c(-10000, 10000)) +
+  theme(panel.spacing = unit(2, "lines"))
+
+library(ggplot2)
+library(gridExtra)
+library(grid)
+
+
+grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right"), which=1) {
+
+  plots <- list(...)
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[which]] + theme(legend.position = position))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+
+  grid.newpage()
+  grid.draw(combined)
+
+  # return gtable invisibly
+  invisible(combined)
+
+}
+
+grid_arrange_shared_legend(p1, p2, ncol = 2, which=2)
 ```
 
 ### Detectability
@@ -79,7 +214,7 @@ where we index the segments by $j$ and:
   - $\hat{p}_j$ is the estimated probability of detection in the segment,
   - $\exp$ is the inverse link function for the response distribution we use to model the response (usually the link is $\log$ and the inverse is therefore $\exp$),
   - $\beta_0$ is the intercept for the model,
-  - $s_k(z_{kj})$ are smooths (indexed by $k$) of the covariates, for each segment that we'll use to model the counts.
+  - $s_k(z_{kj})$ are smooths (indexed by $k$) of the covariates, for each segment that we'll use to model the counts. We'll go into more detail about these in XXXX.
 
 An important limitation of this model is that detectability can only vary at the scale of the segments. So detection covariates can include, e.g., foliage density or Beaufort sea state but not things like observer identity or group size.
 
@@ -114,10 +249,6 @@ Two-stage approaches are effectively "divide and conquer" techniques: concentrat
 
 Two-stage models have the disadvantage that to accurately quantify model uncertainty one must appropriately combine uncertainty from the detection function and spatial models. This can be challenging; however, the alternative of ignoring uncertainty from the detection process \cite[e.g.][]{Niemi:2010kx} can produce confidence or credible intervals for abundance estimates that have coverage below the nominal level.
 
-
-
-
-
 ## Recap
 
 Here we've looked at one approach amongst the many available to model the spatial distribution of animals. Generalized additive models offer a wide variety of different possible modelling options for covariates, response and have a well-founded set of checking procedures. Using them as a base, we can include detectability in one of two ways (either via the offset, giving an effective area surveyed or via the response, correcting observed counts). This multi-stage approach lends itself well to ensuring that each part of the model is correct.
@@ -126,8 +257,7 @@ In the next section we'll look at how to get your data in order, before starting
 
 ## Further reading
 
- - Numerous other approaches to spatial modelling with distance sampling data have been proposed, these include: @Johnson:2009gf, @Niemi:2010kx, @Chelgren:2011us, @Schmidt:2011ec, @Conn:2012bx and XXXYUAN.
-
+ - Numerous other approaches to spatial modelling with distance sampling data have been proposed, these include: @Johnson:2009gf, @Niemi:2010kx, @Chelgren:2011us, @Schmidt:2011ec, @Conn:2012bx and XXXYUAN. Although we won't apply any of them directly here, knowing that they exist and thinking about their assumptions can improve your understanding of the limitations and assumptions in DSM.
 
 
 
