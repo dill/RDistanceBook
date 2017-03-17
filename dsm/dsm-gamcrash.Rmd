@@ -466,13 +466,21 @@ Sometimes basis size isn't the issue...
 - Other things can cause low "`p-value`" and "`k-index`"
 - Increasing `k` can cause problems (nullspace)
 
+### Putting it all together
+
+
+
+
 
 
 ## Recap
 
+
+
+
 ## Further reading
 
-- ver Hoef quasi vs nb paper
+- @VerHoef:2007gx compare quasi-Poisson and negative binomial models.
 
 ## References
 
