@@ -67,7 +67,7 @@ We're going to focus on using three response distributions here, they are the: q
 
 
 
-```{r tweedie-nb, fig.width=10, echo=FALSE, message=FALSE, fig.cap="quasi-Poisson, Tweedie and negative binomial distributions"}
+```{r tweedie-nb, fig.width=10, echo=FALSE, message=FALSE, fig.cap="Tweedie and negative binomial distributions"}
 library(tweedie)
 library(RColorBrewer)
 
@@ -118,7 +118,9 @@ for(i in 1:ncol(fymat)){
 
 #### Quasi-Poisson
 
+The quasi-Poisson "distribution" is not really a distribution but is a quick way of fitting things that have particular mean-variance relationships. The quasi-Poisson assumes only that $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})$ where $\phi$ is referred to as a *dispersion parameter* that scales the mean appropriately so that the variance is large enough. This leads to a more flexible modelling option than the Poisson distribution, but still only allows for linear scaling.
 
+The quasi-Poisson distribution's quasi nature is a bit of a drawback in practice. As quasi distributions don't have probability density functions, it's rather difficult to do some of the model checking that we'd really like to do for these models. On the other hand quasi-Poisson models are usually quick to put together and can be a good first step to building a model.
 
 
 #### Tweedie
