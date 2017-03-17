@@ -141,12 +141,71 @@ The power parameter, $q$, dictates which distribution we get and also tells us w
 
 ### Additive terms
 
+We talk about "additive terms" above and in the previous chapter we started thinking about "smooths" and "wiggles". Now let's get into a bit more detail with these terms and think about how to really model the covariate effects in our DSMs.
+
+Let's start by thinking about the good old statistical workhorse, the linear model. Now we can 
+
+
+
+```{r islinear, fig.width=12, fig.height=7}
+library(ggplot2)
+set.seed(2) ## simulate some data...
+dat <- gamSim(1, n=400, dist="normal", scale=1, verbose=FALSE)
+dat <- dat[,c("y", "x0", "x1", "x2", "x3")]
+p <- ggplot(dat,aes(y=y,x=x1)) +
+      geom_point()
+print(p)
+```
+
+Is this relationship linear? Maybe?
+
+```{r maybe, fig.width=12, fig.height=7}
+print(p + geom_smooth(method="lm"))
+```
+
+
+Adding a quadratic term?
+```{r eval=FALSE, echo=TRUE}
+lm(y ~ x1 + poly(x1, 2), data=dat)
+```
+
+```{r quadratic, fig.width=12, fig.height=7}
+p <- ggplot(dat, aes(y=y, x=x1)) + geom_point() +
+      theme_minimal()
+print(p + geom_smooth(method="lm", formula=y~x+poly(x, 2)))
+```
+
+
+
+
+Is this sustainable?
+
+- Adding in quadratic (and higher terms) *can* make sense
+- This feels a bit *ad hoc*
+- Better if we had a **framework** to deal with these issues?
+
+```{r ruhroh, fig.width=12, fig.height=6}
+p <- ggplot(dat, aes(y=y, x=x2)) + geom_point() +
+      theme_minimal()
+print(p + geom_smooth(method="lm", formula=y~x+poly(x, 2)))
+```
+
+
+
+
+
+
+
+
+
+
+
 Smooth terms
 
 $$
 n_j = A_j\hat{p}_j \exp\left[ \beta_0 + \color{red}{s(\text{y}_j) + s(\text{Depth}_j}) \right] + \epsilon_j
 $$
-<br/>
+
 where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim$ count distribution
 
 
