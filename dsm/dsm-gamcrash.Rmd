@@ -85,7 +85,7 @@ for(pow in pows){
   i <- i+1
 }
 
-plot(range(y), range(fymat), type="n", ylab="Density", xlab="x", cex.lab=1.5,
+plot(range(y), range(fymat), type="n", ylab="Density", xlab="Count", cex.lab=1.5,
      main="Tweedie")
 
 rr <- brewer.pal(8,"Dark2")
@@ -106,7 +106,7 @@ for(disp in disps){
   i <- i+1
 }
 
-plot(range(y), range(fymat), type="n", ylab="Density", xlab="x", cex.lab=1.5,
+plot(range(y), range(fymat), type="n", ylab="Density", xlab="Count", cex.lab=1.5,
      main="Negative binomial")
 
 rr <- brewer.pal(8,"Dark2")
@@ -143,46 +143,63 @@ The power parameter, $q$, dictates which distribution we get and also tells us w
 
 We talk about "additive terms" above and in the previous chapter we started thinking about "smooths" and "wiggles". Now let's get into a bit more detail with these terms and think about how to really model the covariate effects in our DSMs.
 
-Let's start by thinking about the good old statistical workhorse, the linear model. Now we can 
+Let's start by thinking about the good old statistical workhorse, the linear model. Figure XXXX shows a plot of some data, the left panel shows a linear fit through the data, the right shows a linear fit (`y~x`) with an additional term: the explanatory variable squared (`y~x+poly(x, 2)`). This seems to give a good fit too. The true function that generates this data is $\exp(2x)$, so the latter seems like a better approximation.
 
-
-
-```{r islinear, fig.width=12, fig.height=7}
+```{r islinear, fig.width=10}
 library(ggplot2)
+library(gridExtra)
 set.seed(2) ## simulate some data...
 dat <- gamSim(1, n=400, dist="normal", scale=1, verbose=FALSE)
 dat <- dat[,c("y", "x0", "x1", "x2", "x3")]
+
+
 p <- ggplot(dat,aes(y=y,x=x1)) +
-      geom_point()
-print(p)
+  geom_point() +
+  theme_minimal()
+grid.arrange(p + geom_smooth(method="lm"),
+             p + geom_smooth(method="lm", formula=y~x+poly(x, 2)),
+             ncol=2)
 ```
 
-Is this relationship linear? Maybe?
+This "trick" of adding polynomial terms seems to work, and could be extended to higher order terms, but is it sustainable? In short: no. First, it feels somewhat *ad hoc* to add terms like this, the choice of which terms to add seems somwhat arbitrary and although it's easy for simple examples like the one above, knowing which relationships to choose for more complex relationships is down to the expertise of the modeller. Second, the polynomials are defined over the whole of the range of the covariate, one can't restrict their effect to a subset of the range. So if the line we need to fit looks like pieces of different functions, fitting a model with simple polynomials won't work. Third, even if we want the extra terms to effect the whole range of the covariate, these (simple) polynomials are not terribly efficient at doing this -- they lack the mathematical property of *orthogonality* and tend to "overlap" in their effects, so each additional term doesn't add something new[^orthogonal]. Fourth, there is no control over how additional polynomials should effect the model fit, there is capacity for the model to overfit, making the model less general and useful. With these points in mind, wouldn't it be nice to think about adding wiggles to our models through a framework rather than *ad hoc* additions?
 
-```{r maybe, fig.width=12, fig.height=7}
-print(p + geom_smooth(method="lm"))
+What if we could introduce flexible wiggles into our models, built using simple locally-acting functions that add together to create complicated effects? Enter those $s$ terms we saw in the previous chapter, which we'll refer to here as *smooths* (or *smoothers*) or *splines* (more technically). Splines take a simple idea: you can build complicated things from lots of simple things and apply this to making wiggles in your models. Splines are formulated as:
+$$
+s(x) = \sum_{k=1}^K \beta_k b_k(x),
+$$
+where we estimate $K$ $\beta_k$ parameters which multiply the *basis functions* $b_k$. We'll ignore the exact form of the basis functions for now, but bear in mind that there are many modelling options when it comes to which basis to use, and they can be tailored to the specific modelling task. Figure XXXX shows some basis functions (dashed) and how they can add (when scaled by appropriate $\beta_k$s) to create another function (solid line).
+
+```{r basis-ex, results='hide', fig.width=10, fig.width=5, fig.cap="Eight basis functions (grey, dashed lines) used to build a function (solid line)."}
+# generate some data
+set.seed(2)
+dat <- gamSim(1, n=400, dist="normal", scale=2)
+
+# fit a model
+b <- gam(y~s(x0, k=8, bs="cr"), data=dat)
+
+# main plot
+plot(b, se=FALSE, rug=FALSE, ylim=c(-1, 1), lwd=2, asp=1/2,
+     xlab="x", ylab="s(x)")
+
+# extract coefficients
+cf <- coef(b)
+# build an Lp matrix
+xp <- data.frame(x0=seq(0, 1, length.out=100))
+Xp <- predict(b, newdata=xp, type="lpmatrix")
+
+# plot each basis function
+for(i in 1:length(cf)){
+  cf_c <- cf
+  cf_c[-i] <- 0
+  cf_c[i] <- 1
+  lines(xp$x0, as.vector(Xp%*%cf_c), lty=2, lwd=1.5, col="grey")
+}
 ```
 
 
-Adding a quadratic term?
-```{r eval=FALSE, echo=TRUE}
-lm(y ~ x1 + poly(x1, 2), data=dat)
-```
-
-```{r quadratic, fig.width=12, fig.height=7}
-p <- ggplot(dat, aes(y=y, x=x1)) + geom_point() +
-      theme_minimal()
-print(p + geom_smooth(method="lm", formula=y~x+poly(x, 2)))
-```
+### How do we estimate smooths?
 
 
-
-
-Is this sustainable?
-
-- Adding in quadratic (and higher terms) *can* make sense
-- This feels a bit *ad hoc*
-- Better if we had a **framework** to deal with these issues?
 
 ```{r ruhroh, fig.width=12, fig.height=6}
 p <- ggplot(dat, aes(y=y, x=x2)) + geom_point() +
@@ -190,44 +207,6 @@ p <- ggplot(dat, aes(y=y, x=x2)) + geom_point() +
 print(p + geom_smooth(method="lm", formula=y~x+poly(x, 2)))
 ```
 
-
-
-
-
-
-
-
-
-
-
-Smooth terms
-
-$$
-n_j = A_j\hat{p}_j \exp\left[ \beta_0 + \color{red}{s(\text{y}_j) + s(\text{Depth}_j}) \right] + \epsilon_j
-$$
-
-where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim$ count distribution
-
-
-Okay, but what about these "s" things?
-
-```{r n-covar}
-#spdat <- dsm.nb.xy$data
-#spdat <- melt(spdat, id.vars = c("Sample.Label","count"), measure.vars = c("x","y"))
-#p <- ggplot(spdat) +
-#      geom_point(aes(y=count,x=value)) +
-#      facet_wrap(~variable, ncol=1)
-#print(p)
-```
-
-- Think $s$=**smooth**
-- Want to model the covariates flexibly
-- Covariates and response not necessarily linearly related!
-- Want some wiggles
-
-
-
-Straight lines vs. interpolation
 
 
 ```{r wiggles}
@@ -252,19 +231,6 @@ points(dat$x2, dat$y-mean(dat$y))
 - Don't want interpolation -- we know there is "error"
 - Balance between interpolation and "fit"
 
-Splines
-========
-
-- Functions made of other, simpler functions
-- **Basis functions** $b_k$, estimate $\beta_k$ 
-- $s(x) = \sum_{k=1}^K \beta_k b_k(x)$
-- Makes the math(s) much easier
-
-```{r}
-#<img src="images/addbasis.png">
-```
-
-
 Measuring wigglyness
 ======================
 
@@ -281,38 +247,38 @@ Wigglyness by derivatives
 ==========================
 
 ```{r wigglyanim, results="hide"}
-library(numDeriv)
-f2 <- function(x) 0.2*x^11*(10*(1-x))^6+10*(10*x)^3*(1-x)^10 - mean(dat$y)
-
-xvals <- seq(0,1,len=100)
-
-plot_wiggly <- function(f2, xvals){
-
-  # pre-calculate
-  f2v <- f2(xvals)
-  f2vg <- grad(f2,xvals)
-  f2vg2 <- unlist(lapply(xvals, hessian, func=f2))
-  f2vg2min <- min(f2vg2) -2
-
-  # now plot
-  for(i in 1:length(xvals)){
-    par(mfrow=c(1,3))
-    plot(xvals, f2v, type="l", main="function", ylab="f")
-    points(xvals[i], f2v[i], pch=19, col="red")
-
-    plot(xvals, f2vg, type="l", main="derivative", ylab="df/dx")
-    points(xvals[i], f2vg[i], pch=19, col="red")
-
-    plot(xvals, f2vg2, type="l", main="2nd derivative", ylab="d2f/dx2")
-    points(xvals[i], f2vg2[i], pch=19, col="red")
-    polygon(x=c(0,xvals[1:i], xvals[i],f2vg2min),
-            y=c(f2vg2min,f2vg2[1:i],f2vg2min,f2vg2min), col = "grey")
-
-    ani.pause()
-  }
-}
-
-saveGIF(plot_wiggly(f2, xvals), "wiggly.gif", interval = 0.2, ani.width = 800, ani.height = 400)
+#library(numDeriv)
+#f2 <- function(x) 0.2*x^11*(10*(1-x))^6+10*(10*x)^3*(1-x)^10 - mean(dat$y)
+#
+#xvals <- seq(0,1,len=100)
+#
+#plot_wiggly <- function(f2, xvals){
+#
+#  # pre-calculate
+#  f2v <- f2(xvals)
+#  f2vg <- grad(f2,xvals)
+#  f2vg2 <- unlist(lapply(xvals, hessian, func=f2))
+#  f2vg2min <- min(f2vg2) -2
+#
+#  # now plot
+#  for(i in 1:length(xvals)){
+#    par(mfrow=c(1,3))
+#    plot(xvals, f2v, type="l", main="function", ylab="f")
+#    points(xvals[i], f2v[i], pch=19, col="red")
+#
+#    plot(xvals, f2vg, type="l", main="derivative", ylab="df/dx")
+#    points(xvals[i], f2vg[i], pch=19, col="red")
+#
+#    plot(xvals, f2vg2, type="l", main="2nd derivative", ylab="d2f/dx2")
+#    points(xvals[i], f2vg2[i], pch=19, col="red")
+#    polygon(x=c(0,xvals[1:i], xvals[i],f2vg2min),
+#            y=c(f2vg2min,f2vg2[1:i],f2vg2min,f2vg2min), col = "grey")
+#
+#    ani.pause()
+#  }
+#}
+#
+#saveGIF(plot_wiggly(f2, xvals), "wiggly.gif", interval = 0.2, ani.width = 800, ani.height = 400)
 ```
 
 ![Animation of derivatives](wiggly.gif)
@@ -370,10 +336,6 @@ Okay, that was a lot of theory...
 ==================================
 type:section
 
-Fitting GAMs using dsm
-=========================
-type:section
-
 Translating maths into R
 ==========================
 
@@ -389,29 +351,11 @@ where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim$ count distribution
 - offset, data: `segment.data=segs, observation.data=obs` 
 
 
-Your first DSM
-===============
-
-```{r firstdsm, echo=TRUE}
-#library(dsm)
-#dsm_x_tw <- dsm(count~s(x), ddf.obj=df_hr,
-#                segment.data=segs, observation.data=obs,
-#                family=tw(), method="REML")
-```
-
 (`method="REML"` uses REML to select the smoothing parameter)
 
 `dsm` is based on `mgcv` by Simon Wood
 
-What did that do?
-===================
-
-```{r echo=TRUE}
-#summary(dsm_x_tw)
-```
-
 Plotting
-================
 
 ```{r plotsmooth}
 #plot(dsm_x_tw)
@@ -438,14 +382,12 @@ Adding a term
 
 
 Bivariate terms
-================
 
 - Assumed an additive structure
 - No interaction
 - We can specify `s(x,y)` (and `s(x,y,z,...)`)
 
 Thin plate regression splines
-================================
 
 - Default basis
 - One basis function per data point
@@ -453,15 +395,8 @@ Thin plate regression splines
 - Fitting on reduced problem
 - Multidimensional
 
-Thin plate splines (2-D)
-====================
-
-```{r}
-#<img src="images/tprs.png" alt="Thin plate regression spline basis functions. Taken from Wood 2006.">
-```
 
 Bivariate spatial term
-=======================
 
 ```{r xy-biv-dsm, echo=TRUE}
 #dsm_xyb_tw <- dsm(count ~ s(x, y),
@@ -542,4 +477,4 @@ Sometimes basis size isn't the issue...
 ## References
 
 [^altgam]: Natalie Kelly (Australian Antarctic Division pointed me to another definition of "gam", as seen in Moby Dick. 1. Collective noun used to refer to a group of whales, or rarely also of porpoises; a pod or, 2. (by extension) A social gathering of whalers (whaling ships).
-
+[^orthogonal]: To get around this we could use a different set of polynomials, like the Hermite polynomials we saw as an adjustment term for detection functions, but they will still act globally over the whole covariate range.
