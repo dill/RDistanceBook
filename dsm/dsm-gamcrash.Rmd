@@ -484,5 +484,5 @@ Sometimes basis size isn't the issue...
 
 ## References
 
-[^altgam]: Natalie Kelly (Australian Antarctic Division pointed me to another definition of "gam", as seen in Moby Dick. 1. Collective noun used to refer to a group of whales, or rarely also of porpoises; a pod or, 2. (by extension) A social gathering of whalers (whaling ships).
+[^altgam]: Natalie Kelly (Australian Antarctic Division) pointed me to another definition of "gam", as seen in Moby Dick. 1. Collective noun used to refer to a group of whales, or rarely also of porpoises; a pod or, 2. (by extension) A social gathering of whalers.
 [^orthogonal]: To get around this we could use a different set of polynomials, like the Hermite polynomials we saw as an adjustment term for detection functions, but they will still act globally over the whole covariate range.
