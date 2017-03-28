@@ -12,43 +12,36 @@ library(animation)
 opts_chunk$set(cache=TRUE, echo=FALSE)
 ```
 
-In this chapter we'll take a tour through the world of generalized additive models (GAMs) and see how these flexible models work in practice. Note that although this chapter gives a broad overview of GAMs, it is no substitute for a comprehensive understanding of the framework. I highly recommend CITE WOOD 2017 both as a starting point and a useful reference for more complex modelling techniques. That book alone is a few hundred pages, what I can condense into a chapter here is the bare bones in comparison.
+In this chapter we'll take a tour through the world of generalized additive models (GAMs) and see how these flexible models work in practice. Note that although this chapter gives a broad overview of GAMs, it does not cover anything close to "everything" one needs to know. I highly recommend CITE WOOD 2017 both as a starting point and a useful reference for more complex modelling techniques. That book alone is a few hundred pages, what I can condense into a chapter here is the bare bones in comparison.
 
 With that in mind, here we'll look into some of the mathematics behind generalized additive models while keeping an eye on the practical implications that these technical details have on modelling biological populations.
 
 
-- What is a GAM?
-- What is smoothing?
-- How do GAMs work?
-- Fitting GAMs using `dsm`
-
-
 ## What is a GAM?
 
-Before trying to start to use GAMs we need to understand what they are really *doing*. We saw in the previous chapter an "equation for our model" but what does that really *mean*? Fundementally understanding what the model is doing is key to successful modelling -- this sounds obvious, but it's surprisingly common for folks to not understand what their model does, asking yourself questions like this can be very helpful during the modelling process.
+Before trying to start to use GAMs we need to understand what they are really *doing*. We saw in the previous chapter an "equation for our model" but what does that really *mean*? Fundamentally understanding what the model is doing is key to successful modelling --- this sounds obvious, but it's surprisingly common for folks to not understand what their model does. Asking yourself questions about what your model is *doing* can be very helpful during the modelling process[^jennyquote].
 
 We'll start thinking about GAMs[^altgam] by dissecting the term "generalized additive model":
 
-- Generalized: is in the same sense as "generalized linear model", it means that we can use many response distributions to model the data (we are not just restricted to normal distributions).
+- Generalized: is in the same sense as "generalized linear model", it means that we can use many response distributions to model the data (we are not just restricted the normal distribution).
 - Additive: the terms in our model add together.
 - Models: of course, we have a model.
 
 
 ### Response distributions
 
-Generalized refers to the response distribution. Let's think about that response to begin with. As we talked about in the previous chapter, the response for a DSM is a count or estimated abundance in a given segment. I'll use the term "count" here very generally for the rest of this section, but I mean both. These counts should be modelled using a count distribution (the classic count distribution is Poisson, but we'll come across other, more flexible families later).
+Generalized refers to the response distribution. Let's begin by thinking about the response. As we talked about in the previous chapter, the response for a DSM is a count or estimated abundance in a given segment. I'll use the term "count" here very generally for the rest of this section, but I mean both count and estimated abundance. Counts should be modelled using a "count distribution": a distribution that can handle non-negative numbers (though they don't necessarily need to be whole numbers). The classic count distribution you've probably heard of before is Poisson, but we'll come across other, more flexible families later.
 
-Now what do we mean by "should be modelled using a count distribution"? What we're really talking about is modelling the mean (or expected value) of that count distribution. We want to say that given particular covariate values, we will expect a particular value of the distribution on average. We model the relationship between the counts and the covariates using the smooths (or other additive terms), which we'll get to in the next section.
-
-
+Now what do we mean by "should be modelled using a count distribution"? What we're really talking about is modelling the mean (or *expected value*) of that count distribution. We want to say that given particular covariate values, we will expect a particular value of the distribution on average. We model the relationship between the counts and the covariates using the smooths (or other additive terms), which we'll get to in the next section.
 
 There are some complications of modelling counts, we need to think about the requirements we need for a useful response distribution. Figure XXXX shows a histogram of the counts per segment for the Gulf of Mexico dolphin data. We can observe some important (and common) features of the data:
 
-- *Counts are mostly zero*. Though this can differ based on the species, observaers and land/seascape, one should expect that the majority of the segments to have zero counts.
-- *Overdispersion*: For our cannonical count distribution, the Poisson, we assume that the mean and variance are equal. This is clearly not the case if we have many zero counts and then a series of non-zero (perhaps large) counts. To model this kind of data, we require flexible mean-variance relationships -- the three dsitributions we look at below, have this property.
+- *Counts are mostly zero*. Though this can differ based on the species, observers and land/seascape, one should expect that many of the segments to have zero counts.
+- *Overdispersion*: For our canonical count distribution, the Poisson, we assume that the mean and variance are equal (this is usually a quite restrictive assumption). This is clearly not the case if we have many zero counts and then a series of non-zero (perhaps large) counts. To model data where the variance is greater than the mean ("overdispersed"), we require flexible mean-variance relationships --- the three distributions we look at below have this property.
 
-```{r countshist, fig.width=5, echo=FALSE, message=FALSE, fig.cap=""}
+```{r countshist, fig.width=5, echo=FALSE, message=FALSE, fig.cap="Frequency of per-segment counts for the Gulf of Mexico dolphin data. Note the spike at zero (though the bin is goes from 0 to 10, there are only zeros here)."}
 library(dsm)
+library(ggplot2)
 data(mexdolphins)
 # just grab the non-zero count samples
 # awkward aggregate step
@@ -57,17 +50,20 @@ names(count_data) <- c("Sample.Label", "count")
 dat <- merge(segdata, count_data, by="Sample.Label", all.x=TRUE)
 dat$count[is.na(dat$count)] <- 0
 
-hist(dat$count, xlab="Count", main="", breaks=c(0,10,20,50,100,200,400,700),
-     freq=TRUE)
+#hist(dat$count, xlab="Count", main="", breaks=c(0,10,20,50,100,200,400,700),
+#     freq=TRUE)
+ggplot(dat) + geom_histogram(aes(count),
+                             breaks=c(0,10,20,50,100,200,400,700)) +
+  labs(x="Number of dolphins per segment", y="Frequency") +
+  theme_minimal()
 ```
 
-Generally speaking, the response is a count but is not not always integer. This can be because we used the estimated abundance as the response (which doesn't guarantee that the reponse will be whole numbers of animals) but can also be because we averaged group sizes from multiple observations (many multi-observer cruises average group sizes as estimated by different members of the observer team to get a more robust estimate). Our response should take this into account (this means that the Poisson distribution cannot be used, as it will only accept integer values).
+Generally speaking, the response is a count but is not not always integer. This can be because we used the estimated abundance as the response (which doesn't guarantee that the response will be whole numbers of animals) but can also be because we averaged group sizes from multiple observations (many multi-observer cruises average group sizes as estimated by different members of the observer team to get a more robust estimate). Our response should take this into account (this means that the Poisson distribution cannot be used, as it will only accept integer values).
 
-We're going to focus on using three response distributions here, they are the: quasi-Poisson, Tweedie and the negative binomial distribution.
+We're going to focus on using three response distributions here, they are the: quasi-Poisson, Tweedie and the negative binomial distribution[^othercountmodels].
 
 
-
-```{r tweedie-nb, fig.width=10, echo=FALSE, message=FALSE, fig.cap="Tweedie and negative binomial distributions"}
+```{r tweedie-nb, fig.width=10, echo=FALSE, message=FALSE, fig.cap="Tweedie and negative binomial distribution densities over a range of counts. Different colours indicate different power parameters (Tweedie) or scale parameters (negative binomial). Both distributions are able to model spikes at zero."}
 library(tweedie)
 library(RColorBrewer)
 
@@ -118,56 +114,54 @@ for(i in 1:ncol(fymat)){
 
 #### Quasi-Poisson
 
-The quasi-Poisson "distribution" is not really a distribution but is a quick way of fitting things that have particular mean-variance relationships. The quasi-Poisson assumes only that $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})$ where $\phi$ is referred to as a *dispersion parameter* that scales the mean appropriately so that the variance is large enough. This leads to a more flexible modelling option than the Poisson distribution, but still only allows for linear scaling.
+The quasi-Poisson "distribution" is not really a distribution but is a quick way of fitting data that have particular mean-variance relationships[^quasipois]. The quasi-Poisson assumes only that $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})$ where $\phi$ is referred to as a *dispersion parameter* that scales the mean appropriately so that the variance is large enough. This leads to a more flexible modelling option than the Poisson distribution, but still only allows for linear scaling.
 
 The quasi-Poisson distribution's quasi nature is a bit of a drawback in practice. As quasi distributions don't have probability density functions, it's rather difficult to do some of the model checking that we'd really like to do for these models. On the other hand quasi-Poisson models are usually quick to put together and can be a good first step to building a model.
 
 
 #### Tweedie
 
-The Tweedie distribution (CITE XXXX) is not a single distribution at all, but rather a series of different distributions that one can obtain by setting a specific parameter (that we'll refer to here as the "power parameter"). Tweedie incorporates Poisson, Gamma and Normal distributions and things inbetween.
+The Tweedie distribution (CITE Tweedie 1984, Jorgensen 1997, Shono 2008) is not a single distribution at all, but rather a family of distributions that one can obtain by setting a specific parameter (the *power parameter*). Tweedie incorporates Poisson, Gamma and Normal distributions and things between.
 
-Tweedie distributions are often referred to in the statistical literature as "gamma mixtures of Poisson random variables", while this may seem a little opaque it is a useful way of thinking about them... Intuitively we can think of our survey (ship or person or plane) travelling to a given segment, at this segment, we either see something or we don't (gamma distributed) and if we do see something, we see a given count (Poisson distributed).
+Tweedie distributions are often referred to in the statistical literature as "gamma mixtures of Poisson random variables", which may seem a little opaque. Intuitively we can think of our survey (ship or person or plane) travelling to a given segment, at this segment, we either see something or we don't (gamma distributed) and if we do see something, we see a given count (Poisson distributed).
 
-The power parameter, $q$, dictates which distribution we get and also tells us what the mean-variance relationship will be. The mean-variance relationship is given by: $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})^q$, where $\phi$ is a scale parameter (XXXX ref to quasi above). Setting $q=1 \Rightarrow$ Poisson, $q=2 \Rightarrow$ Gamma and $q=3 \Rightarrow$ Normal. Once $q$ gets below $1.2$, we see some odd behaviour from the distribution (we get a multimodal distribution, which seems unrealistic. We are only interested in distributions between $1.2 < q < 2$ and really there is not much difference in the distributions if we vary $q$ at below the first decimal place (so we really only need to think about $q = 1.2, 1.3, \ldots, 1.9$, as shown in figure XXXX).
+The power parameter, $q$, dictates which distribution we get and also tells us what the mean-variance relationship will be. The mean-variance relationship is given by: $\text{Var}\left(\text{count}\right) = \phi\mathbb{E}(\text{count})^q$, where $\phi$ is a scale parameter (XXXX ref to quasi above). Setting $q=1$ gives a Poisson distribution, $q=2$ gives a Gamma distribution and $q=3$ gives a Normal distribution. Once $q$ gets below $1.2$, we see some odd behaviour from the distribution (we get a multimodal distribution, which seems unrealistic). We are only interested in distributions between $1.2 < q < 2$ and really there is not much difference in the distributions if we vary $q$ at below the first decimal place (so we really only need to think about $q = 1.2, 1.3, \ldots, 1.9$, as shown in Figure XXXX).
 
 #### Negative binomial
 
-- $\text{Var}\left(\text{count}\right) =$ $\mathbb{E}(\text{count}) + \kappa \mathbb{E}(\text{count})^2$
-- Estimate $\kappa$
-- Is quadratic relationship a "strong" assumption?
-- Similar to Poisson: $\text{Var}\left(\text{count}\right) =\mathbb{E}(\text{count})$ 
+The negative binomial distribution assumes a different mean-variance relationship to the Tweedie and quasi-Poisson: $\text{Var}\left(\text{count}\right) =$ $\mathbb{E}(\text{count}) + \kappa \mathbb{E}(\text{count})^2$ where we estimate $\kappa$. The negative binomial therefore assumes a quadratic relationship between the mean and variance, which may be a rather strong assumption to make (though you might argue that the linear assumption of quasi-Poisson is also strong). @VerHoef:2007gx note that the negative binomial also tends to up-weight observations with small (compared to the mean) counts relative to what the quasi-Poisson would; this property seems to be useful when fitting models where there are many large groups (for example seabirds and dolphins) and we'll look into this in more detail in the following chapters.
 
 
 ### Additive terms
 
 We talk about "additive terms" above and in the previous chapter we started thinking about "smooths" and "wiggles". Now let's get into a bit more detail with these terms and think about how to really model the covariate effects in our DSMs.
 
-Let's start by thinking about the good old statistical workhorse, the linear model. Figure XXXX shows a plot of some data, the left panel shows a linear fit through the data, the right shows a linear fit (`y~x`) with an additional term: the explanatory variable squared (`y~x+poly(x, 2)`). This seems to give a good fit too. The true function that generates this data is $\exp(2x)$, so the latter seems like a better approximation.
+Let's start by thinking about the good old statistical workhorse, the linear model. Figure XXXX shows a plot of some data, the left panel shows a linear fit through the data, the right shows a linear fit (`y~x`) with an additional term: the explanatory variable squared (`y~x+poly(x, 2)`). This seems to give a good fit too. The true function that generates this data is $\exp(2x)$, so the latter is a better approximation.
 
-```{r islinear, fig.width=10}
+```{r islinear, fig.width=10, warning=FALSE, fig.cap="Predictions from fits to data generated from the function $\\exp(2x)$ (with additional noise). Left: a linear regression, right: linear with an additional quadratic term."}
 library(ggplot2)
 library(gridExtra)
 set.seed(2) ## simulate some data...
 dat <- gamSim(1, n=400, dist="normal", scale=1, verbose=FALSE)
 dat <- dat[,c("y", "x0", "x1", "x2", "x3")]
 
-
+# plot (and fit/predict at the same time!)
 p <- ggplot(dat,aes(y=y,x=x1)) +
   geom_point() +
   theme_minimal()
+
 grid.arrange(p + geom_smooth(method="lm"),
              p + geom_smooth(method="lm", formula=y~x+poly(x, 2)),
              ncol=2)
 ```
 
-This "trick" of adding polynomial terms seems to work, and could be extended to higher order terms, but is it sustainable? In short: no. First, it feels somewhat *ad hoc* to add terms like this, the choice of which terms to add seems somwhat arbitrary and although it's easy for simple examples like the one above, knowing which relationships to choose for more complex relationships is down to the expertise of the modeller. Second, the polynomials are defined over the whole of the range of the covariate, one can't restrict their effect to a subset of the range. So if the line we need to fit looks like pieces of different functions, fitting a model with simple polynomials won't work. Third, even if we want the extra terms to effect the whole range of the covariate, these (simple) polynomials are not terribly efficient at doing this -- they lack the mathematical property of *orthogonality* and tend to "overlap" in their effects, so each additional term doesn't add something new[^orthogonal]. Fourth, there is no control over how additional polynomials should effect the model fit, there is capacity for the model to overfit, making the model less general and useful. With these points in mind, wouldn't it be nice to think about adding wiggles to our models through a framework rather than *ad hoc* additions?
+This "trick" of adding polynomial terms seems to work, and could be extended to higher order terms, but is it sustainable? In short: no. First, it feels somewhat *ad hoc* to add terms like this, the choice of which terms to add seems arbitrary and although it's easy for simple examples like the one above, knowing which order terms to choose for more complex relationships is down to the expertise of the modeller. Second, the polynomials are defined over the whole of the range of the covariate, one can't restrict their effect to a subset of the range. So if the line we need to fit looks like pieces of different functions, fitting a model with simple polynomials won't work. Third, even if we want the extra terms to effect the whole range of the covariate, these (simple) polynomials are not terribly efficient at doing this --- they lack the mathematical property of *orthogonality* and tend to "overlap" in their effects, so each additional term doesn't add much new[^orthogonal]. Fourth, there is no control over how additional polynomials should effect the model fit, there is capacity for the model to overfit, making the model less general and useful. With these points in mind, wouldn't it be nice to think about adding wiggles to our models through a framework rather than *ad hoc* additions?
 
-What if we could introduce flexible wiggles into our models, built using simple locally-acting functions that add together to create complicated effects? Enter those $s$ terms we saw in the previous chapter, which we'll refer to here as *smooths* (or *smoothers*) or *splines* (more technically). Splines take a simple idea: you can build complicated things from lots of simple things and apply this to making wiggles in your models. Splines are formulated as:
+What if we could introduce flexible wiggles into our models, built using simple (mostly) locally-acting functions that add together to create complicated effects? Enter those $s$ terms we saw in the previous chapter, which we'll refer to here as *smooths* (or *smoothers*) or *splines* (more technically). Splines take a simple idea: you can build complicated things from lots of simple things and apply this to making wiggles in your models. Splines are formulated as:
 $$
 s(x) = \sum_{k=1}^K \beta_k b_k(x),
 $$
-where we estimate $K$ $\beta_k$ parameters which multiply the *basis functions* $b_k$. We'll ignore the exact form of the basis functions for now, but bear in mind that there are many modelling options when it comes to which basis to use, and they can be tailored to the specific modelling task. Figure XXXX shows some basis functions (dashed) and how they can add (when scaled by appropriate $\beta_k$s) to create another function (solid line).
+where we estimate $K$ parameters, $\left\{\beta_k; k=1, \ldots, K \right\}$, which multiply the *basis functions* $b_k$, which are functions of the covariate $x$. We'll ignore the exact form of the basis functions for now, but bear in mind that there are many options when it comes to which basis to use, and they can be tailored to the specific modelling task. For now let's also simplify and only think about the case where $s$ is a function of one covariate, but later we'll see more complex formulations for $s$. Figure XXXX shows some basis functions (dashed) and how they can add (when scaled by appropriate $\beta_k$s) to create another function (solid line).
 
 ```{r basis-ex, results='hide', fig.width=10, fig.width=5, fig.cap="Eight basis functions (grey, dashed lines) used to build a function (solid line)."}
 # generate some data
@@ -199,17 +193,9 @@ for(i in 1:length(cf)){
 
 ### How do we estimate smooths?
 
+Now we know we can build complicated functions from lots of little simple ones, how can we make it fit well? The danger with having something that *can* fit a complex function is that it might well *always* do that, which we don't want. In the linear model world, folks often use the residual sum of squares (or $R^2$) as a measure of model fit. For a number of reasons, this is a bad idea[^shalizirsq] even for linear models, but this is a very bad idea when our model is flexible. Consider the fits shown in Figure XXXX. Data is generated from the blue line with some (normal) errors. Looking at the left plot (and ignoring the others for now), we see that our model (the black line) has attempted to join the dots. Although an admirable try, this is not the behaviour we seek --- we would like our models to tell us something general about the data, not precisely reproduce what we saw (we can look at the raw data for that!). Getting very close to the data is especially problematic when we know there are errors in the response (which we think there always are). Using $R^2$ to guide us would lead us to this kind of model, which would not be helpful.
 
-
-```{r ruhroh, fig.width=12, fig.height=6}
-p <- ggplot(dat, aes(y=y, x=x2)) + geom_point() +
-      theme_minimal()
-print(p + geom_smooth(method="lm", formula=y~x+poly(x, 2)))
-```
-
-
-
-```{r wiggles}
+```{r wiggles-plot, fig.width=10, fig.cap="Models fitted to some data with wiggles in it."}
 library(mgcv)
 # hacked from the example in ?gam
 set.seed(2) ## simulate some data... 
@@ -223,28 +209,43 @@ b.justright <- gam(y~s(x2),data=dat)
 b.sp0 <- gam(y~s(x2, sp=0, k=50),data=dat)
 b.spinf <- gam(y~s(x2),data=dat, sp=1e10)
 
-curve(f2,0,1, col="blue", ylim=ylim)
+## plotting
+
+#curve(f2,0,1, col="blue", ylim=ylim)
+#points(dat$x2, dat$y-mean(dat$y))
+# make three plots, w. estimated smooth, truth and data on each
+par(mfrow=c(1,3), cex.main=2)
+
+plot(b.sp0, se=FALSE, ylim=ylim, main=expression(lambda*plain("=")*0))
 points(dat$x2, dat$y-mean(dat$y))
+curve(f2,0,1, col="blue", add=TRUE)
+
+plot(b.spinf, se=FALSE, ylim=ylim, main=expression(lambda*plain("=")*infinity)) 
+points(dat$x2, dat$y-mean(dat$y))
+curve(f2,0,1, col="blue", add=TRUE)
+
+# goldilocks
+plot(b.justright, se=FALSE, ylim=ylim, main=expression(lambda*plain("= just right")))
+points(dat$x2, dat$y-mean(dat$y))
+curve(f2,0,1, col="blue", add=TRUE)
+
 ```
 
-- Want a line that is "close" to all the data
-- Don't want interpolation -- we know there is "error"
-- Balance between interpolation and "fit"
+We'd prefer a model like the one on the right of Figure XXXX, but how can we achieve this? We need to *penalize* our fit to stop our model from being too wiggly. But what should we use for this penalty? Well, the answer comes from thinking about wiggles. We can stop our model from overfitting by supressing the number of wiggles it can have. Effectively we are saying to the model: "get as close to the data as possible, but only be *this* wiggly". Before we start thinking about how wiggly "this" should be, we first need to think about how we measure wigglyness.
 
-Measuring wigglyness
-======================
-
-- Visually:
-  - Lots of wiggles == NOT SMOOTH
-  - Straight line == VERY SMOOTH
-- How do we do this mathematically?
-  - Derivatives!
-  - (Calculus *was* a useful class afterall)
-
-
-
-Wigglyness by derivatives
-==========================
+Mathematically, we can think of wigglyness as the derivatives of a function, as they measure the change in the function. In one dimension, the second derivatives of the function tell us about the wiggles. Figure XXXX shows a function and it's first and second derivatives. Since our function is continuous, we can find it's first and second derivatives at any point. Knowing the second derivative at a given point is useful, but we really need a single number that tells us how wiggly the function is. That's where calculus comes in useful again, we can integrate the second derivative to get a single number. Large values of this integral correspond to very wiggly functions, small values will correspond to very flat functions (which we also might call "very smooth" functions). Mathematically we might write such a penalty as:
+$$
+\int_A \left(\frac{\partial^2 s(x)}{\partial x^2}\right)^2 \text{d}x,
+$$
+where again $s(x)$ is our smooth, we've taken second derivatives of it and we then integrate over the domain $A$ (which depends on the exact formulation of $s(x)$, which we'll get to shortly). Now a useful property of our basis decomposition of the smooth comes into play. Since we can write $s(x)$ as a sum and the $\beta_k$s don't involve $x$ at all, we can rewrite our penalty as[^penaltytry]
+$$
+\boldsymbol{\beta}^\text{T} S \boldsymbol{\beta},
+$$
+where the $ij^\text{th}$ element of the *penalty matrix*, $S$, is:
+$$
+S_{ij} = \int_A \frac{\partial^2 b_i(x)}{\partial x^2} \frac{\partial^2 b_j(x)}{\partial x^2} \text{d}x.
+$$
+This quadratic form for the penalty turns out to be very useful. The integrals and the model parameters are seperable, so we only need compute $S$ once, at the start of our model fitting and once it's computed we only need to matrix multiplications to calculate the penalty for different parameter values.
 
 ```{r wigglyanim, results="hide"}
 #library(numDeriv)
@@ -266,7 +267,7 @@ Wigglyness by derivatives
 #    plot(xvals, f2v, type="l", main="function", ylab="f")
 #    points(xvals[i], f2v[i], pch=19, col="red")
 #
-#    plot(xvals, f2vg, type="l", main="derivative", ylab="df/dx")
+#    plot(xvals, f2vg, type="l", main="1st derivative", ylab="df/dx")
 #    points(xvals[i], f2vg[i], pch=19, col="red")
 #
 #    plot(xvals, f2vg2, type="l", main="2nd derivative", ylab="d2f/dx2")
@@ -281,91 +282,66 @@ Wigglyness by derivatives
 #saveGIF(plot_wiggly(f2, xvals), "wiggly.gif", interval = 0.2, ani.width = 800, ani.height = 400)
 ```
 
-![Animation of derivatives](wiggly.gif)
+![Animation of derivatives (one frame of this animation will appear in the paper copy of the book).](wiggly.gif)
 
-Making wigglyness matter
-=========================
+So far we have a measure of how close the model is to the data (something like a likelihood) and the penalty (a function of the model parameters that measures the wigglyness of the model). But how to we control how much influence the penalty has once we add those things together? We can add another parameter to the model (one per smooth term) and estimate that while we're estimating the $\beta_k$s. The *smoothing parameter* (often denoted $\lambda$) dictates the influence of the penalty. Setting the smoothing parameter to be zero means the penalty has no influence and the model is free to overfit (back to the left panel in Figure XXXX). If the smoothing parameter is set large (let's say, $\infty$), the penalty will have a very big effect and we'll remove all the wiggles from the model. Depending on the basis we use, the resulting model might be a constant line or some line with a slope (or something else), this is because what is left are the parts of $s(x)$ that aren't effected by the penalty: the parts without second derivatives.
 
-- Integration of derivative (squared) gives wigglyness
-- Fit needs to be **penalised**
-- **Penalty matrix** gives the wigglyness 
-- Estimate the $\beta_k$ terms but penalise objective
-  - "closeness to data" + penalty
+In order to fit these models we don't set the smoothing parameter(s), we estimate them. Luckily there is a fairly large literature on which methods work well (both in practice and theoretically). Generally, REstricted Maximum Likelihood (REML) gives good results in the kind of models we'll fit here.
 
-Penalty matrix
-===============
+#### Let's try that out
 
-- For each $b_k$ calculate the penalty
-- Penalty is a function of $\beta$
-  - $\lambda \beta^\text{T}S\beta$
-- $S$ calculated once
-- smoothing parameter ($\lambda$) dictates influence
+Before we go further, let's try out fitting a very simple model using the `dsm` package and see how the concepts we've looked at above translate into code. First let's write down a simple model:
+$$
+n_j = A_j\hat{p}_j \exp\left[ \beta_0 + s(\texttt{y}) \right] + \epsilon_j
+$$
+where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim\text{Tweedie}$
 
-Smoothing parameter
-=======================
+This model specifies that the count in segment $j$ is a function of $\texttt{y}$ (Northing) and an intercept ($\beta_0$). After applying the (inverse) link function[^invlink] ($\exp$), we scale the model by the effective area $A_j\hat{p}_j$, where $A_j$ is the segment area and $\hat{p}_j$ is estimated from the detection function. Writing this model in R we have:
 
-
-```{r wiggles-plot, fig.width=15}
-# make three plots, w. estimated smooth, truth and data on each
-par(mfrow=c(1,3), cex.main=3.5)
-
-plot(b.justright, se=FALSE, ylim=ylim, main=expression(lambda*plain("= just right")))
-points(dat$x2, dat$y-mean(dat$y))
-curve(f2,0,1, col="blue", add=TRUE)
-
-plot(b.sp0, se=FALSE, ylim=ylim, main=expression(lambda*plain("=")*0))
-points(dat$x2, dat$y-mean(dat$y))
-curve(f2,0,1, col="blue", add=TRUE)
-
-plot(b.spinf, se=FALSE, ylim=ylim, main=expression(lambda*plain("=")*infinity)) 
-points(dat$x2, dat$y-mean(dat$y))
-curve(f2,0,1, col="blue", add=TRUE)
-
+```{r first-dsm, message=FALSE, warning=FALSE}
+# load packages and the dolphin data
+library(dsm)
+library(Distance)
+data(mexdolphins)
+# fit a detection function
+dolphin_df <- ds(distdata, truncation=6000)
+# fit a dsm
+simple_dsm <- dsm(formula=count~s(y), family=tw(), ddf.obj=dolphin_df, segment.data=segdata, observation.data=obsdata)
 ```
 
-How wiggly are things?
-========================
+This code specifies our mathematical model: inside the link we have our formula `formula=count ~ s(y)` the response distribution `family=tw()`, detectability information in the form of the fitted detection function from `Distance` `ddf.obj=dolphin_df`, offset and segment-level data: `segment.data=segdata` and finally the table linking observations to the segments `observation.data=obsdata` (the latter is not strictly-speaking in the formula above, but is implied).
 
-- We can set **basis complexity** or "size" ($k$)
-  - Maximum wigglyness
-- Smooths have **effective degrees of freedom** (EDF)
-- EDF < $k$
-- Set $k$ "large enough"
-
-Okay, that was a lot of theory...
-==================================
-type:section
-
-Translating maths into R
-==========================
-
-$$
-n_j = A_j\hat{p}_j \exp\left[ \beta_0 + s(\text{y}_j) \right] + \epsilon_j
-$$
-
-where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim$ count distribution
-
-- inside the link: `formula=count ~ s(y)`
-- response distribution: `family=nb()` or `family=tw()`
-- detectability: `ddf.obj=df_hr`
-- offset, data: `segment.data=segs, observation.data=obs` 
+Having fitted this model, we can inspect the returned object and find the mathematical objects we saw above. First, we can look at the model graphically, by calling `plot` as usual:
 
 
-(`method="REML"` uses REML to select the smoothing parameter)
-
-`dsm` is based on `mgcv` by Simon Wood
-
-Plotting
-
-```{r plotsmooth}
-#plot(dsm_x_tw)
+```{r plotsmooth, fig.cap="Plot of the effect of Northing on the Guld of Mexico dolphins."}
+plot(simple_dsm)
 ```
 
-- `plot(dsm_x_tw)`
-- Dashed lines indicate +/- 2 standard errors
-- Rug plot
-- On the link scale
-- EDF on $y$ axis
+In Figure XXX, dashed lines indicate +/- 2 standard errors from the fitted smooth in solid line, the lines at on the horizontal axis are a rug plot indicating the locations of the observed data. The label on the vertical axis tells us that the model term's name and gives an indication of how complex the function is (more on this in a moment. Importantly, the plot is on the link scale, so we could exponentiate it to get a plot on the response scale here, but generally we look at these plots on the link scale.
+
+The plot shows that there is a range of values of Northing that seem to be appealing to the dolphins but those in the extreme north and south appear to be less appealing. Going back to the plot of the data in the "Why do spatial modelling?" chapter, this seems believable.
+
+Now let's look at extracting the mathematical objects we talked about above. First we cal look at the coefficients we estimated (the $\beta_k$s):
+
+```{r coefs}
+coef(simple_dsm)
+```
+
+and also we can see what the smoothing parameter was estimated to be:
+
+```{r sp}
+simple_dsm$sp
+```
+
+We can also look at the penalty matrix:
+
+```{r penalty}
+simple_dsm$smooth[[1]]$S
+```
+
+
+Unlike linear regression, these numbers are not really directly interpretable, but it's useful to know that they are there and we will use them later on.
 
 
 Adding a term
@@ -430,6 +406,14 @@ Comparing bivariate and additive models
 #vis.gam(dsm_x_y_nb, plot.type = "contour", view=c("x","y"), zlim = c(-11,1), too.far=0.1, asp=1, main="Additive")
 ```
 
+How wiggly are things?
+========================
+
+- We can set **basis complexity** or "size" ($k$)
+  - Maximum wigglyness
+- Smooths have **effective degrees of freedom** (EDF)
+- EDF < $k$
+- Set $k$ "large enough"
 
 Basis size (k)
 ===========
@@ -466,12 +450,16 @@ Sometimes basis size isn't the issue...
 - Other things can cause low "`p-value`" and "`k-index`"
 - Increasing `k` can cause problems (nullspace)
 
+
 ### Putting it all together
 
 
 
+## GAMs in context
 
-
+- is everything a GAM?
+- point processes
+- `dsm` is based on `mgcv` by Simon Wood
 
 ## Recap
 
@@ -480,9 +468,19 @@ Sometimes basis size isn't the issue...
 
 ## Further reading
 
+- (CITE Hastie GAM book) is the "original" reference text on GAMs and is somewhat technical. It now seems a little long in the tooth (especially when it comes to thinking about fitting and uncertainty estimation) but there are many sections that are still highly relevant.
+- @Ruppert:2003uc is another classic statistical text on generalized additive models. Though less hollistic than (CITE WOOD 2017), it's perspective is still very useful.
 - @VerHoef:2007gx compare quasi-Poisson and negative binomial models.
+- @Shono:2008ge gives an introduction to the Tweedie distribution from a fisheries perspective.
+
 
 ## References
 
+[^jennyquote]: In the words of Jenny Bryan "All models are wrong, so why not start with one you actually understand?" [https://twitter.com/JennyBryan/status/782326492449480704](https://twitter.com/JennyBryan/status/782326492449480704).
 [^altgam]: Natalie Kelly (Australian Antarctic Division) pointed me to another definition of "gam", as seen in Moby Dick. 1. Collective noun used to refer to a group of whales, or rarely also of porpoises; a pod or, 2. (by extension) A social gathering of whalers.
+[^othercountmodels]: There are other options for "overdispersed" data, including so-called "zero-inflated" models. We don't discuss them here as they don't currently fit into the GAM framework very easily. It's also worth noting that "zero-inflation" is a complex concept and really refers to a rather specific situation (excess zeros conditional on the model) rather than just "a lot of zeros in the data".
+[^quasipois]: Strictly speaking, by "quasi-Poisson" we mean "quasi-likelihood methods with Poisson assumptions" @VerHoef:2007gx.
 [^orthogonal]: To get around this we could use a different set of polynomials, like the Hermite polynomials we saw as an adjustment term for detection functions, but they will still act globally over the whole covariate range.
+[^shalizirsq]: Cosma Shalizi has some useful thoughts on this topic at [https://www.stat.cmu.edu/~cshalizi/mreg/15/lectures/10/lecture-10.pdf](https://www.stat.cmu.edu/~cshalizi/mreg/15/lectures/10/lecture-10.pdf). One of the most useful to us here is that $R^2$ can be arbitrarily high when the model is completely wrong and arbitrarily low when the model is correct.
+[^penaltytry]: Try this out for yourself! Start by expanding out the sqaured and simplifying. If you get stuck, try from the other direction and multiply out the matrices.
+[^invlink]: Note that $\log$ is the link function, so $\exp$ is referred to as the inverse link.
