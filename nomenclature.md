@@ -14,4 +14,6 @@ This doesn't necessarily live in the book, but is used for consistency.
   * $x$ always refers to perpendiculat distances
   * $r$ always refers to radial distances
   * *generalized* is spelt with a "z"
+  * segment areas are $a_j$ not $A_j$
+  * matrices are in `\mathbf`, as in $\mathbf{X}$
 
