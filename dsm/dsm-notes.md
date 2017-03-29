@@ -31,7 +31,6 @@ Notes:
      * fit model with all covars (using method="REML")
      * ensure that k~=k'
      * cut covars back using select=TRUE and p-values
-     * default use negative binomial for sea birds, can fit theta at the same time as other pars
      * check other response distributions (using qq plot)
      * check for residual autocorrelation (using dsm.cor)
      * check predictive power? (Oppel's test? is this BS?)
@@ -93,5 +92,14 @@ TODO
 delta method http://www.ats.ucla.edu/stat/r/faq/deltamethod.htm
 
 Ferrier S, Watson G, Pearce J, Drielsma M. 2002. Extended statistical approaches to modelling spatial pattern in biodiversity: the north-east New South Wales experience. I. Species-level modelling. Biodivers. Conserv. 11:2275–307
+
+
+# GAMs in context stuff
+
+
+- is everything a GAM?
+- point processes
+
+
 
 

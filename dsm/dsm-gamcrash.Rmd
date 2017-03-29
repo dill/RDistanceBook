@@ -148,6 +148,7 @@ dat <- dat[,c("y", "x0", "x1", "x2", "x3")]
 # plot (and fit/predict at the same time!)
 p <- ggplot(dat,aes(y=y,x=x1)) +
   geom_point() +
+  labs(x="x", y="y") +
   theme_minimal()
 
 grid.arrange(p + geom_smooth(method="lm"),
@@ -190,6 +191,19 @@ for(i in 1:length(cf)){
 }
 ```
 
+When thinking about linear models, we generally talk about the *design matrix* for our model, and call it $\mathbf{X}$. Each row of $\mathbf{X}$ corresponds to a sample in our data (in our DSM case, a segment) and each column relates to a covariate we will multiply by the coefficients we'll estimate when fitting the model ($\boldsymbol{\beta}$). When we add polynomials or splines to the model, we just augment the design matrix with extra columns. Each column is the evaluation of the appropriate basis function (or polynomial).
+
+If we have a model with the $s(x)$ given above in addition to $x$ and an intercept, we have the following design matrix (for $n$ samples):
+$$
+\mathbf{X} = \pmatrix{1 & x_1 & b_1(x_1) & b_2(x_1) & \ldots & b_K(x_1)\\
+             1 & x_2 & b_1(x_2) & b_2(x_2) & \ldots & b_K(x_2)\\
+             \vdots & \vdots & \vdots & \vdots & \vdots & \vdots\\
+             1 & x_n & b_1(x_n) & b_2(x_n) & \ldots & b_K(x_n)\\
+}.
+$$
+So we can write the *linear predictor* of our model as $\mathbf{\mu} = \mathbf{X}\boldsymbol{\beta}$ (if we put all our $\beta$s together in a vector $\boldsymbol{\beta}$). Note that $\mathbf{X}\boldsymbol{\beta}$ is on the link function scale, and we need to apply the inverse link to get on the scale of the observations (usually we use $\log$ links with the above distributions).
+
+
 
 ### How do we estimate smooths?
 
@@ -198,7 +212,7 @@ Now we know we can build complicated functions from lots of little simple ones, 
 ```{r wiggles-plot, fig.width=10, fig.cap="Models fitted to some data with wiggles in it."}
 library(mgcv)
 # hacked from the example in ?gam
-set.seed(2) ## simulate some data... 
+set.seed(2) ## simulate some data...
 dat <- gamSim(1,n=50,dist="normal",scale=0.5, verbose=FALSE)
 dat$y <- dat$f2 + rnorm(length(dat$f2), sd = sqrt(0.5))
 f2 <- function(x) 0.2*x^11*(10*(1-x))^6+10*(10*x)^3*(1-x)^10-mean(dat$y)
@@ -288,17 +302,18 @@ So far we have a measure of how close the model is to the data (something like a
 
 In order to fit these models we don't set the smoothing parameter(s), we estimate them. Luckily there is a fairly large literature on which methods work well (both in practice and theoretically). Generally, REstricted Maximum Likelihood (REML) gives good results in the kind of models we'll fit here.
 
-#### Let's try that out
+
+## Let's try that out
 
 Before we go further, let's try out fitting a very simple model using the `dsm` package and see how the concepts we've looked at above translate into code. First let's write down a simple model:
 $$
-n_j = A_j\hat{p}_j \exp\left[ \beta_0 + s(\texttt{y}) \right] + \epsilon_j
+n_j = a_j\hat{p}_j \exp\left[ \beta_0 + s(\texttt{y}) \right] + \epsilon_j
 $$
 where $\epsilon_j \sim N(0, \sigma^2)$, $\quad n_j\sim\text{Tweedie}$
 
-This model specifies that the count in segment $j$ is a function of $\texttt{y}$ (Northing) and an intercept ($\beta_0$). After applying the (inverse) link function[^invlink] ($\exp$), we scale the model by the effective area $A_j\hat{p}_j$, where $A_j$ is the segment area and $\hat{p}_j$ is estimated from the detection function. Writing this model in R we have:
+This model specifies that the count in segment $j$ is a function of $\texttt{y}$ (Northing) and an intercept ($\beta_0$). After applying the (inverse) link function[^invlink] ($\exp$), we scale the model by the effective area $a_j\hat{p}_j$, where $a_j$ is the segment area and $\hat{p}_j$ is estimated from the detection function. We can fit this model in R using the `dsm()` function in the `dsm` package:
 
-```{r first-dsm, message=FALSE, warning=FALSE}
+```{r first-dsm, message=FALSE, warning=FALSE, echo=TRUE}
 # load packages and the dolphin data
 library(dsm)
 library(Distance)
@@ -306,17 +321,20 @@ data(mexdolphins)
 # fit a detection function
 dolphin_df <- ds(distdata, truncation=6000)
 # fit a dsm
-simple_dsm <- dsm(formula=count~s(y), family=tw(), ddf.obj=dolphin_df, segment.data=segdata, observation.data=obsdata)
+simple_dsm <- dsm(formula=count~s(y), family=tw(), ddf.obj=dolphin_df,
+                  segment.data=segdata, observation.data=obsdata)
 ```
 
 This code specifies our mathematical model: inside the link we have our formula `formula=count ~ s(y)` the response distribution `family=tw()`, detectability information in the form of the fitted detection function from `Distance` `ddf.obj=dolphin_df`, offset and segment-level data: `segment.data=segdata` and finally the table linking observations to the segments `observation.data=obsdata` (the latter is not strictly-speaking in the formula above, but is implied).
 
+The `dsm` package is based on the popular `mgcv` package by Simon Wood. The main thing that the `dsm()` function does is take the data formatted as detection function, segments and observations and appropriately aggregate it. The rest of the package provides the utility functions we'll use later on. Most of the output from `dsm` is actually being generated by `mgcv` in the background at some point.
+
 Having fitted this model, we can inspect the returned object and find the mathematical objects we saw above. First, we can look at the model graphically, by calling `plot` as usual:
 
-
-```{r plotsmooth, fig.cap="Plot of the effect of Northing on the Guld of Mexico dolphins."}
-plot(simple_dsm)
+```{r eval=FALSE, echo=FALSE}
+plot(simple_dsm, main="Smooth of x, k default")
 ```
+
 
 In Figure XXX, dashed lines indicate +/- 2 standard errors from the fitted smooth in solid line, the lines at on the horizontal axis are a rug plot indicating the locations of the observed data. The label on the vertical axis tells us that the model term's name and gives an indication of how complex the function is (more on this in a moment. Importantly, the plot is on the link scale, so we could exponentiate it to get a plot on the response scale here, but generally we look at these plots on the link scale.
 
@@ -324,153 +342,134 @@ The plot shows that there is a range of values of Northing that seem to be appea
 
 Now let's look at extracting the mathematical objects we talked about above. First we cal look at the coefficients we estimated (the $\beta_k$s):
 
-```{r coefs}
+```{r coefs, echo=TRUE}
 coef(simple_dsm)
 ```
 
 and also we can see what the smoothing parameter was estimated to be:
 
-```{r sp}
+```{r sp, echo=TRUE}
 simple_dsm$sp
 ```
 
 We can also look at the penalty matrix:
 
-```{r penalty}
-simple_dsm$smooth[[1]]$S
+```{r penalty, echo=TRUE}
+simple_dsm$smooth[[1]]$S[[1]]
 ```
 
+Note that the penalty matrix is `r nrow(simple_dsm$smooth[[1]]$S[[1]])` by `r ncol(simple_dsm$smooth[[1]]$S[[1]])`, where as there are `r length(coef(simple_dsm))` coefficients. This is because the intercept term (handily labelled as such) doesn't have second derivatives, so doesn't have an associated entry in the penalty matrix.
 
 Unlike linear regression, these numbers are not really directly interpretable, but it's useful to know that they are there and we will use them later on.
 
+Now, we've said there are 10 coefficients in the model and this, of course relates to the basis size $K$ that we defined above. We can increase $K$ per-term in the model, making it have more potential complexity (we often refer to $K$ a *basis complexity* or *basis size*) and we can control this in R using the `k` argument to `s`. So, we can double the basis size:
 
-Adding a term
-===============
-
-- Just use `+`
-```{r xydsm, echo=TRUE}
-#dsm_xy_tw <- dsm(count ~ s(x) + s(y),
-#                 ddf.obj=df_hr,
-#                 segment.data=segs, observation.data=obs,
-#                 family=tw(), method="REML")
+```{r first-dsm-double-basis, message=FALSE, warning=FALSE, echo=TRUE}
+double_k_dsm <- dsm(formula=count~s(y, k=20), family=tw(), ddf.obj=dolphin_df,
+                    segment.data=segdata, observation.data=obsdata)
 ```
 
 
-
-Bivariate terms
-
-- Assumed an additive structure
-- No interaction
-- We can specify `s(x,y)` (and `s(x,y,z,...)`)
-
-Thin plate regression splines
-
-- Default basis
-- One basis function per data point
-- Reduce # basis functions (eigendecomposition)
-- Fitting on reduced problem
-- Multidimensional
-
-
-Bivariate spatial term
-
-```{r xy-biv-dsm, echo=TRUE}
-#dsm_xyb_tw <- dsm(count ~ s(x, y),
-#                 ddf.obj=df_hr,
-#                 segment.data=segs, observation.data=obs,
-#                 family=tw(), method="REML")
+```{r plotsmooth, fig.cap="Plot of the effect of Northing on the Guld of Mexico dolphins.", fig.width=10}
+par(mfrow = c(1,2))
+plot(simple_dsm, main="Smooth of x, k default")
+plot(double_k_dsm, main="Smooth of x, k=20")
 ```
 
+we can see that this changed the number of coefficients and the size of the penalty matrix:
 
-```{r visgam, echo=TRUE}
-#vis.gam(dsm_xyb_tw, view=c("x","y"), plot.type="contour", too.far=0.1, asp=1)
+```{r double-k-etc, echo=TRUE}
+length(coef(double_k_dsm))
+dim(double_k_dsm$smooth[[1]]$S[[1]])
 ```
 
-- Still on link scale
-- `too.far` excludes points far from data
+Looking at Figure XXXX, we don't see a difference in the plots. So, what's going on here? We increased the number of basis function we use to represent the smooth, but the smooth didn't change, meaning that we had a good idea of what the funciton should look like when we just use 10 basis functions. Looking back at the coefficients, we see that some of them are quite small and some are negative, can we measure how many of the basis functions are really being used? Yes, the number reported in the "s()" in the plots gives us the *estimated degrees of freedom* (EDF) -- the amount of that basis complexity that is used in the smooth. Handily, we can compute this:
 
-Comparing bivariate and additive models
-========================================
-
-```{r xy-x-y, fig.width=15}
-#dsm_xy_nb <- dsm(count~s(x,y),
-#                 ddf.obj=df_hr,
-#                 segment.data=segs, observation.data=obs,
-#                 family=nb(), method="REML")
-#dsm_x_y_nb <- dsm(count~s(x) +s(y),
-#                  ddf.obj=df_hr,
-#                  segment.data=segs, observation.data=obs,
-#                  family=nb(), method="REML")
-#par(mfrow=c(1,2))
-#vis.gam(dsm_xy_nb, plot.type = "contour", view=c("x","y"), zlim = c(-11,1), too.far=0.1, asp=1, main="Bivariate")
-#vis.gam(dsm_x_y_nb, plot.type = "contour", view=c("x","y"), zlim = c(-11,1), too.far=0.1, asp=1, main="Additive")
+```{r compute-edf, echo=TRUE}
+sum(influence(simple_dsm))
+sum(influence(double_k_dsm))
 ```
 
-How wiggly are things?
-========================
+where `influence()` will extract the diagonal elements from the influence or hat matrix of the model (CITE XXXX), that is the matrix $A$ such that $\hat{\mu} = \mathbf{A}\mathbf{x}$ (it "puts the hats on the $x$s", turning them into the predictions). Note these numbers are one bigger than the number in the axis labels in the plots in Figure XXXX, as the numbers above are for the whole model, including the intercept (which adds 1 whole parameter to the total). It might seem weird at first that the EDF is not an integer, but remember that the penalty doesn't suppress the effect of whole basis functions, just their wiggliness.
 
-- We can set **basis complexity** or "size" ($k$)
-  - Maximum wigglyness
-- Smooths have **effective degrees of freedom** (EDF)
-- EDF < $k$
-- Set $k$ "large enough"
+We can see what the estimated Tweedie power parameter is:
 
-Basis size (k)
-===========
-
-- Set `k` per term
-- e.g. `s(x, k=10)` or `s(x, y, k=100)`
-- Penalty removes "extra" wigglyness
-  - *up to a point!*
-- (But computation is slower with bigger `k`)
-
-Checking basis size
-====================
-
-```{r gamcheck-text, fig.keep="none", echo=TRUE}
-#gam.check(dsm_x_tw)
+```{r tw-par, echo=TRUE}
+simple_dsm$family$getTheta(trans=TRUE)
 ```
 
+(note we need to specify `trans=TRUE` to put the power parameter on the right scale for us to understand).
 
-Increasing basis size
-====================
+Now we've looked at our model the hard way, we can also look at a summary:
 
-```{r gamcheck-kplus-text, fig.keep="none", echo=TRUE}
-#dsm_x_tw_k <- dsm(count~s(x, k=20), ddf.obj=df_hr,
-#                  segment.data=segs, observation.data=obs,
-#                  family=tw(), method="REML")
-#gam.check(dsm_x_tw_k)
+```{r summary, echo=TRUE}
+summary(simple_dsm)
 ```
 
-Sometimes basis size isn't the issue...
-========================================
-
-- Generally, double `k` and see what happens
-- Didn't increase the EDF much here
-- Other things can cause low "`p-value`" and "`k-index`"
-- Increasing `k` can cause problems (nullspace)
+We have the information we just extracted plus more, including the Tweedie parameter, the EDF of each term in the model as well as some information on significance, deviance and adjusted $R^2$. Note that the model formula includes a term `offset(off.set)` this is the $a_j\hat{p}_j$ in the formula (R needs to know it's an offset, and therefore has no coefficient to estimate, so it gets encased in `offset()`). We'll explore more of the `summary()` output as we continue looking at GAMs. `summary()` is usually the first step in investigating the model results.
 
 
-### Putting it all together
+### Adding a term
 
+To add another term into our model, we just use `+` to include it:
 
+```{r xy-dsm, message=FALSE, warning=FALSE, echo=TRUE}
+xy_dsm <- dsm(formula=count~s(y) + s(x), family=tw(), ddf.obj=dolphin_df,
+                    segment.data=segdata, observation.data=obsdata)
+```
 
-## GAMs in context
+Looking at the corresponding `summary()` output, we see an additional line in the smooth terms table:
 
-- is everything a GAM?
-- point processes
-- `dsm` is based on `mgcv` by Simon Wood
+```{r summary-xy, echo=TRUE}
+summary(xy_dsm)
+```
+
+In the next chapter on practical DSMs, we'll look at whether that was a good idea (in the sense of model selection), but for now, let's just experiment with the model structure. We can plot that model as before, and see the two plots for the two terms in the model.
+
+```{r plotsmooth-noeval, eval=FALSE, echo=TRUE}
+par(mfrow=c(1, 2)) # set up the plot window
+plot(xy_dsm)
+```
+
+```{r plotsmooth_xy, fig.cap="Plot of the smooths of Northing and Easting on the Guld of Mexico dolphins.", fig.width=10}
+par(mfrow=c(1,2))
+plot(xy_dsm)
+```
+
+The model `xy_dsm` treats the effects of Northing and Easting as additive, but this ignores their joint effect (the model only addresses their marginal effects). We can include bivariate terms terms in our model instead. How we do this depends on the exact form of the basis functions we use, but for the default basis in `mgcv` (and hence `dsm`, thin plate regression splines), we can simply add another variable to our `s` term and again look at the summary:
+
+```{r xy-bi-dsm, message=FALSE, warning=FALSE, echo=TRUE}
+xy_bi_dsm <- dsm(formula=count~s(x, y), family=tw(), ddf.obj=dolphin_df,
+                    segment.data=segdata, observation.data=obsdata)
+summary(xy_bi_dsm)
+```
+
+We now see that there is only one smooth term, `s(x,y)`. We can plot this effect in 2 dimensions using a heatmap (we use `scheme=1` to produce the heatmap rather than the other, harder to read options). We can also overplot the locations of the non-zero counts.
+
+```{r plotsmooth-bi-noeval, eval=FALSE, echo=TRUE}
+plot(xy_bi_dsm, scheme=1)
+points(xy_bi_dsm$data[, c("x","y")][xy_bi_dsm$data$count>0, ])
+```
+
+```{r plotsmooth-bi-xy, fig.cap="Plot of the bivariate smooth of Northing and Easting on the Guld of Mexico dolphins. Heatmap colours indicate that red is lower values, white higher. Dots indicate observation locations (segments) and circles the location of non-zero counts.", fig.width=10}
+plot(xy_bi_dsm, scheme=2)
+points(xy_bi_dsm$data[, c("x","y")][xy_bi_dsm$data$count>0, ])
+```
+
+This model doesn't seem too satisfying, but we'll look into that more in the next chapter. For now let us be content with the increase in deviance explained and $R^2$.
+
 
 ## Recap
 
+In this chapter you've had a whirlwind tour of generalized additive models from the perspective of fitting spatial distance sampling data. We looked at what a generalized additive model is doing (fitting a model to the mean of a distribution) and how it does it (adding wiggly functions of the covariates). We also saw how we can measure wigglyness (via integrating squared derivatives) and go a rough idea of how to trade-off flexibility and overfitting. We finally tried this out in practice using the `dsm` package, which is very similar to `mgcv`.
 
-
+Next chapter we'll dive into this further and start building and selecting between more complex models.
 
 ## Further reading
 
 - (CITE Hastie GAM book) is the "original" reference text on GAMs and is somewhat technical. It now seems a little long in the tooth (especially when it comes to thinking about fitting and uncertainty estimation) but there are many sections that are still highly relevant.
 - @Ruppert:2003uc is another classic statistical text on generalized additive models. Though less hollistic than (CITE WOOD 2017), it's perspective is still very useful.
-- @VerHoef:2007gx compare quasi-Poisson and negative binomial models.
+- @VerHoef:2007gx compare quasi-Poisson and negative binomial models for fitting abundance data. This paper gives some nice insights into how these models are fitted and what they really are doing with count data.
 - @Shono:2008ge gives an introduction to the Tweedie distribution from a fisheries perspective.
 
 
