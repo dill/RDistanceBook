@@ -8,6 +8,7 @@ Running file for acknowledgements, reformat before "publishing".
 - MVB
 - CREEMinals
 - Gavin Simpson, Eric Pedersen, Noam Ross (ESA course and paper thoughts)
+- Slack support channel
 - NOAA Marine Mammal Laboratory (course)
 
 
