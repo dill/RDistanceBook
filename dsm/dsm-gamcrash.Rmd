@@ -361,7 +361,7 @@ Having fitted this model, we can inspect the returned object and find the mathem
 plot(simple_dsm, main="Smooth of x, k default")
 ```
 
-```{r plotsmooth, fig.cap="Plot of the smooth of Northing on the Guld of Mexico dolphins for a model with the default basis size (10, left) and a basis size of 20 (right).", fig.width=10, warning=FALSE}
+```{r plotsmooth, fig.cap="Plot of the smooth of Northing on the Gulf of Mexico dolphins for a model with the default basis size (10, left) and a basis size of 20 (right).", fig.width=10, warning=FALSE}
 double_k_dsm <- dsm(formula=count~s(y, k=20),
                     family=tw(), ddf.obj=dolphin_df,
                     segment.data=segdata, observation.data=obsdata)
@@ -460,7 +460,7 @@ par(mfrow=c(1, 2))
 plot(xy_dsm, shade=TRUE)
 ```
 
-```{r plotsmooth_xy, fig.cap="Plot of the smooths of Northing and Easting on the Guld of Mexico dolphins. Note that setting `shade=TRUE` means our +/- 2 standard error band is shaded gray rather than delimited with dotted lines, this can be easier to see on plots with many elements.", fig.width=10}
+```{r plotsmooth_xy, fig.cap="Plot of the smooths of Northing and Easting on the Gulf of Mexico dolphins. Note that setting `shade=TRUE` means our +/- 2 standard error band is shaded gray rather than delimited with dotted lines, this can be easier to see on plots with many elements.", fig.width=10}
 par(mfrow=c(1,2))
 plot(xy_dsm, shade=TRUE)
 ```
@@ -480,7 +480,7 @@ plot(xy_bi_dsm, scheme=1, asp=1)
 points(xy_bi_dsm$data[, c("x","y")][xy_bi_dsm$data$count>0, ])
 ```
 
-```{r plotsmooth-bi-xy, fig.cap="Plot of the bivariate smooth of Northing and Easting on the Guld of Mexico dolphins. Heatmap colours indicate that red is lower values, white higher. Dots indicate observation locations (segments) and circles the location of non-zero counts. Again this plot is on the linear predictor (logarithmic) scale.", fig.width=10}
+```{r plotsmooth-bi-xy, fig.cap="Plot of the bivariate smooth of Northing and Easting on the Gulf of Mexico dolphins. Heatmap colours indicate that red is lower values, white higher. Dots indicate observation locations (segments) and circles the location of non-zero counts. Again this plot is on the linear predictor (logarithmic) scale.", fig.width=10}
 plot(xy_bi_dsm, scheme=2, asp=1)
 points(xy_bi_dsm$data[, c("x","y")][xy_bi_dsm$data$count>0, ])
 ```
