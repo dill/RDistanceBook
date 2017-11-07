@@ -16,7 +16,7 @@ Before diving into the sampling we should first think a little about why we're d
 
 Since we are interested in abundance, it is important to ensure that the estimates of abundance are as accurate as possible. Our estimates of abundance will always be based on the observed counts -- how many animals we saw. We may also want to think about what other factors affected that count, and model the *observation process* (contrast this to the paragraph about, where we were thinking about modelling the abundance as a function of environmental factors). There are many factors that can affect whether we see an animal, for example: how far away animals are, how brightly coloured they are, whether the observers are fresh grad students or older, seasoned field biologists. We might also like to think about whether animals are there to be seen at all -- have cetaceans or seabirds dived and are now too deep to be detected?
 
-The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology using a simple simulation in R.
+The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology, by accounting for imperfect detectability, using a simple simulation in R.
 
 
 ## Why distance sampling?
