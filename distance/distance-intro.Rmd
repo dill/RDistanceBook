@@ -10,13 +10,13 @@ animation: true
 source("../figure-captions.R")
 ```
 
-In this first chapter I want to give a brief refresher on distance sampling, building up from simpler sampling techniques to show how they relate to distance sampling. I'll show this via some simulations in R. (Understanding the code is not as important as understanding the concepts, but it'll help; the source for this document can be found [here](https://github.com/dill/RDistanceBook/blob/master/distance/distance-intro.Rmd), showing how the plots were made).
+In this first chapter I want to give a brief refresher on distance sampling, building up from simpler sampling techniques to show how they relate to distance sampling. I will show this via some simulations in R. (Understanding the code is not as important as understanding the concepts, but it will help; the source for this document can be found [here](https://github.com/dill/RDistanceBook/blob/master/distance/distance-intro.Rmd), showing how the plots were made).
 
 Before diving into the sampling we should first think a little about why we're doing distance sampling. Really what we are interested in is estimating the abundance of some biological population. Knowing how many animals (or plants) there are in a given area can tell us important management information as well as help to answer ecological questions.
 
 Since we are interested in abundance, it is important to ensure that the estimates of abundance are as accurate as possible. Our estimates of abundance will always be based on the observed counts -- how many animals we saw. We may also want to think about what other factors affected that count, and model the *observation process* (contrast this to the paragraph about, where we were thinking about modelling the abundance as a function of environmental factors). There are many factors that can affect whether we see an animal, for example: how far away animals are, how brightly coloured they are, whether the observers are fresh grad students or older, seasoned field biologists. We might also like to think about whether animals are there to be seen at all -- have cetaceans or seabirds dived and are now too deep to be detected?
 
-The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology using a simple simulation in R.
+The rest of this chapter will show how common survey techniques (quadrat and strip sampling) generalise into distance sampling methodology, by accounting for imperfect detectability, using a simple simulation in R.
 
 
 ## Why distance sampling?
@@ -160,7 +160,7 @@ In the previous examples, we were able to estimate the abundance in the study ar
 $$
 \hat{D} = n/a,
 $$
-where $D$ is density (the hat indicates it's an estimate of density), $n$ is the number of animals we saw and $a$ is the area we covered during the survey. We can think of $a$ as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multiplied by its height, i.e. $a=2wKl$ where $K$ is the number of transects, $2w$ is the width (why we say $2w$ will become apparent below) and $l$ is the length. What is unclear in the *line transect* case is what $a$ is -- not only the quantity we should use, but also its meaning.
+where $D$ is density (the hat indicates it's an estimate of density *TAM this is an estimator, not an estimate, of density*), $n$ is the number of animals we saw and $a$ is the area we covered during the survey. We can think of $a$ as the sum of the areas of the strips/quadrats in the above examples, and that each strip or quadrat has area equal to its width multiplied by its height, i.e. $a=2wKl$ where $K$ is the number of transects, $2w$ is the width (why we say $2w$ will become apparent below) and $l$ is the length. What is unclear in the *line transect* case is what $a$ is -- not only the quantity we should use, but also its meaning.
 
 Looking at each component of $a$, the part that we are uncertain about is $2w$, what should this width be? One could make the argument that the largest observed distance is a good candidate for the width of the transect. This can easily be too large if we observe a few outlying distances which are much much further than others (we will revisit this in a more rigorous way later). Since we may want to discard these outlying distances we refer to $w$ as the *truncation* (or *truncation distance*). For now let us choose a truncation that include almost all of our observations, throwing out only a few outliers (say $w=0.02$). We now have a value for the area covered, but it's not quite right: the estimator we've constructed so far is the same as the quadrat/strip estimator, not taking into account the probabilistic nature of the detections we made.
 
