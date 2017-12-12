@@ -242,4 +242,4 @@ In this chapter I showed how we can think about distance sampling line and point
 
 ## References
 
-[^distancefromtransect]: Note that the distance from the *transect* is important here. The detection function models probability of detection (given observation) as a function of distance between the line or point transect centreline or point (respectively) to the animal. We may record the distance from the observer, $r$, and convert this to distance from the transect using trigonometry, of course. For that we also need to record the angle between the transect line and the observer to animal line, $\theta$. Then, $x$=$r \sin \theta$.
+[^distancefromtransect]: Note that the distance from the *transect* is important here. The detection function models probability of detection (given observation) as a function of distance between the line or point transect centreline or point (respectively) to the animal. We may record the distance from the observer, $r$, and convert this to distance from the transect using trigonometry, of course. For that we also need to record the angle between the transect line and the observer-to-animal line, $\theta$. Then, $x=r \sin \theta$.
