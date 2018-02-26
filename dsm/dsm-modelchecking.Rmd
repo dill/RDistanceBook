@@ -1,0 +1,123 @@
+---
+title: Model checking for density surface models
+bibliography: full.bib
+csl: biometrics.csl
+animation: true
+---
+
+```{r echo=FALSE, include=FALSE}
+## abstract this into a header
+source("../figure-captions.R")
+library(animation)
+opts_chunk$set(cache=TRUE, echo=FALSE, fig.width=10)
+```
+
+
+
+- we fitted a model, that's ace
+- how do we know it's right?
+- we made some assumptions, let's check them
+- Checking $\neq$ validation!
+
+- "perhaps the most important part of applied statistical modelling" -- Simon Wood
+
+
+
+# What were the assumptions we made, how do we check them?
+
+- constant variance
+- response distribution
+
+# Residuals
+
+
+- What are residuals?
+  - Generally residuals = observed value - fitted value
+  - BUT hard to see patterns in these "raw" residuals
+  - Need to standardise $\Rightarrow$ **deviance residuals**
+  - Residual sum of squares $\Rightarrow$ linear model
+    - deviance $\Rightarrow$ GAM
+  - Expect these residuals $\sim N(0,1)$
+- Shortcomings
+  - `gam.check` can be helpful
+  - "Resids vs. linear pred" is victim of artifacts
+  - Need an alternative
+  - "Randomised quanitle residuals" (*experimental*)
+    - `rqgam.check`
+    - Exactly normal residuals
+- Residuals vs. covariates (boxplots)
+- Summary
+  - Looking for patterns (not artifacts)
+  - This can be tricky
+  - Each dataset is different
+
+
+
+# What other stuff do we need to check?
+
+- `k`
+- the model converged
+
+
+
+
+
+## Convergence
+
+- Fitting the GAM involves an optimization
+- By default this is REstricted Maximum Likelihood (REML) score
+- Sometimes this can go wrong
+- R will warn you!
+- example of a model that converges vs. one that doesn't
+  - gam.check output
+- The Folk Theorem of Statistical Computing
+  - "most statistical computational problems are due not to the algorithm being used but rather the model itself" Andrew Gelman
+
+
+
+
+
+
+# Basis size (k)
+
+- Set `k` per term
+- e.g. `s(x, k=10)` or `s(x, y, k=100)`
+- Penalty removes "extra" wigglyness
+  - *up to a point!*
+- (But computation is slower with bigger `k`)
+- gam.check output
+- Generally, double `k` and see what happens
+  - Didn't increase the EDF much here
+  - Other things can cause low "`p-value`" and "`k-index`"
+  - Increasing `k` can cause problems (nullspace)
+- k is a maximum
+  - (Usually) Don't need to worry about things being too wiggly
+  - `k` gives the maximum complexity
+  - Penalty deals with the rest
+  - plot this!
+
+
+
+
+## Recap
+
+- Convergence
+  - Rarely an issue
+  - Check your thinking about the model
+- Basis size
+  - k is a maximum
+  - Double and see what happens
+- Residuals
+  - Deviance and randomised quantile
+  - check for artifacts
+- `gam.check` is your friend
+- Need to use a mixture of techniques
+- Cycle through checks, make changes recheck
+
+
+## Further reading
+
+
+## References
+
+
