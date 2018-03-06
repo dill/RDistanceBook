@@ -1,5 +1,5 @@
 ---
-title: Model checking for density surface models
+title: Model checking and validation for density surface models
 bibliography: full.bib
 csl: biometrics.csl
 animation: true
@@ -12,27 +12,90 @@ library(animation)
 opts_chunk$set(cache=TRUE, echo=FALSE, fig.width=10)
 ```
 
+*"perhaps the most important part of applied statistical modelling"* -- Simon Wood
+
+We can fit any model we like to the data and make inferences from that model, but how do we know that the model is "right". We can apply our prior knowledge and think "does that make sense?" but it's not impossible for us to be wrong and that the model we fitted is just confirming our biases. We need to think about our model objectively and see whether it conforms to too criteria:
+
+1. does the model conform to its own assumptions? (Model checking)
+2. is the model a good abstraction of the data that we have? (Model validation)
+
+In this chapter we are first going to focus on the assumptions that we make when we fit a DSM, then onto wether the model conforms to its own assumptions. We'll then go on to cover ensuring that the model is a good representation of the data.
 
 
-- we fitted a model, that's ace
-- how do we know it's right?
-- we made some assumptions, let's check them
-- Checking $\neq$ validation!
+## What were the assumptions we made, how do we check them?
 
-- "perhaps the most important part of applied statistical modelling" -- Simon Wood
-
-
-
-# What were the assumptions we made, how do we check them?
+GAMs are very flexible models but we still are limited in how we can structure the model in some ways. When we write out our model in code or in mathematics, we are making assumptions about exactly how the model works.
 
 - constant variance
 - response distribution
+- residual distribution
 
-# Residuals
 
+## Residuals
+
+Residuals are defined in multiple different ways, in general we are thinking about the difference between the value that a model predicts for a given observation and the value that we observed. The different ways we define residuals allow us to see what's going on with our model. Looking at the difference between the fitted and observed values we are simply looking at the distance between the observed data and the smooth. If our response distribution is normal, we have assumed in our model that the residuals ($\epsilon_i$) are normally distributed, so if we collect up these residuals and make a histogram of them, we should see something that looks like a normal distribution. For example:
+
+```{r rawresids, message=FALSE, warning=FALSE, fig.cap="Looking at the same simulation data and model as in Chapter XXXX, in the left panel, we define the raw residuals as the difference between the model predictions (line) and the observed data (dots) given by the blue vertical lines). The right panel shows a histogram of the residuals, as we hoped, the residuals look somewhat normally distributed."}
+library(mgcv)
+# simulate some data... (don't worry about understanding this right now)
+set.seed(2)
+dat <- gamSim(1, n=100, dist="normal", verbose=FALSE)
+dat$y <- dat$f2 + rnorm(nrow(dat), sd=1)
+# fit a model
+b <- gam(y~s(x2), data=dat)
+
+par(mfrow=c(1,2))
+# plot the data and the model
+plot(b, se=FALSE, ylim=c(-2, 11), shift=mean(dat$y))
+points(dat[, c("x2", "y")], pch=19, cex=0.5)
+# show the raw residuals
+segments(dat$x2, dat$y, dat$x2, predict(b), col="blue")
+
+hist(dat$y - predict(b), xlab="Raw residuals")
+```
+
+Seeing if these model residuals are normally distributed is relatively easy. We assume with our models that the variance conforms to the relationship that we specified in our model (which in the case of the Tweedie and negative binomial we defined in terms of the linear predictor; see Chapter XXXX). If that assumption is right then we should see that the residuals have constant variance as we will have modelled the variance relationship adequately. If we didn't do a good job, there will be structure in the residuals and we should be able to see the variance in the residuals increasing or decreasing with the value of the linear predictor.
+
+These "raw" residuals (difference between the observed and predicted values) seem fine when we have a normal distribution as the response in our model. But once we branch into more fancy response distributions, this gets more tricky. Thinking about the Poisson distribution, the variance should increase in proportion to the mean, this can be hard to see from plots of the raw residuals. Looking at the left panel of Figure XXXX, we can see that the raw residuals don't give a good impression of what's going on with this relationship as the 
+
+
+```{r nonconstantvar}
+# this example should show a non-constant variance issue
+dat <- gamSim(1,n=2000, scale=0.1, dist="poisson")
+dat$y <- exp(log(dat$f) + rnorm(nrow(dat), sd=dat$f))
+
+b <- gam(y~s(x2), data=dat, family=quasipoisson())
+
+par(mfrow=c(1,2))
+plot(predict(b), dat$y - predict(b), xlab="Raw residuals")
+
+plot(predict(b), residuals(b, type="deviance"), xlab="Deviance residuals")
+
+
+```
+
+
+The residuals can be useful in another way too though. If we have modelled the data well, the residuals will be randomly distributed and there will be no structure in them -- they will just be a representation of the noise in the data, not to do with something that we didn't model. There are a few approaches to this.
+
+
+```{r simple-model}
+library(Distance)
+library(dsm)
+
+# load the Gulf of Mexico dolphin data (see ?mexdolphins)
+data(mexdolphins)
+
+# fit a detection function and look at the summary
+hr.model <- ds(distdata, max(distdata$distance),
+               key = "hr", adjustment = NULL)
+
+# fit a simple smooth of x and y to counts
+mod1 <- dsm(count~s(x,y), hr.model, segdata, obsdata)
+```
+
+**TKTKTK what should one do when this goes wrong?!?!?**
 
 - What are residuals?
-  - Generally residuals = observed value - fitted value
   - BUT hard to see patterns in these "raw" residuals
   - Need to standardise $\Rightarrow$ **deviance residuals**
   - Residual sum of squares $\Rightarrow$ linear model
@@ -46,6 +109,40 @@ opts_chunk$set(cache=TRUE, echo=FALSE, fig.width=10)
     - `rqgam.check`
     - Exactly normal residuals
 - Residuals vs. covariates (boxplots)
+- Variograms/correlograms?
+
+### Fitting models to the residuals
+
+One way of assessing whether there is any pattern in the residuals is to model the residuals themselves -- if there is any pattern the model will look reasonable. For this we can restrict our model to just a model of space, as usually this gives a good proxy for anything else. We're then fitting a relatively simple model that should show whether we have unmodelled structure in our residuals.
+
+
+```{r fit-to-resids}
+resid_df <- mod1$data
+
+# by default this returns the deviance residuals
+resid_df$resids <- residuals(mod1)
+
+# since our deviance residuals should be normally distributed
+# we can use the default family in our gam() call
+mod_resids <- gam(resids~s(x, y, k=100), data=resid_df, method="REML")
+
+summary(mod_resids)
+```
+
+As we can see the $R^2$ and percentage deviance explained for this model are *terrible*. Even with a `k` of 100, we are struggling to get anything out of these data. We can belabour the point even further by using a shrinkage smoother:
+
+
+```{r fit-to-resids-ts}
+mod_resids_ts <- gam(resids~s(x, y, k=100, bs="ts"),
+                     data=resid_df, method="REML")
+
+summary(mod_resids_ts)
+```
+
+Here we can see that the shrinkage has removed almost all the flexibility from the model (EDF much less than 1!).
+
+
+
 - Summary
   - Looking for patterns (not artifacts)
   - This can be tricky
