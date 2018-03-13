@@ -56,21 +56,23 @@ hist(dat$y - predict(b), xlab="Raw residuals")
 
 Seeing if these model residuals are normally distributed is relatively easy. We assume with our models that the variance conforms to the relationship that we specified in our model (which in the case of the Tweedie and negative binomial we defined in terms of the linear predictor; see Chapter XXXX). If that assumption is right then we should see that the residuals have constant variance as we will have modelled the variance relationship adequately. If we didn't do a good job, there will be structure in the residuals and we should be able to see the variance in the residuals increasing or decreasing with the value of the linear predictor.
 
-These "raw" residuals (difference between the observed and predicted values) seem fine when we have a normal distribution as the response in our model. But once we branch into more fancy response distributions, this gets more tricky. Thinking about the Poisson distribution, the variance should increase in proportion to the mean, this can be hard to see from plots of the raw residuals. Looking at the left panel of Figure XXXX, we can see that the raw residuals don't give a good impression of what's going on with this relationship as the 
+These "raw" residuals (difference between the observed and predicted values) seem fine when we have a normal distribution as the response in our model. But once we branch into more fancy response distributions, this gets more tricky. Thinking about the Poisson distribution, the variance should increase in proportion to the mean, this can be hard to see from plots of the raw residuals. Looking at the left panel of Figure XXXX, it's hard to judge whether the variance of the dots is increasing in proportion to the mean of the linear predictor. The right panel shows the same plot but this time the residuals calculated are deviance residuals, in this case the residuals are defined as the contribution that each observation makes to the total model deviance multiplied by the [^devianceref].
+
 
 
 ```{r nonconstantvar}
 # this example should show a non-constant variance issue
 dat <- gamSim(1,n=2000, scale=0.1, dist="poisson")
-dat$y <- exp(log(dat$f) + rnorm(nrow(dat), sd=dat$f))
+#dat$y <- exp(log(dat$f) + rnorm(nrow(dat), sd=dat$f))
 
 b <- gam(y~s(x2), data=dat, family=quasipoisson())
 
 par(mfrow=c(1,2))
-plot(predict(b), dat$y - predict(b), xlab="Raw residuals")
+plot(predict(b), dat$y - predict(b), ylab="Raw residuals",
+     xlab="Linear predictor")
 
-plot(predict(b), residuals(b, type="deviance"), xlab="Deviance residuals")
-
+plot(predict(b), residuals(b, type="deviance"),
+     ylab="Deviance residuals", xlab="Linear predictor")
 
 ```
 
@@ -95,12 +97,6 @@ mod1 <- dsm(count~s(x,y), hr.model, segdata, obsdata)
 
 **TKTKTK what should one do when this goes wrong?!?!?**
 
-- What are residuals?
-  - BUT hard to see patterns in these "raw" residuals
-  - Need to standardise $\Rightarrow$ **deviance residuals**
-  - Residual sum of squares $\Rightarrow$ linear model
-    - deviance $\Rightarrow$ GAM
-  - Expect these residuals $\sim N(0,1)$
 - Shortcomings
   - `gam.check` can be helpful
   - "Resids vs. linear pred" is victim of artifacts
@@ -109,11 +105,98 @@ mod1 <- dsm(count~s(x,y), hr.model, segdata, obsdata)
     - `rqgam.check`
     - Exactly normal residuals
 - Residuals vs. covariates (boxplots)
-- Variograms/correlograms?
+
+### Observed vs. expected counts
+
+The first step to our model doing a good job is to investigate whether the model gives results that are close to the values we saw. If the model isn't even doing a good job where we have data, it surely has no hope when it comes to looking elsewhere.
+
+
+```{r bf-model}
+## TKTKTK fix this!
+### fit a detection function with beaufort as a covariate
+##hr_model_bf <- ds(distdata, max(distdata$distance), formula=~beaufort,
+##               key = "hr", adjustment = NULL)
+##
+### fit a simple smooth of x and y to counts
+##mod1_bf <- dsm(count~s(x, y), hr_model_bf, segdata, obsdata)
+```
+
+We can compare the observed versus expected (predicted) values at the segment level (indeed that's what the plot in the lower right of the `gam.check` output does), but it can be helpful to look at this aggregated at the various levels of the covariates used in the detection function. For example, it can be useful to see if we are not modelling the higher Beaufort levels very well. The `obs_exp` function in `dsm` can do this comparison for us. We just need to give the function the model that we want to make the comparison, the covariate that we want to use to aggregate the observed/expected counts by and, optionally, a set of cuts to make to that covariate (this can be useful if you want to separate a continuous covariate into "high", "medium" and "low" groups, for example).
+
+
+```{r obs-exp}
+#obs_exp(mod1_bf, beaufort)
+```
+
+### Unmodelled spatial correlation
+
+We would expect that if we see lots of animals in one segment, we might see many animals in the neighbouring segments in that transect (and perhaps the neighbouring segments in adjacent transects too). If we did a good job of modelling the data, we should have explained these by either having a flexible enough spatial model, by use of environmental covariates or by explicitly modelling the spatial correlation (see Chapter XXXX). We call this effect *residual spatial autocorrelation* (often just *autocorrelation*). Plotting the correlations between the residuals at various distances ("lags"[^lagchat]) lets us see whether there is unmodelled correlation in the data.
+
+TKTKTK more explanation here
+
+
+We can do this using the `dsm_variog` function (for "variogram"[^variogram] using functions in in the `geoR` package in R). We need to tell the function the maximum distance at which we want to calculate the variogram and the binning for the calculations. We want to make sure we capture the full range of the variation and that the bins are a reasonable size (so we can capture any variation that exists there). The binning should be at minimum the segment length (as we can't detect anything on a finer scale); we can use `summary` on the `Effort` column in the data to find out what the range of values are there (in this case they are `r min(mod1$data$Effort)` to `r max(mod1$dat$Effort)` metres with a median of `r median(mod1$data$Effort)`).
+
+If the residuals do not exhibit spatial autocorrelation then we would expect the plot to be relatively flat, but if there was an issue with spatial autocorrelation then we see a spike in the plot (potentially with the function leveling out at greater distances). This is the relationship we see in Figure XXXX.
+
+```{r}
+# TKTKTK should this be a function in dsm?
+# code taken from Wood 2017 p. 364
+library(geoR)
+
+# variogram function
+dsm_variog <- function(model, max.dist, breaks, xy=c("x", "y"),
+                       resid.type="deviance"){
+  # make a list
+  gb <- list(data   = residuals(model, type=resid.type),
+             # grab the location columns, make them a matrix
+             coords = as.matrix(model$data[, xy])
+            )
+  plot(variog(gb, max.dist=max.dist, breaks=breaks))
+}
+
+# check for mod1
+par(mfrow=c(1,2))
+dsm_variog(mod1, max.dist=1000000, breaks=seq(0, 1000000, by=20000))
+
+
+mod2 <- dsm(count~s(x, y) + s(depth), hr.model, segdata, obsdata)
+dsm_variog(mod2, max.dist=1000000, breaks=seq(0, 1000000, by=20000))
+```
+
+
+
+
+
+
+
+### Plotting residuals
+
+If we want to investigate whether there is structure in the residuals, one way to look into this is to make boxplots of the residuals at various aggregations. If the model is right, we'd expect the median and the inter-quartile range of the residuals to be about the same at each of the aggregations. This is best seen though examples.
+
+
+#### Observation process
+
+For the observation process 
+
+
+#### Distribution process
+
+For the distribution process we expect that the deviance residuals from the spatial model will be approximately normally distributed. We can take aggregations of the data over the covariates and plot boxplots of the residuals to see whether there are large differences between different values fo the covariate.
+
+```{r depth-boxplot}
+boxdata <- mod1$data
+boxdata$depthbin <- cut(boxdata$depth, seq(0, 3500, by=500),
+                        labels=paste(seq(0, 3000, by=500),
+                                     seq(500, 3500, by=500), sep="-"))
+boxdata$resids <- residuals(mod1)
+boxplot(resids~depthbin, data=boxdata,
+        xlab="Depth bin (m)", ylab="Deviance residuals")
+```
 
 ### Fitting models to the residuals
 
-One way of assessing whether there is any pattern in the residuals is to model the residuals themselves -- if there is any pattern the model will look reasonable. For this we can restrict our model to just a model of space, as usually this gives a good proxy for anything else. We're then fitting a relatively simple model that should show whether we have unmodelled structure in our residuals.
+Another way of assessing whether there is any pattern in the residuals is to model the residuals themselves -- if there is any pattern the model will look reasonable. For this we can restrict our model to just a model of space, as usually this gives a good proxy for other variables that we might not have modelled (that we might assume vary in space). We're then fitting a relatively simple model that should show whether we have unmodelled structure in our residuals.
 
 
 ```{r fit-to-resids}
@@ -139,7 +222,24 @@ mod_resids_ts <- gam(resids~s(x, y, k=100, bs="ts"),
 summary(mod_resids_ts)
 ```
 
-Here we can see that the shrinkage has removed almost all the flexibility from the model (EDF much less than 1!).
+Here we can see that the shrinkage has removed almost all the flexibility from the model (EDF much less than 1!). So in this case it's quite clear that we've accounted for most of the pattern in the data. To give an example where the model doesn't do a good job and looking at how to spot that, we can refit `mod1` with only a smooth of `x`, when we know there is something going on in the `y` direction too (remember in Chapter XXXX we saw the distribution change with distance from the shore). Figure XXXX shows the smooth of `y`, which although it has a small EDF has a clear shape.
+
+```{r fit-to-resids-struct}
+mod1_x <- dsm(count~s(x), hr.model, segdata, obsdata)
+resid_df$resids <- residuals(mod1_x)
+
+mod_resids_str <- gam(resids~s(y, k=100, bs="ts"),
+                      data=resid_df, method="REML")
+
+summary(mod_resids_str)
+```
+
+
+
+```{r fit-to-resids-struct-plot, fig.caption="Plot of the smooth of `y` to the residuals for model `mod1_x` where `y` was omitted from the model. In this case we can see there is a clear relationship between the residuals and the `y` coordinate.", fig.width=5, fig.height=5}
+plot(mod_resids_str)
+```
+
 
 
 
@@ -216,5 +316,9 @@ Here we can see that the shrinkage has removed almost all the flexibility from t
 
 
 ## References
+
+[^devianceref]: CITEX WOOD 2017 section 3.1.7 has more information on the derivation of deviance derivatives. See also CITEX Davison 1989. Deviance residuals are equivalent for GLMs and GAMs to residual sums of squares are for linear models.
+[^variog]: There is a lot of chat in the spatial modelling literature about "correlograms", "autocorrelograms", "variograms" and "semi-variograms". In some sense they are all looking at the same thing.
+[^lagchat]: The term "lag" often refers to discrete units. In our case we can think about using lag as the number of transects different, but that seems to break down when we have segments of different lengths (the lag of 1 between two particular transects means something different to a lag of one between two other transects). For this reason, we only think about continuous space when we use the correlogram. **TKTKTK need to say something about time here?**
 
 
