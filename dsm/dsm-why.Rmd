@@ -8,6 +8,7 @@ animation: true
 ```{r echo=FALSE}
 ## abstract this into a header
 source("../figure-captions.R")
+opts_chunk$set(cache=TRUE)
 ```
 
 Looking back at the first chapter, [Introduction to distance sampling](distance-intro.html), we saw some simulations of animal populations. In these examples animals were distributed pretty uniformly across the survey area. In reality, the locatio  of animals in space is driven by a variety of factors: climate, prey availability, ease of movement and more play a role.

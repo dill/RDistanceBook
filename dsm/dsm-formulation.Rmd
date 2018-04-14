@@ -8,6 +8,7 @@ animation: true
 ```{r echo=FALSE}
 ## abstract this into a header
 source("../figure-captions.R")
+opts_chunk$set(cache=TRUE)
 ```
 
 Now we know that we want to use spatial models for our data, we need to think about how to formulate the models, so we can construct and fit them. As is common in statistics, *there's more than one way to do it* (TMTOWTDI; Wall ????): we have multiple modelling options and it can be daunting to work out just how to model a particular data set. There are a huge number of possible spatial modelling approaches in ecology alone. Different methods make different assumptions and lead to different interpretations of the results. Some are less flexible than others. Many methods will only model presence (or probability of presence) of animals, we're really interested in estimating abudance and this moves us away from many popular methods [such as MaxEnt; @Elith:2010ce]. With distance sampling data, we really have useful information about where animals *aren't* and how easy they are to detect -- we want to use that information in our spatial models.

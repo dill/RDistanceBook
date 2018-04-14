@@ -8,6 +8,7 @@ animation: true
 ```{r echo=FALSE, include=FALSE}
 ## abstract this into a header
 source("../figure-captions.R")
+#library(knitr)
 library(animation)
 opts_chunk$set(cache=TRUE, echo=FALSE, fig.width=10)
 ```
@@ -51,7 +52,7 @@ points(dat[, c("x2", "y")], pch=19, cex=0.5)
 # show the raw residuals
 segments(dat$x2, dat$y, dat$x2, predict(b), col="blue")
 
-hist(dat$y - predict(b), xlab="Raw residuals")
+hist(dat$y - predict(b), xlab="Raw residuals", main="")
 ```
 
 Seeing if these model residuals are normally distributed is relatively easy. We assume with our models that the variance conforms to the relationship that we specified in our model (which in the case of the Tweedie and negative binomial we defined in terms of the linear predictor; see Chapter XXXX). If that assumption is right then we should see that the residuals have constant variance as we will have modelled the variance relationship adequately. If we didn't do a good job, there will be structure in the residuals and we should be able to see the variance in the residuals increasing or decreasing with the value of the linear predictor.
@@ -60,7 +61,7 @@ These "raw" residuals (difference between the observed and predicted values) see
 
 
 
-```{r nonconstantvar}
+```{r nonconstantvar, fig.cap="what"}
 # this example should show a non-constant variance issue
 dat <- gamSim(1,n=2000, scale=0.1, dist="poisson")
 #dat$y <- exp(log(dat$f) + rnorm(nrow(dat), sd=dat$f))
@@ -139,7 +140,7 @@ We can do this using the `dsm_variog` function (for "variogram"[^variogram] usin
 
 If the residuals do not exhibit spatial autocorrelation then we would expect the plot to be relatively flat, but if there was an issue with spatial autocorrelation then we see a spike in the plot (potentially with the function leveling out at greater distances). This is the relationship we see in Figure XXXX.
 
-```{r}
+```{r variog, fig.cap="variograms"}
 # TKTKTK should this be a function in dsm?
 # code taken from Wood 2017 p. 364
 library(geoR)
@@ -184,7 +185,7 @@ For the observation process
 
 For the distribution process we expect that the deviance residuals from the spatial model will be approximately normally distributed. We can take aggregations of the data over the covariates and plot boxplots of the residuals to see whether there are large differences between different values fo the covariate.
 
-```{r depth-boxplot}
+```{r depth-boxplot, fig.cap="boxplot"}
 boxdata <- mod1$data
 boxdata$depthbin <- cut(boxdata$depth, seq(0, 3500, by=500),
                         labels=paste(seq(0, 3000, by=500),

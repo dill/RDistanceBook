@@ -8,6 +8,7 @@ animation: true
 ```{r echo=FALSE}
 ## abstract this into a header
 source("../figure-captions.R")
+opts_chunk$set(cache=TRUE)
 ```
 
 In this section we'll investigate how to setup our data in R so we can go on to build spatial models. This is somewhat more involved than when we fitted detection functions as we need to link the detection data to spatial locations. We'll also look at some sime visualisations and exploratory plots one can make to reveal potentially interesting relationships in the data and check that the data has been imported correctly.
