@@ -1,6 +1,6 @@
 ## this code makes figure captions work in HTML output
 
-# taken from http://gforge.se/2014/01/fast-track-publishing-using-knitr-part-iii/
+# adapted from http://gforge.se/2014/01/fast-track-publishing-using-knitr-part-iii/
 library(knitr)
 options(figure_counter = TRUE)
 
@@ -10,38 +10,24 @@ options(figure_counter = TRUE)
 # it is therefore useful to evaluate it afterwards.
 opts_knit$set(eval.after='fig.cap')
 
-# The actual hook
+# hack default
 knit_hooks$set(plot = function(x, options) {
-  fig_fn = paste0(opts_knit$get("base.url"),
-                  paste(x, collapse = "."))
 
-  # Some stuff from the default definition
   fig.cap <- knitr:::.img.cap(options)
+  "%n%" <- knitr:::"%n%"
+  # pull out all the relevant plot options
+  fig.num = options$fig.num = options$fig.num %n% 1L
+  fig.cur = options$fig.cur %n% 1L
 
-  # Style and additional options that should be included in the img tag
-  style=c("display: block",
-          sprintf("margin: %s;",
-                   switch(options$fig.align,
-                          left = 'auto auto auto 0',
-                          center = 'auto',
-                          right = 'auto 0 auto auto')))
-  # Certain arguments may not belong in style,
-  # for instance the width and height are usually
-  # outside if the do not have a unit specified
-  addon_args = ""
-
-  # This is perhaps a little overly complicated prepared
-  # with the loop but it allows for a more out.parameters if necessary
-  if (any(grepl("^out.(height|width)", names(options)))){
-      on <- names(options)[grep("^out.(height|width)", names(options))]
-      for(out_name in on){
-          dimName <- substr(out_name, 5, nchar(out_name))
-          if (grepl("[0-9]+(em|px|%|pt|pc|in|cm|mm)", out_name))
-              style=append(style, paste0(dimName, ": ", options[[out_name]]))
-          else if (length(options$out.width) > 0)
-              addon_args = paste0(addon_args, dimName, "='", options[[out_name]], "'")
-      }
+  if (options$fig.show == 'animate') {
+    # Don't print out intermediate plots if we're animating
+    return(if (fig.cur < fig.num) '' else opts_knit$get('animation.fun')(x, options))
   }
+  ai = options$fig.show == 'asis'
+  plot1 = ai || fig.cur <= 1L; plot2 = ai || fig.cur == fig.num
+  d1 = if (plot1) paste0(if (knitr:::out_format('html')) '</div>',
+                        sprintf('<div class="rimage %s">', options$fig.align))
+  d2 = if (plot2) paste0('</div>', if (knitr:::out_format('html')) '<div class="rcode">')
 
   # Add counter if wanted
   fig_number_txt <- ""
@@ -63,10 +49,11 @@ knit_hooks$set(plot = function(x, options) {
       options(figure_counter = cntr + 1)
   }
 
-  # Put it all together
-  paste0("<figure><img src='", fig_fn, "'",
-         " ", addon_args,
-         paste0(" style='", paste(style, collapse="; "), "'"),
-         ">",
-         "<figcaption>", fig_number_txt, fig.cap, "</figcaption></figure>")
+  paste0(
+    d1, knitr:::.img.tag(
+      knitr:::.upload.url(x), options$out.width, options$out.height, knitr:::.img.cap(options),
+      paste(c(options$out.extra, 'class="plot"'), collapse = ' ')
+    ), d2, '\n',
+    '<figcaption>', fig_number_txt, fig.cap, '</figcaption><br/>')
 })
+
