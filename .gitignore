@@ -7,3 +7,9 @@ other-stuff/
 README.html
 BUILDING.html
 site/
+distance/distance-*.html
+dsm/dsm-*.html
+distance/distance-*_files
+distance/distance-*_cache
+dsm/dsm-*_files
+dsm/dsm-*_cache
